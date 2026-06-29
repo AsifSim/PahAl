@@ -42,4 +42,25 @@ public class PahalApiController {
                     .body("Error executing AI code generation chain: " + e.getMessage());
         }
     }
+
+    @PostMapping("/tokens")
+    public ResponseEntity<String> getTokens(@RequestBody String rawIncomingJson) {
+        log.info("[API Request Received] Reached /api/raven/tokens endpoint.");
+        log.debug("[Payload Sample] Raw JSON character length for token calculation: {}", rawIncomingJson != null ? rawIncomingJson.length() : 0);
+
+        try {
+            log.info("[Execution Chain] Invoking RavenPipelineService.fetchTokens()...");
+            String tokenCountResult = pipelineService.fetchTokens(rawIncomingJson);
+
+            log.info("[Execution Chain] Token extraction completed successfully. Token count value: {}", tokenCountResult);
+            log.info("[API Response] Returning token count back to the Raven UI client.");
+            return ResponseEntity.ok(tokenCountResult);
+
+        } catch (Exception e) {
+            log.error("[Execution Failure] Error caught inside token calculation workflow!", e);
+            log.warn("[API Error Response] Returning HTTP 500 Internal Server Error status to the user interface.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching token count: " + e.getMessage());
+        }
+    }
 }

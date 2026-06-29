@@ -23,16 +23,14 @@
 
         .json-display { background-color: #040407; color: #00F5D4; font-family: 'Consolas', 'Fira Code', monospace; }
 
-        /* Enhanced Highlighting & Distinct Colors Selection Log Lines */
         .log-line { font-family: 'Consolas', monospace; font-size: 13px; margin-bottom: 4px; border-left: 3px solid transparent; padding-left: 10px; line-height: 1.4; word-break: break-all; transition: background-color 0.15s; }
         .log-line:hover { background-color: rgba(255, 255, 255, 0.03); }
         .log-info { color: #8F8FC7; }
         .log-success { color: #00F5D4; border-left-color: #00F5D4; }
-        .log-warn { color: #FBBF24; border-left-color: #FBBF24; } /* Amber Yellow Warning */
-        .log-error { color: #EF4444; border-left-color: #EF4444; font-weight: bold; } /* Sharp Red Error */
+        .log-warn { color: #FBBF24; border-left-color: #FBBF24; }
+        .log-error { color: #EF4444; border-left-color: #EF4444; font-weight: bold; }
         .log-ollama { color: #B388FF; border-left-color: #7C4DFF; }
 
-        /* Multi-Split Resizer Strips */
         .resizer-h { width: 14px; cursor: col-resize; background: #0E0E16; transition: background 0.2s; flex-shrink: 0; }
         .resizer-h:hover, .resizer-h.dragging { background: #6A1EB2; box-shadow: 0 0 15px #9D4EDD; }
         .resizer-v { height: 14px; cursor: row-resize; background: #0E0E16; transition: background 0.2s; flex-shrink: 0; }
@@ -44,7 +42,6 @@
         }
         .status-pulse { animation: pulseGlow 2s infinite ease-in-out; }
 
-        /* Scanning Text Processing Animation Overlay */
         .scanning-loader::after {
             content: ' ▍';
             animation: blinker 0.8s steps(2, start) infinite;
@@ -106,6 +103,21 @@
                         <input type="file" id="fileInput" class="hidden" accept=".json,.txt">
                     </div>
 
+                    <div class="bg-[#07070B] border-2 border-[#2C1A4D] rounded-2xl p-5 flex flex-col flex-shrink-0 shadow-lg">
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="text-xs font-black tracking-wider text-purple-400 uppercase">Context Token Footprint</h3>
+                            <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-purple-950 text-purple-300 border border-purple-800 tracking-wider">Pre-flight Metrics</span>
+                        </div>
+                        <div class="text-3xl font-black font-mono tracking-tight text-white my-2 flex items-baseline gap-1">
+                            <span id="animatedTokenCount" class="transition-all duration-300 ease-out text-purple-400">0</span>
+                            <span class="text-xs font-normal text-gray-500">tokens</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-[#1C1136] text-[11px] font-mono text-gray-400">
+                            <div>System Base: <span id="sysTokenCount" class="text-gray-200 font-bold">0</span> t</div>
+                            <div>User Spec: <span id="userTokenCount" class="text-gray-200 font-bold">0</span> t</div>
+                        </div>
+                    </div>
+
                     <div class="bg-[#07070B] border-2 border-[#12121F] rounded-2xl p-6 flex flex-col gap-4 flex-shrink-0">
                         <div class="flex justify-between items-center text-base font-black">
                             <span id="progressStatus" class="text-gray-400 uppercase tracking-wider text-sm">Status: Dormant</span>
@@ -156,6 +168,9 @@
                 <div class="flex justify-between items-center mb-4">
                     <span id="previewHeader" class="text-xs font-black tracking-widest text-gray-400 uppercase">📋 Microservice Map Blueprint</span>
                     <div class="flex items-center gap-2">
+                        <span id="blueprintTimerDisplay" class="hidden text-xs font-mono text-emerald-400 bg-[#11111A] border border-[#222235] px-2.5 py-1 rounded-md font-bold">
+                            0.00s
+                        </span>
                         <button id="minimizeBlueprintBtn" class="text-[10px] border border-[#222235] px-2 py-1 rounded bg-[#11111A] text-gray-400 hover:text-white font-bold">🗕 MIN</button>
                         <button id="copyBlueprintBtn" class="flex items-center gap-1.5 rounded-lg bg-[#11111A] border border-[#222235] px-3 py-1.5 text-xs font-mono font-bold text-gray-400 transition-all hover:bg-[#161626] hover:text-white">
                             <svg id="copyBlueprintIcon" class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
@@ -244,6 +259,31 @@
 
         <div id="resizerH5" class="resizer-h rounded mx-1 hidden"></div>
 
+        <div id="fsmPanel" class="flex-1 flex flex-col min-w-[60px] h-full bg-[#07070B] border-2 border-[#1A263E] rounded-2xl p-6 transition-all-custom overflow-hidden relative">
+            <div id="fsmTileView" class="hidden absolute inset-0 bg-[#0A101C] hover:bg-[#121A2E] cursor-pointer flex flex-col items-center justify-center text-center p-2 transition-colors">
+                <span class="text-2xl mb-2">⚙️</span>
+                <span class="text-[10px] font-black font-mono tracking-wider text-blue-400 uppercase rotate-90 whitespace-nowrap">FSM EXTRACTOR</span>
+            </div>
+            <div id="fsmFullContent" class="flex flex-col h-full w-full">
+                <div class="flex justify-between items-center mb-4 gap-2">
+                    <span class="text-xs font-black tracking-widest text-blue-400 uppercase whitespace-nowrap">⚙️ Finite State Machine (FSM)</span>
+                    <div class="flex items-center gap-2">
+                        <button id="minimizeFsmBtn" class="text-[10px] border border-[#222235] px-2 py-1 rounded bg-[#11111A] text-gray-400 hover:text-white font-bold">🗕 MIN</button>
+                        <button id="copyFsmBtn" class="flex items-center gap-1.5 rounded-lg bg-[#11111A] border border-[#222235] px-3 py-1.5 text-xs font-mono font-bold text-gray-400 transition-all hover:bg-[#161626] hover:text-white">
+                            <svg id="copyFsmIcon" class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            <span id="copyFsmText">COPY</span>
+                        </button>
+                        <button id="triggerFsmBtn" disabled class="text-xs bg-[#111E36] hover:bg-[#172B4D] text-blue-400 border border-blue-800/60 font-mono font-bold px-4 py-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed tracking-wider uppercase transition-all">
+                            🚀 Build FSM
+                        </button>
+                    </div>
+                </div>
+                <pre id="fsmDisplay" class="flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-blue-400 font-mono">// Ready for behavioral state mapping generation extraction...</pre>
+            </div>
+        </div>
+
+        <div id="resizerH6" class="resizer-h rounded mx-1 hidden"></div>
+
         <div id="javaCodePanel" class="hidden opacity-0 flex-col min-w-[60px] h-full bg-[#07070B] border-2 border-[#221238] rounded-2xl p-6 transition-all-custom duration-500 overflow-hidden relative shadow-[0_0_25px_rgba(168,85,247,0.15)]">
             <div id="javaCodeTileView" class="hidden absolute inset-0 bg-[#120A1F] hover:bg-[#1E1233] cursor-pointer flex flex-col items-center justify-center text-center p-2 transition-colors">
                 <span class="text-2xl mb-2">☕</span>
@@ -314,6 +354,7 @@
     const triggerDeamBtn = document.getElementById('triggerDeamBtn');
     const triggerAllPairsBtn = document.getElementById('triggerAllPairsBtn');
     const triggerLlmResultsBtn = document.getElementById('triggerLlmResultsBtn');
+    const triggerFsmBtn = document.getElementById('triggerFsmBtn');
     const progressStatus = document.getElementById('progressStatus');
     const progressPercent = document.getElementById('progressPercent');
     const progressBar = document.getElementById('progressBar');
@@ -321,6 +362,7 @@
     const deamDisplay = document.getElementById('deamDisplay');
     const allPairsDisplay = document.getElementById('allPairsDisplay');
     const llmResultsDisplay = document.getElementById('llmResultsDisplay');
+    const fsmDisplay = document.getElementById('fsmDisplay');
     const javaCodeDisplay = document.getElementById('javaCodeDisplay');
     const previewHeader = document.getElementById('previewHeader');
     const logConsole = document.getElementById('logConsole');
@@ -328,7 +370,6 @@
     const clearLogsBtn = document.getElementById('clearLogsBtn');
     const logSearchInput = document.getElementById('logSearchInput');
 
-    // Copy Action Handles
     const copyBlueprintBtn = document.getElementById('copyBlueprintBtn');
     const copyBlueprintIcon = document.getElementById('copyBlueprintIcon');
     const copyBlueprintText = document.getElementById('copyBlueprintText');
@@ -341,37 +382,41 @@
     const copyLlmResultsBtn = document.getElementById('copyLlmResultsBtn');
     const copyLlmResultsIcon = document.getElementById('copyLlmResultsIcon');
     const copyLlmResultsText = document.getElementById('copyLlmResultsText');
+    const copyFsmBtn = document.getElementById('copyFsmBtn');
+    const copyFsmIcon = document.getElementById('copyFsmIcon');
+    const copyFsmText = document.getElementById('copyFsmText');
     const copyJavaCodeBtn = document.getElementById('copyJavaCodeBtn');
     const copyJavaCodeIcon = document.getElementById('copyJavaCodeIcon');
     const copyJavaCodeText = document.getElementById('copyJavaCodeText');
 
     const topArea = document.getElementById('topArea');
+    const logPanel = document.getElementById('logPanel');
     const sidebarPanel = document.getElementById('sidebarPanel');
     const previewPanel = document.getElementById('previewPanel');
     const deamPanel = document.getElementById('deamPanel');
     const allPairsPanel = document.getElementById('allPairsPanel');
     const llmResultsPanel = document.getElementById('llmResultsPanel');
+    const fsmPanel = document.getElementById('fsmPanel');
     const javaCodePanel = document.getElementById('javaCodePanel');
-    const logPanel = document.getElementById('logPanel');
-    const parsingEngineBlock = document.getElementById('parsingEngineBlock');
-    const gitBranchPanel = document.getElementById('gitBranchPanel');
 
-    // Minimizer / Tile Content Elements
-    const previewTileView = document.getElementById('previewTileView');
     const previewFullContent = document.getElementById('previewFullContent');
-    const deamTileView = document.getElementById('deamTileView');
+    const previewTileView = document.getElementById('previewTileView');
     const deamFullContent = document.getElementById('deamFullContent');
-    const allPairsTileView = document.getElementById('allPairsTileView');
+    const deamTileView = document.getElementById('deamTileView');
     const allPairsFullContent = document.getElementById('allPairsFullContent');
-    const llmResultsTileView = document.getElementById('llmResultsTileView');
+    const allPairsTileView = document.getElementById('allPairsTileView');
     const llmResultsFullContent = document.getElementById('llmResultsFullContent');
-    const javaCodeTileView = document.getElementById('javaCodeTileView');
+    const llmResultsTileView = document.getElementById('llmResultsTileView');
+    const fsmFullContent = document.getElementById('fsmFullContent');
+    const fsmTileView = document.getElementById('fsmTileView');
     const javaCodeFullContent = document.getElementById('javaCodeFullContent');
+    const javaCodeTileView = document.getElementById('javaCodeTileView');
 
     const minimizeBlueprintBtn = document.getElementById('minimizeBlueprintBtn');
     const minimizeDeamBtn = document.getElementById('minimizeDeamBtn');
     const minimizeAllPairsBtn = document.getElementById('minimizeAllPairsBtn');
     const minimizeLlmResultsBtn = document.getElementById('minimizeLlmResultsBtn');
+    const minimizeFsmBtn = document.getElementById('minimizeFsmBtn');
     const minimizeJavaCodeBtn = document.getElementById('minimizeJavaCodeBtn');
 
     const resizerH1 = document.getElementById('resizerH1');
@@ -379,6 +424,7 @@
     const resizerH3 = document.getElementById('resizerH3');
     const resizerH4 = document.getElementById('resizerH4');
     const resizerH5 = document.getElementById('resizerH5');
+    const resizerH6 = document.getElementById('resizerH6');
     const resizerV = document.getElementById('resizerV');
 
     const baseBranchSelect = document.getElementById('baseBranchSelect');
@@ -398,37 +444,82 @@
     let compiledDeamJsonString = "";
     let compiledAllPairsJsonString = "";
     let compiledLlmResultsJsonString = "";
+    let compiledFsmJsonString = "";
     let generatedJavaCodeString = "";
 
-    // Panel Sizing State Trackers for the Expand/Minimize features
     let isLogPanelFullScreen = false;
     let cachedLogPanelHeight = "28%";
     let cachedTopAreaHeight = "72%";
 
-    function appendLog(message, type = 'info', consoleTarget = logConsole) {
-        const timestamp = new Date().toISOString().split('T')[1].substring(0, 8);
+    function runNumericAnimation(elementId, startVal, targetVal, animationDuration) {
+        const targetNode = document.getElementById(elementId);
+        if (!targetNode) return;
+        targetNode.classList.add('scale-105', 'text-purple-300');
+        let initialTimestamp = null;
+        const triggerFrame = (currentTimestamp) => {
+            if (!initialTimestamp) initialTimestamp = currentTimestamp;
+            const absoluteProgress = Math.min((currentTimestamp - initialTimestamp) / animationDuration, 1);
+            const quadraticEaseOut = absoluteProgress * (2 - absoluteProgress);
+            const calculatedFrameVal = Math.floor(quadraticEaseOut * (targetVal - startVal) + startVal);
+            targetNode.innerText = calculatedFrameVal.toLocaleString();
+            if (absoluteProgress < 1) {
+                window.requestAnimationFrame(triggerFrame);
+            } else {
+                targetNode.innerText = targetVal.toLocaleString();
+                targetNode.classList.remove('scale-105', 'text-purple-300');
+            }
+        };
+        window.requestAnimationFrame(triggerFrame);
+    }
+
+    async function requestTokenTelemetry(rawJsonString) {
+        try {
+            const endpointResponse = await fetch(`${PRIMARY_ENGINE_URL}/api/raven/tokens`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: rawJsonString
+            });
+
+            if (!endpointResponse.ok) throw new Error(`Telemetry call rejected: ${endpointResponse.status}`);
+
+            const rawText = await endpointResponse.text();
+
+            try {
+                const numericalMetrics = JSON.parse(rawText);
+                if (numericalMetrics && typeof numericalMetrics === 'object') {
+                    runNumericAnimation("animatedTokenCount", 0, numericalMetrics.total_combined_tokens || 0, 850);
+                    document.getElementById("sysTokenCount").innerText = numericalMetrics.system_prompt_tokens || 0;
+                    document.getElementById("userTokenCount").innerText = numericalMetrics.user_prompt_tokens || 0;
+                    return;
+                }
+            } catch (e) {}
+
+            const tokenCount = parseInt(rawText, 10) || 0;
+            runNumericAnimation("animatedTokenCount", 0, tokenCount, 850);
+            document.getElementById("sysTokenCount").innerText = "0";
+            document.getElementById("userTokenCount").innerText = tokenCount.toString();
+
+        } catch (telemetryException) {
+            console.error("Failed to parse token count footprints:", telemetryException);
+        }
+    }
+
+    function appendLog(message, type = 'info') {
         const line = document.createElement('div');
         line.className = `log-line log-${type}`;
-        line.innerText = `[${timestamp}] ${message}`;
-        consoleTarget.appendChild(line);
-        consoleTarget.scrollTop = consoleTarget.scrollHeight;
-
-        // Ensure newly injected logs instantly evaluate search parameters
+        const timeStamp = new Date().toLocaleTimeString();
+        line.innerText = `[${timeStamp}] ${message}`;
+        logConsole.appendChild(line);
+        logConsole.scrollTop = logConsole.scrollHeight;
         applyConsoleLiveSearch();
     }
 
-    clearLogsBtn.addEventListener('click', () => {
-        logConsole.innerHTML = '';
-        ollamaConsole.innerHTML = '';
-        appendLog('Log display clear operation executed.', 'info', logConsole);
-    });
-
-    // --- LIVE SEARCH ENGINE FUNCTIONALITY ---
     function applyConsoleLiveSearch() {
         const query = logSearchInput.value.toLowerCase().trim();
-        const allLogLines = document.querySelectorAll('.log-line');
-
-        allLogLines.forEach(line => {
+        const logs = logConsole.querySelectorAll('.log-line');
+        logs.forEach(line => {
             const rowText = line.innerText.toLowerCase();
             if (!query || rowText.includes(query)) {
                 line.style.display = "block";
@@ -439,21 +530,16 @@
     }
     logSearchInput.addEventListener('input', applyConsoleLiveSearch);
 
-    // --- DOUBLE-CLICK PANEL TOGGLE EXPAND / RESTORE SYSTEM ---
     function handleLogPanelFullscreenToggle() {
         if (!isLogPanelFullScreen) {
-            // Cache current layouts
             cachedLogPanelHeight = logPanel.style.height || "28%";
             cachedTopAreaHeight = topArea.style.height || "72%";
-
-            // Transition to fullscreen coverage
             topArea.style.height = "0%";
-            topArea.style.display = "none"; // Hard collapse upper frame
+            topArea.style.display = "none";
             logPanel.style.height = "100%";
             resizerV.style.display = "none";
             isLogPanelFullScreen = true;
         } else {
-            // Revert configuration settings back down
             topArea.style.display = "flex";
             topArea.style.height = cachedTopAreaHeight;
             logPanel.style.height = cachedLogPanelHeight;
@@ -464,8 +550,6 @@
     document.getElementById('coreConsoleWrapper').addEventListener('dblclick', handleLogPanelFullscreenToggle);
     document.getElementById('ollamaConsoleWrapper').addEventListener('dblclick', handleLogPanelFullscreenToggle);
 
-
-    // --- REUSABLE CLIPBOARD MANAGER UTILITY ---
     async function executeClipboardAction(textToCopy, textElement, iconElement) {
         if (!textToCopy || textToCopy.startsWith("//")) return;
         try {
@@ -475,7 +559,6 @@
             const originalIcon = iconElement.innerHTML;
             iconElement.innerHTML = '<path d="M20 6 9 17l-5-5"/>';
             iconElement.setAttribute("class", "w-3.5 h-3.5 text-emerald-400");
-
             setTimeout(() => {
                 textElement.innerText = "COPY";
                 textElement.className = "";
@@ -487,59 +570,91 @@
         }
     }
 
-    copyBlueprintBtn.addEventListener('click', () => {
-        executeClipboardAction(compiledWorkflowJson, copyBlueprintText, copyBlueprintIcon);
-    });
+    copyBlueprintBtn.addEventListener('click', () => { executeClipboardAction(compiledWorkflowJson, copyBlueprintText, copyBlueprintIcon); });
+    copyDeamBtn.addEventListener('click', () => { executeClipboardAction(compiledDeamJsonString, copyDeamText, copyDeamIcon); });
+    copyAllPairsBtn.addEventListener('click', () => { executeClipboardAction(compiledAllPairsJsonString, copyAllPairsText, copyAllPairsIcon); });
+    copyLlmResultsBtn.addEventListener('click', () => { executeClipboardAction(compiledLlmResultsJsonString, copyLlmResultsText, copyLlmResultsIcon); });
+    copyFsmBtn.addEventListener('click', () => { executeClipboardAction(compiledFsmJsonString, copyFsmText, copyFsmIcon); });
+    copyJavaCodeBtn.addEventListener('click', () => { executeClipboardAction(generatedJavaCodeString, copyJavaCodeText, copyJavaCodeIcon); });
 
-    copyDeamBtn.addEventListener('click', () => {
-        executeClipboardAction(compiledDeamJsonString, copyDeamText, copyDeamIcon);
-    });
-
-    copyAllPairsBtn.addEventListener('click', () => {
-        executeClipboardAction(compiledAllPairsJsonString, copyAllPairsText, copyAllPairsIcon);
-    });
-
-    copyLlmResultsBtn.addEventListener('click', () => {
-        executeClipboardAction(compiledLlmResultsJsonString, copyLlmResultsText, copyLlmResultsIcon);
-    });
-
-    copyJavaCodeBtn.addEventListener('click', () => {
-        executeClipboardAction(generatedJavaCodeString, copyJavaCodeText, copyJavaCodeIcon);
-    });
-
-    // --- RECONFIGURED MULTI-TILES VIEW SYSTEM TIGGLERS ---
     function togglePanelState(panel, fullContent, tileView, minimize) {
         if (minimize) {
             fullContent.classList.add('hidden');
             tileView.classList.remove('hidden');
-            panel.style.flex = "0 0 60px";
+            panel.style.flex = "0 0 55px";
+            panel.style.minWidth = "55px";
         } else {
             tileView.classList.add('hidden');
             fullContent.classList.remove('hidden');
             panel.style.flex = "1 1 0%";
+            panel.style.minWidth = "60px";
         }
     }
 
-    minimizeBlueprintBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePanelState(previewPanel, previewFullContent, previewTileView, true); });
-    previewTileView.addEventListener('click', () => togglePanelState(previewPanel, previewFullContent, previewTileView, false));
+    minimizeBlueprintBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePanelState(previewPanel, previewFullContent, previewTileView, true);
+        resizerH2.classList.add('hidden');
+    });
+    previewTileView.addEventListener('click', () => {
+        togglePanelState(previewPanel, previewFullContent, previewTileView, false);
+        resizerH2.classList.remove('hidden');
+    });
 
-    minimizeDeamBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePanelState(deamPanel, deamFullContent, deamTileView, true); });
-    deamTileView.addEventListener('click', () => togglePanelState(deamPanel, deamFullContent, deamTileView, false));
+    minimizeDeamBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePanelState(deamPanel, deamFullContent, deamTileView, true);
+        if(resizerH3) resizerH3.classList.add('hidden');
+    });
+    deamTileView.addEventListener('click', () => {
+        togglePanelState(deamPanel, deamFullContent, deamTileView, false);
+        if(resizerH3) resizerH3.classList.remove('hidden');
+    });
 
-    minimizeAllPairsBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePanelState(allPairsPanel, allPairsFullContent, allPairsTileView, true); });
-    allPairsTileView.addEventListener('click', () => togglePanelState(allPairsPanel, allPairsFullContent, allPairsTileView, false));
+    minimizeAllPairsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePanelState(allPairsPanel, allPairsFullContent, allPairsTileView, true);
+        if(resizerH4) resizerH4.classList.add('hidden');
+    });
+    allPairsTileView.addEventListener('click', () => {
+        togglePanelState(allPairsPanel, allPairsFullContent, allPairsTileView, false);
+        if(resizerH4) resizerH4.classList.remove('hidden');
+    });
 
-    minimizeLlmResultsBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePanelState(llmResultsPanel, llmResultsFullContent, llmResultsTileView, true); });
-    llmResultsTileView.addEventListener('click', () => togglePanelState(llmResultsPanel, llmResultsFullContent, llmResultsTileView, false));
+    minimizeLlmResultsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePanelState(llmResultsPanel, llmResultsFullContent, llmResultsTileView, true);
+        if(resizerH5) resizerH5.classList.add('hidden');
+    });
+    llmResultsTileView.addEventListener('click', () => {
+        togglePanelState(llmResultsPanel, llmResultsFullContent, llmResultsTileView, false);
+        if(resizerH5) resizerH5.classList.remove('hidden');
+    });
 
-    minimizeJavaCodeBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePanelState(javaCodePanel, javaCodeFullContent, javaCodeTileView, true); });
+    minimizeFsmBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePanelState(fsmPanel, fsmFullContent, fsmTileView, true);
+        if(resizerH6) resizerH6.classList.add('hidden');
+    });
+    fsmTileView.addEventListener('click', () => {
+        togglePanelState(fsmPanel, fsmFullContent, fsmTileView, false);
+        if(resizerH6) resizerH6.classList.remove('hidden');
+    });
+
+    minimizeJavaCodeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePanelState(javaCodePanel, javaCodeFullContent, javaCodeTileView, true);
+    });
     javaCodeTileView.addEventListener('click', () => togglePanelState(javaCodePanel, javaCodeFullContent, javaCodeTileView, false));
 
-    // --- PANEL RESIZING ---
     resizerH1.addEventListener('mousedown', (e) => {
-        e.preventDefault(); resizerH1.classList.add('dragging');
+        e.preventDefault();
+        resizerH1.classList.add('dragging');
         document.addEventListener('mousemove', dragH1);
-        document.addEventListener('mouseup', () => { resizerH1.classList.remove('dragging'); document.removeEventListener('mousemove', dragH1); });
+        document.addEventListener('mouseup', () => {
+            resizerH1.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragH1);
+        });
     });
     function dragH1(e) {
         let width = e.clientX - topArea.getBoundingClientRect().left;
@@ -547,9 +662,13 @@
     }
 
     resizerH2.addEventListener('mousedown', (e) => {
-        e.preventDefault(); resizerH2.classList.add('dragging');
+        e.preventDefault();
+        resizerH2.classList.add('dragging');
         document.addEventListener('mousemove', dragH2);
-        document.addEventListener('mouseup', () => { resizerH2.classList.remove('dragging'); document.removeEventListener('mousemove', dragH2); });
+        document.addEventListener('mouseup', () => {
+            resizerH2.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragH2);
+        });
     });
     function dragH2(e) {
         let previewWidth = e.clientX - previewPanel.getBoundingClientRect().left;
@@ -557,9 +676,13 @@
     }
 
     resizerH3.addEventListener('mousedown', (e) => {
-        e.preventDefault(); resizerH3.classList.add('dragging');
+        e.preventDefault();
+        resizerH3.classList.add('dragging');
         document.addEventListener('mousemove', dragH3);
-        document.addEventListener('mouseup', () => { resizerH3.classList.remove('dragging'); document.removeEventListener('mousemove', dragH3); });
+        document.addEventListener('mouseup', () => {
+            resizerH3.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragH3);
+        });
     });
     function dragH3(e) {
         let deamWidth = e.clientX - deamPanel.getBoundingClientRect().left;
@@ -567,9 +690,13 @@
     }
 
     resizerH4.addEventListener('mousedown', (e) => {
-        e.preventDefault(); resizerH4.classList.add('dragging');
+        e.preventDefault();
+        resizerH4.classList.add('dragging');
         document.addEventListener('mousemove', dragH4);
-        document.addEventListener('mouseup', () => { resizerH4.classList.remove('dragging'); document.removeEventListener('mousemove', dragH4); });
+        document.addEventListener('mouseup', () => {
+            resizerH4.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragH4);
+        });
     });
     function dragH4(e) {
         let allPairsWidth = e.clientX - allPairsPanel.getBoundingClientRect().left;
@@ -577,39 +704,67 @@
     }
 
     resizerH5.addEventListener('mousedown', (e) => {
-        e.preventDefault(); resizerH5.classList.add('dragging');
+        e.preventDefault();
+        resizerH5.classList.add('dragging');
         document.addEventListener('mousemove', dragH5);
-        document.addEventListener('mouseup', () => { resizerH5.classList.remove('dragging'); document.removeEventListener('mousemove', dragH5); });
+        document.addEventListener('mouseup', () => {
+            resizerH5.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragH5);
+        });
     });
     function dragH5(e) {
-        let javaCodeWidth = e.clientX - javaCodePanel.getBoundingClientRect().left;
-        if (javaCodeWidth >= 60) javaCodePanel.style.flex = `0 0 ${javaCodeWidth}px`;
+        let fsmWidth = e.clientX - fsmPanel.getBoundingClientRect().left;
+        if (fsmWidth >= 60) fsmPanel.style.flex = `0 0 ${fsmWidth}px`;
+    }
+
+    resizerH6.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        resizerH6.classList.add('dragging');
+        document.addEventListener('mousemove', dragH6);
+        document.addEventListener('mouseup', () => {
+            resizerH6.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragH6);
+        });
+    });
+    function dragH6(e) {
+        let javaWidth = e.clientX - javaCodePanel.getBoundingClientRect().left;
+        if (javaWidth >= 60) javaCodePanel.style.flex = `0 0 ${javaWidth}px`;
     }
 
     resizerV.addEventListener('mousedown', (e) => {
-        if(isLogPanelFullScreen) return; // Freeze dragging manipulation while tracking screens
-        e.preventDefault(); resizerV.classList.add('dragging');
+        e.preventDefault();
+        resizerV.classList.add('dragging');
         document.addEventListener('mousemove', dragV);
-        document.addEventListener('mouseup', () => { resizerV.classList.remove('dragging'); document.removeEventListener('mousemove', dragV); });
+        document.addEventListener('mouseup', () => {
+            resizerV.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragV);
+        });
     });
     function dragV(e) {
+        let totalHeight = document.body.clientHeight;
         let topHeight = e.clientY - topArea.getBoundingClientRect().top;
-        let bottomHeight = document.body.clientHeight - e.clientY - 40;
-        if (topHeight > 180 && bottomHeight > 90) {
-            topArea.style.height = `${topHeight}px`;
-            logPanel.style.height = `${bottomHeight}px`;
+        let bottomHeight = totalHeight - topHeight - 48;
+        if (topHeight > 100 && bottomHeight > 80) {
+            topArea.style.height = `${(topHeight / totalHeight) * 100}%`;
+            logPanel.style.height = `${(bottomHeight / totalHeight) * 100}%`;
         }
     }
 
-    // --- NVIDIA TELEMETRY POLLING ---
     async function queryHardwareMetrics() {
         try {
             const res = await fetch(`${BACKEND_BRIDGE_URL}/api/telemetry`);
             const data = await res.json();
-            gpuLoad.innerText = `${data.gpu_load}.0 %`;
-            vramUsage.innerText = `${data.vram_used} MB / ${data.vram_total} MB`;
-            gpuGraphBar.style.width = `${Math.max(data.gpu_load, 1)}%`;
-            vramGraphBar.style.width = `${Math.max((data.vram_used / data.vram_total) * 100, 1)}%`;
+
+            // Fixed camelCase/snake_case structure fallback to fix undefined status bugs
+            const activeLoad = data.gpu_load !== undefined ? data.gpu_load : (data.gpuLoad !== undefined ? data.gpuLoad : 0);
+            const activeUsed = data.vram_used !== undefined ? data.vram_used : (data.vramUsed !== undefined ? data.vramUsed : 0);
+            const activeTotal = data.vram_total !== undefined ? data.vram_total : (data.vramTotal !== undefined ? data.vramTotal : 1);
+
+            gpuLoad.innerText = `${activeLoad} %`;
+            vramUsage.innerText = `${activeUsed} MB / ${activeTotal} MB`;
+            gpuGraphBar.style.width = `${Math.max(activeLoad, 1)}%`;
+            vramGraphBar.style.width = `${Math.max((activeUsed / activeTotal) * 100, 1)}%`;
+
             statusDot.className = "w-4 h-4 bg-purple-500 status-pulse";
             statusText.innerText = "Metrics Active";
             statusText.className = "text-base font-mono tracking-wider text-purple-400 font-bold uppercase";
@@ -621,14 +776,12 @@
     }
     setInterval(queryHardwareMetrics, 1000);
 
-    // --- REAL-TIME STREAM CONNECTIONS ---
     function initializeOllamaLogStream() {
         const eventSource = new EventSource(`${BACKEND_BRIDGE_URL}/api/logs/ollama/stream`);
         eventSource.onmessage = function(event) {
             if (event.data.trim()) {
                 if(ollamaConsole.innerText.includes("Awaiting pipeline stream")) ollamaConsole.innerHTML = "";
 
-                // Color parsing logic boundaries for incoming streams
                 let logType = "ollama";
                 const lowerData = event.data.toLowerCase();
                 if (lowerData.includes("error") || lowerData.includes("critical") || lowerData.includes("exception")) logType = "error";
@@ -640,11 +793,13 @@
                 line.innerText = event.data;
                 ollamaConsole.appendChild(line);
                 ollamaConsole.scrollTop = ollamaConsole.scrollHeight;
-
                 applyConsoleLiveSearch();
             }
         };
-        eventSource.onerror = function() { eventSource.close(); setTimeout(initializeOllamaLogStream, 6000); };
+        eventSource.onerror = function() {
+            eventSource.close();
+            setTimeout(initializeOllamaLogStream, 6000);
+        };
     }
 
     function initializeCoreLogStream() {
@@ -655,182 +810,191 @@
                 const line = document.createElement('div');
                 const rawData = event.data;
 
-                // Segment colors securely via pattern definitions
                 if (rawData.includes("ERROR") || rawData.includes("CRITICAL") || rawData.includes("Exception")) line.className = 'log-line log-error font-mono';
                 else if (rawData.includes("WARN")) line.className = 'log-line log-warn font-mono';
                 else if (rawData.includes("DEBUG") || rawData.includes("org.jooq")) line.className = 'log-line text-cyan-400 font-mono';
-                else if (rawData.includes("INFO") && (rawData.includes("SUCCESS") || rawData.includes("cleanly"))) line.className = 'log-line log-success font-mono';
+                else if (rawData.includes("INFO") && (rawData.includes("SUCCESS") || rawData.includes("COMPLETED"))) line.className = 'log-line log-success font-mono';
                 else line.className = 'log-line log-info font-mono';
 
                 line.innerText = rawData;
                 logConsole.appendChild(line);
                 logConsole.scrollTop = logConsole.scrollHeight;
-
                 applyConsoleLiveSearch();
             }
         };
-        coreEventSource.onerror = function() { coreEventSource.close(); setTimeout(initializeCoreLogStream, 5000); };
+        coreEventSource.onerror = function() {
+            coreEventSource.close();
+            setTimeout(initializeCoreLogStream, 5000);
+        };
     }
 
-    initializeOllamaLogStream();
-    initializeCoreLogStream();
-
-    // --- INTERACTIVE ACTIONS ---
     dropZone.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('active'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
-    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('active'); handleFile(e.dataTransfer.files[0]); });
-
-    function handleFile(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            rawFileContent = e.target.result;
-            fileStatus.innerText = `✔ ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-            dropTitle.innerText = "Target Confirmed";
-            compileBtn.disabled = false;
-        };
-        reader.readAsText(file);
-    }
-
-    compileBtn.addEventListener('click', async () => {
-        compileBtn.disabled = true;
-        progressBar.style.width = "50%";
-        progressPercent.innerText = "50%";
-        progressStatus.innerText = "Status: Transpiling Schema Attributes...";
-        jsonDisplay.innerText = "// Loading blueprints...";
-        deamDisplay.innerText = "// Standing by for blueprint compilation...";
-
-        try {
-            const response = await fetch(`${PRIMARY_ENGINE_URL}/api/raven/process`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: rawFileContent
-            });
-            const textResult = await response.text();
-
-            try {
-                const parsedObj = JSON.parse(textResult);
-                compiledWorkflowJson = JSON.stringify(parsedObj, null, 2);
-                jsonDisplay.innerText = compiledWorkflowJson;
-            } catch {
-                compiledWorkflowJson = textResult;
-                jsonDisplay.innerText = textResult;
-            }
-
-            progressBar.style.width = "100%";
-            progressPercent.innerText = "100%";
-            progressStatus.innerText = "Status: Schema Map Populated.";
-
-            triggerDeamBtn.disabled = false;
-            triggerDeamBtn.className = "text-xs bg-emerald-500 hover:bg-emerald-400 text-black font-mono font-black px-4 py-1.5 rounded-lg tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)]";
-
-            appendLog("Microservice Map Generated. Deam Read compilation gateway open.", "success");
-        } catch (err) {
-            progressBar.style.width = "0%";
-            progressPercent.innerText = "0%";
-            progressStatus.innerText = "Status: Fault Intercepted.";
-            jsonDisplay.innerText = `Halted: ${err.message}`;
-            compileBtn.disabled = false;
-            appendLog(`Blueprint parsing layout aborted: ${err.message}`, "error");
-        }
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        if (e.dataTransfer.files.length) handleIngestedFileSpec(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleIngestedFileSpec(e.target.files[0]);
     });
 
-    // --- ANIMATED INTERACTION DEAM MAP COMPILER ---
+    function handleIngestedFileSpec(file) {
+        fileStatus.innerText = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+        dropTitle.innerText = "Architecture JSON Target Anchored";
+        dropZone.style.borderColor = "#9D4EDD";
+
+        const fileReader = new FileReader();
+        fileReader.onload = function(event) {
+            rawFileContent = event.target.result;
+            compileBtn.disabled = false;
+            appendLog(`Target JSON metadata structural resource parsed accurately: ${file.name}`, "info");
+            requestTokenTelemetry(rawFileContent);
+        };
+        fileReader.readAsText(file);
+    }
+
+    clearLogsBtn.addEventListener('click', () => {
+        logConsole.innerHTML = '<div class="log-line log-info">[System Core] Active console streams cleared down safely.</div>';
+        ollamaConsole.innerHTML = '<div class="log-line log-ollama">[Ollama System Listen] Active logs truncated cleanly.</div>';
+    });
+
+    compileBtn.addEventListener('click', async () => {
+    // ⏱️ START THE TIMER & RESET PREVIOUS DISPLAY
+    const startTime = performance.now();
+    const timerEl = document.getElementById("blueprintTimerDisplay");
+    if (timerEl) timerEl.classList.add("hidden");
+
+    compileBtn.disabled = true;
+    progressBar.style.width = "40%";
+    progressPercent.innerText = "40%";
+    progressStatus.innerText = "Status: Parsing Requirements...";
+    appendLog("Initiating code generation pipeline schema mapping parameters parsing...", "info");
+
+    try {
+        const response = await fetch(`${PRIMARY_ENGINE_URL}/api/raven/process`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: rawFileContent
+        });
+        const textResult = await response.text();
+        try {
+            const parsedObj = JSON.parse(textResult);
+            compiledWorkflowJson = JSON.stringify(parsedObj, null, 2);
+            jsonDisplay.innerText = compiledWorkflowJson;
+        } catch {
+            compiledWorkflowJson = textResult;
+            jsonDisplay.innerText = textResult;
+        }
+
+        // ⏱️ STOP THE TIMER & UPDATE THE UI VALUE
+        const endTime = performance.now();
+        const duration = ((endTime - startTime) / 1000).toFixed(2); // Formats to 2 decimal places (e.g. 1.24s)
+        if (timerEl) {
+            timerEl.innerText = `⏱ ${duration}s`;
+            timerEl.classList.remove("hidden");
+        }
+
+        progressBar.style.width = "100%";
+        progressPercent.innerText = "100%";
+        progressStatus.innerText = "Status: Schema Map Populated.";
+        triggerDeamBtn.disabled = false;
+        triggerDeamBtn.className = "text-xs bg-emerald-500 hover:bg-emerald-400 text-black font-mono font-black px-4 py-1.5 rounded-lg tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)]";
+        triggerFsmBtn.disabled = false;
+        appendLog("Microservice Map Generated. Deam Read compilation gateway open.", "success");
+    } catch (err) {
+        progressBar.style.width = "0%";
+        progressPercent.innerText = "0%";
+        progressStatus.innerText = "Status: Fault Intercepted.";
+        jsonDisplay.innerText = `Halted: ${err.message}`;
+        compileBtn.disabled = false;
+        appendLog(`Blueprint parsing layout aborted: ${err.message}`, "error");
+    }
+});
     triggerDeamBtn.addEventListener('click', async () => {
         triggerDeamBtn.disabled = true;
         deamDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-purple-400 font-mono scanning-loader";
-
         deamDisplay.innerText = ">> Initializing Bridge Extraction Core...\n";
-
-        setTimeout(() => {
-            deamDisplay.innerText += ">> Interrogating 'workflow_steps' matrix array data...\n";
-        }, 400);
-
-        setTimeout(() => {
-            deamDisplay.innerText += ">> Filtering database actions where type == 'DATABASE_LOOKUP'...\n";
-        }, 800);
-
+        setTimeout(() => { deamDisplay.innerText += ">> Interrogating 'workflow_steps' matrix array data...\n"; }, 400);
+        setTimeout(() => { deamDisplay.innerText += ">> Filtering database actions where type == 'DATABASE_LOOKUP'...\n"; }, 800);
         setTimeout(async () => {
-            deamDisplay.innerText += ">> Forwarding map structure directly to secure Java engine endpoint...\n";
-
+        deamDisplay.innerText += ">> Forwarding map structure directly to secure Java engine endpoint...\n";
+        try {
+            const deamResponse = await fetch(`${PRIMARY_ENGINE_URL}/api/code/deam-map`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: compiledWorkflowJson
+            });
+            const deamText = await deamResponse.text();
             try {
-                const deamResponse = await fetch(`${PRIMARY_ENGINE_URL}/api/code/deam-map`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: compiledWorkflowJson
-                });
-
-                const deamText = await deamResponse.text();
-
-                try {
-                    compiledDeamJsonString = JSON.stringify(JSON.parse(deamText), null, 2);
-                } catch {
-                    compiledDeamJsonString = deamText;
-                }
-
-                deamDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-emerald-400 font-mono";
-                deamDisplay.innerText = compiledDeamJsonString;
-
-                appendLog("Relational Deam reads compilation completed successfully.", "success");
-
-                // --- ACTIVATION STAGE OF THE NEW ALL-PAIRS COMBINATIONS PANEL WITH ANIMATED FADE IN ---
-                resizerH3.classList.remove('hidden');
-                allPairsPanel.classList.remove('hidden');
-                setTimeout(() => {
-                    allPairsPanel.classList.remove('opacity-0');
-                    allPairsPanel.classList.add('flex', 'opacity-100');
-                    appendLog("All-Pairs Test Matrix configuration panel unlocked and initialized.", "info");
-                }, 100);
-
-                replaceLeftSidebarWithCodeLinker();
-            } catch (err) {
-                deamDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-red-400 font-mono";
-                deamDisplay.innerText = `Pipeline Compilation Breakdown: ${err.message}`;
-                triggerDeamBtn.disabled = false;
-                appendLog(`Deam Mapping operational failure encountered: ${err.message}`, "error");
+                compiledDeamJsonString = JSON.stringify(JSON.parse(deamText), null, 2);
+            } catch {
+                compiledDeamJsonString = deamText;
             }
-        }, 1300);
-    });
+            deamDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-emerald-500 font-mono";
+            deamDisplay.innerText = compiledDeamJsonString;
+            appendLog("Deam Mapping Strategy extracted perfectly.", "success");
+            triggerDeamBtn.disabled = false;
 
-    // --- ALL PAIRS COMBINATIONS GENERATOR HITTER ---
+            // --- ADDED PANEL SWAP LOGIC START ---
+            const parsingBlock = document.getElementById("parsingEngineBlock");
+            const gitPanel = document.getElementById("gitBranchPanel");
+
+            if (parsingBlock && gitPanel) {
+                parsingBlock.classList.add("hidden");
+                parsingBlock.style.setProperty('display', 'none', 'important');
+
+                gitPanel.classList.remove("hidden");
+                gitPanel.classList.add("flex");
+            }
+            // --- ADDED PANEL SWAP LOGIC END ---
+
+            if (resizerH3) resizerH3.classList.remove('hidden');
+            allPairsPanel.classList.remove('hidden');
+            setTimeout(() => {
+                allPairsPanel.classList.remove('opacity-0');
+                allPairsPanel.classList.add('flex', 'opacity-100');
+                appendLog("Combinatorial Pairwise generation framework matrix panel initialized.", "info");
+            }, 100);
+        } catch (err) {
+            deamDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-red-400 font-mono";
+            deamDisplay.innerText = `Data-Access Map Extraction Exception: ${err.message}`;
+            triggerDeamBtn.disabled = false;
+            appendLog(`Deam Matrix Generation Failure: ${err.message}`, "error");
+        }
+    }, 1200);
+});
+
     triggerAllPairsBtn.addEventListener('click', async () => {
         triggerAllPairsBtn.disabled = true;
         allPairsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-cyan-400 font-mono scanning-loader";
         allPairsDisplay.innerText = ">> Scanning extracted schema properties...\n>> Evaluating dynamic all-pair scenario domains...";
         llmResultsDisplay.innerText = "// Awaiting user manual outcome calculation trigger...";
-
         try {
             const combResponse = await fetch(`${PRIMARY_ENGINE_URL}/api/code/test-combinations`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: compiledWorkflowJson
             });
-
             const combText = await combResponse.text();
-
             try {
                 compiledAllPairsJsonString = JSON.stringify(JSON.parse(combText), null, 2);
             } catch {
                 compiledAllPairsJsonString = combText;
             }
-
             allPairsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-purple-400 font-mono";
             allPairsDisplay.innerText = compiledAllPairsJsonString;
-
             appendLog("Pairwise Combinations successfully compiled for runtime testing.", "success");
             triggerAllPairsBtn.disabled = false;
 
-            // --- RECONFIGURED SUB-TRIGGER STAGE UNLOCK FOR THE LLM RESULTS MATRIX ---
-            resizerH4.classList.remove('hidden');
+            if(resizerH4) resizerH4.classList.remove('hidden');
             llmResultsPanel.classList.remove('hidden');
             setTimeout(() => {
                 llmResultsPanel.classList.remove('opacity-0');
                 llmResultsPanel.classList.add('flex', 'opacity-100');
                 appendLog("LLM Expected Scenarios evaluation panel unlocked. Ready for manual trigger.", "info");
             }, 100);
-
         } catch (err) {
             allPairsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-red-400 font-mono";
             allPairsDisplay.innerText = `Combinatorial Generation Exception: ${err.message}`;
@@ -839,45 +1003,51 @@
         }
     });
 
-    // --- LLM INTERFERENCE WORKFLOW OUTCOME CALCULATION TRIGGER ---
     triggerLlmResultsBtn.addEventListener('click', async () => {
         if (!compiledWorkflowJson || !compiledAllPairsJsonString) {
             appendLog("Inference request cancelled: Source contexts are unassigned.", "warn");
             return;
         }
-
         triggerLlmResultsBtn.disabled = true;
-        llmResultsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-amber-500 font-mono scanning-loader";
-        llmResultsDisplay.innerText = ">> Packaging microservice specification JSON along with matrix configurations...\n>> Executing local parsing pipeline...\n>> Waiting on Ollama intelligence generation array stream output...";
+        llmResultsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-amber-400 font-mono scanning-loader";
+        llmResultsDisplay.innerText = ">> Instantiating locally isolated pipeline context values...\n>> Broadcasting multi-turn logic blocks directly into Ollama execution ring layers...";
+        appendLog("Forwarding model matrix variables into Ollama pipeline ring. Expect processing load spikes.", "warn");
 
         try {
-            const inputWrapperPayload = {
+            // Reconstructed payload delivery strategy to match direct parsing frameworks perfectly
+            const parsedAllPairs = JSON.parse(compiledAllPairsJsonString);
+
+            // 2. Safely extract the raw combinations array, wherever it is hiding
+            const rawCombinationsArray = Array.isArray(parsedAllPairs)
+                ? parsedAllPairs
+                : (parsedAllPairs.combinations || (parsedAllPairs.all_pair_matrix && parsedAllPairs.all_pair_matrix.combinations) || []);
+
+            // 3. Construct your clean, backend-compatible payload object
+            const payloadObject = {
                 microservice_json: JSON.parse(compiledWorkflowJson),
-                all_pair_matrix: JSON.parse(compiledAllPairsJsonString)
+                all_pair_matrix: {
+                    // Map the array elements seamlessly into the scenario schema
+                    combinations: rawCombinationsArray.map((combo, index) => ({
+                        scenario_id: `AP_${String(index + 1).padStart(3, '0')}`,
+                        parameter_values: combo.parameter_values || combo // Fallback if already wrapped
+                    }))
+                }
             };
 
-            const response = await fetch(`${PRIMARY_ENGINE_URL}/api/code/predict-outcomes`, {
+            const llmResponse = await fetch(`${PRIMARY_ENGINE_URL}/api/code/predict-outcomes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(inputWrapperPayload)
+                body: JSON.stringify(payloadObject)
             });
-
-            if (!response.ok) {
-                const errBody = await response.text();
-                throw new Error(`Server status ${response.status}: ${errBody}`);
-            }
-
-            const responseText = await response.text();
-
+            const resultText = await llmResponse.text();
             try {
-                compiledLlmResultsJsonString = JSON.stringify(JSON.parse(responseText), null, 2);
+                compiledLlmResultsJsonString = JSON.stringify(JSON.parse(resultText), null, 2);
             } catch {
-                compiledLlmResultsJsonString = responseText;
+                compiledLlmResultsJsonString = resultText;
             }
-
             llmResultsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-amber-500 font-mono";
             llmResultsDisplay.innerText = compiledLlmResultsJsonString;
-            appendLog("LLM matrix expectations validation evaluation profile generated successfully.", "success");
+            appendLog("Ollama isolated prompt logic calculated outcomes perfectly.", "success");
         } catch (err) {
             llmResultsDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-red-400 font-mono";
             llmResultsDisplay.innerText = `Local Ollama Inference Processing Exception: ${err.message}`;
@@ -887,57 +1057,77 @@
         }
     });
 
-    async function replaceLeftSidebarWithCodeLinker() {
-        parsingEngineBlock.classList.add('hidden');
-        gitBranchPanel.classList.remove('hidden');
-        gitBranchPanel.classList.add('flex');
+    triggerFsmBtn.addEventListener('click', async () => {
+        triggerFsmBtn.disabled = true;
+        fsmDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-blue-400 font-mono scanning-loader";
+        fsmDisplay.innerText = ">> Querying active schema configurations...\n>> Building logical transition nodes maps...";
         try {
-            const res = await fetch(`${PRIMARY_ENGINE_URL}/api/code/branches`);
-            const branches = await res.json();
-            baseBranchSelect.innerHTML = '';
-            branches.forEach(branch => {
-                const opt = document.createElement('option');
-                opt.value = branch; opt.innerText = branch;
-                if(branch === 'main' || branch === 'master') opt.selected = true;
-                baseBranchSelect.appendChild(opt);
+            const fsmResponse = await fetch(`${PRIMARY_ENGINE_URL}/api/code/fsm-extract`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: compiledWorkflowJson
             });
-        } catch(e) {
-            baseBranchSelect.innerHTML = '<option value="main">main (Fallback)</option>';
-        }
-    }
+            const fsmText = await fsmResponse.text();
+            try {
+                compiledFsmJsonString = JSON.stringify(JSON.parse(fsmText), null, 2);
+            } catch {
+                compiledFsmJsonString = fsmText;
+            }
+            fsmDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-blue-400 font-mono";
+            fsmDisplay.innerText = compiledFsmJsonString;
+            appendLog("Behavioral state configurations linked completely.", "success");
+            triggerFsmBtn.disabled = false;
 
-    // Dynamic Live Preview Input Listener for the targeted Branch name
-    newBranchInput.addEventListener('input', (e) => {
-        const val = e.target.value.trim();
-        repoNameDisplay.innerText = val ? val : "pahal-microservice-branch";
+            if(compiledFsmJsonString) {
+                try {
+                    const parsedFsm = JSON.parse(compiledFsmJsonString);
+                    if (parsedFsm.metadata && parsedFsm.metadata.microservice_name) {
+                        const targetSanitizedBranch = `feature-${parsedFsm.metadata.microservice_name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+                        newBranchInput.value = targetSanitizedBranch;
+                        repoNameDisplay.innerText = targetSanitizedBranch;
+                        appendLog(`Target Repository Linker pre-populated with branch: ${targetSanitizedBranch}`, "info");
+                    }
+                } catch(e) {
+                    console.error("Failed to parse state machine metadata layers", e);
+                }
+            }
+<!--            document.getElementById("parsingEngineBlock").classList.add("hidden");-->
+<!--            document.getElementById("gitBranchPanel").classList.remove("hidden");-->
+        } catch (err) {
+            fsmDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-base leading-relaxed font-black transition-all bg-[#040407] text-red-400 font-mono";
+            fsmDisplay.innerText = `Finite State Machine Map Build Exception: ${err.message}`;
+            triggerFsmBtn.disabled = false;
+            appendLog(`Finite State Machine Map extraction failed: ${err.message}`, "error");
+        }
     });
 
     gitGenBtn.addEventListener('click', async () => {
-        const baseBranch = baseBranchSelect.value;
+        const selectedBaseBranch = baseBranchSelect.value;
         const newBranchName = newBranchInput.value.trim();
-        if(!newBranchName) { newBranchInput.focus(); return; }
 
-        if (!compiledWorkflowJson) {
-            appendLog("Branch generation canceled: Missing architecture workflow blueprint context.", "warn");
+        if (!newBranchName) {
+            appendLog("Repository Linker aborted: Source target branch input is empty.", "warn");
             return;
         }
 
-        gitGenBtn.disabled = true;
         const originalBtnText = gitGenBtn.innerText;
-        gitGenBtn.innerText = "CREATING...";
+        gitGenBtn.innerText = "SYNCHRONIZING REPOSITORY...";
+        gitGenBtn.disabled = true;
 
-        // Set loader class on the view display before request completes
-        javaCodeDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-xs font-mono transition-all bg-[#040407] text-purple-400 scanning-loader";
-        javaCodeDisplay.innerText = ">> Connecting to core code generation service compilation channel...\n>> Extracting isolated executable method blocks...\n>> Applying configuration spec templates onto workspace...\n";
+        javaCodeDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-xs font-mono transition-all bg-[#040407] text-purple-400 font-mono scanning-loader";
+        javaCodeDisplay.innerText = `>> Establishing remote workspace reference context mappings...\n>> Provisioning new local target branch: [${newBranchName}] tracking [${selectedBaseBranch}]...\n`;
 
         try {
             const payload = {
-                baseBranch: baseBranch,
-                newBranchName: newBranchName,
-                workflowJson: compiledWorkflowJson
+                baseBranch: selectedBaseBranch,
+                newBranch: newBranchName,
+                schema: JSON.parse(compiledWorkflowJson),
+                fsm: JSON.parse(compiledFsmJsonString),
+                deamMap: compiledDeamJsonString ? JSON.parse(compiledDeamJsonString) : null,
+                outcomes: compiledLlmResultsJsonString ? JSON.parse(compiledLlmResultsJsonString) : null
             };
 
-            const response = await fetch(`${PRIMARY_ENGINE_URL}/api/code/compile`, {
+            const response = await fetch(`${PRIMARY_ENGINE_URL}/api/code/generate-codebase`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -945,7 +1135,7 @@
 
             const resultText = await response.text();
             if (!response.ok) {
-                throw new Error(`HTTP Error ${response.status}: ${resultText}`);
+                throw new Error(`Repository action error ${response.status}: ${resultText}`);
             }
 
             generatedJavaCodeString = resultText;
@@ -953,15 +1143,31 @@
             javaCodeDisplay.innerText = generatedJavaCodeString;
 
             appendLog(`Java codebase compiled successfully on branch: ${newBranchName}`, "success");
+            // 1. Hide the old sidebar and its immediate resizer bar
+        if (gitBranchPanel) {
+            gitBranchPanel.classList.add('hidden');
+            gitBranchPanel.style.setProperty('display', 'none', 'important');
+        }
+        if (parsingEngineBlock) {
+            parsingEngineBlock.classList.add('hidden');
+            parsingEngineBlock.style.setProperty('display', 'none', 'important');
+        }
 
-            // Open the new panel with an animated fade-in transition
-            resizerH5.classList.remove('hidden');
-            javaCodePanel.classList.remove('hidden');
-            setTimeout(() => {
-                javaCodePanel.classList.remove('opacity-0');
-                javaCodePanel.classList.add('flex', 'opacity-100');
-                appendLog("Generated Java compilation component panel unlocked and loaded.", "info");
-            }, 100);
+        // 2. Insert the Java code panel directly into the sidebar container
+        sidebarPanel.appendChild(javaCodePanel);
+
+        // 3. Clear visibility blockades and let it absorb the sidebar container footprint
+        javaCodePanel.classList.remove('hidden', 'opacity-0');
+        javaCodePanel.style.setProperty('display', 'flex', 'important');
+        javaCodePanel.style.width = "100%";
+        javaCodePanel.style.height = "100%";
+        javaCodePanel.style.flex = "1 1 auto";
+
+        // 4. Smooth fade-in activation
+        setTimeout(() => {
+            javaCodePanel.classList.add('opacity-100');
+            appendLog("Generated Java compilation component panel successfully moved into primary left sidebar view.", "info");
+        }, 50);
 
         } catch (err) {
             javaCodeDisplay.className = "flex-1 p-6 rounded-xl border-2 border-[#11111A] overflow-auto whitespace-pre custom-scrollbar text-xs font-mono transition-all bg-[#040407] text-red-400";
@@ -971,6 +1177,11 @@
             gitGenBtn.innerText = originalBtnText;
             gitGenBtn.disabled = false;
         }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initializeCoreLogStream();
+        initializeOllamaLogStream();
     });
 </script>
 </body>

@@ -7,13 +7,15 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import java.io.FileWriter;
 import java.io.IOException;
 
 @Slf4j
 @Service
 public class JsonMicroserviceGenerator {
-
+    private static final com.knuddels.jtokkit.api.EncodingRegistry REGISTRY = com.knuddels.jtokkit.Encodings.newLazyEncodingRegistry();
+    private static final com.knuddels.jtokkit.api.Encoding ENCODER = REGISTRY.getEncoding(com.knuddels.jtokkit.api.EncodingType.CL100K_BASE);
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
 
@@ -183,6 +185,7 @@ public class JsonMicroserviceGenerator {
 
       IV. INPUT DATA MATRIX FOR TARGET COMPILATION
       Please analyze the business document provided in user prompt and generate the single valid output object mirroring the blueprint mechanics without deviations.
+      In the business document, The word `Join Criteria:` maps to the where_clause_parameters for the json being generated.
     """;
 
     public String executePipeline(String incomingJsonString) throws Exception {
@@ -215,8 +218,34 @@ public class JsonMicroserviceGenerator {
         String mjmPrompt = DOCUMENT_TO_JSON_PROMPT + "\n\nINPUT DATA TO COMPILE:\n" + extractedText;
 
         log.info("[AI Orchestration] Dispatching prompt to local Ollama inference model instance.");
-        String microserviceMjmJson = chatClient.prompt(mjmPrompt).call().content();
+//        String microserviceMjmJson = chatClient.prompt(mjmPrompt).call().content();
+
+        org.springframework.ai.chat.model.ChatResponse response = chatClient.prompt(mjmPrompt)
+                .call()
+                .chatResponse();
+        if (response.getMetadata() != null && response.getMetadata().getUsage() != null) {
+            org.springframework.ai.chat.metadata.Usage usage = response.getMetadata().getUsage();
+
+            Integer promptTokens = usage.getPromptTokens();// Input tokens
+            Integer totalTokens = usage.getTotalTokens();          // Total combination
+
+            log.info("[AI Analytics] Token Usage - Prompt: {}, Total: {}",
+                    promptTokens, totalTokens);
+        } else {
+            log.warn("[AI Analytics] Token usage metadata was not returned by the Ollama instance.");
+        }
+
+        String microserviceMjmJson = response.getResult().getOutput().getText();
+        log.debug("microserviceMjmJson = {}",microserviceMjmJson);
+
+        log.debug("Checking the accuracy and refining the generated JSON");
+
+        microserviceMjmJson = generateValidatedMicroserviceJson(extractedText,microserviceMjmJson);
+        log.debug("The accuracy improved json = {}",microserviceMjmJson);
+
+
         log.info("[AI Orchestration] Received generated raw model response payload metadata.");
+
 
         // --- RESILIENT BOUNDARY CORRECTION LAYER ---
         log.debug("[Sanitization] Isomorphic cleansing of outer structural JSON boundaries.");
@@ -255,6 +284,38 @@ public class JsonMicroserviceGenerator {
         return microserviceMjmJson;
     }
 
+    public String fetchTokens(String incomingJsonString) throws Exception {
+        log.info("[Pipeline Execution] Beginning token metric pre-calculation sequence.");
+
+        JsonNode rootNode = objectMapper.readTree(incomingJsonString);
+        JsonNode sections = rootNode.path("sections");
+
+        StringBuilder rawContentText = new StringBuilder();
+        if (sections.isArray() && sections.has(0)) {
+            JsonNode rawContentArray = sections.get(0).path("raw_content");
+            for (JsonNode contentNode : rawContentArray) {
+                rawContentText.append(contentNode.asText()).append("\n");
+            }
+        }
+
+        String extractedText = rawContentText.toString();
+
+        // 1. Calculate individual token segments explicitly
+        int systemPromptTokens = ENCODER.countTokensOrdinary(DOCUMENT_TO_JSON_PROMPT);
+        int userPromptTokens = ENCODER.countTokensOrdinary("\n\nINPUT DATA TO COMPILE:\n" + extractedText);
+        int totalCombinedTokens = systemPromptTokens + userPromptTokens;
+
+        // 2. Build a raw JSON string to return so that the controller's String signature doesn't break
+        com.fasterxml.jackson.databind.node.ObjectNode tokenMetricsNode = objectMapper.createObjectNode();
+        tokenMetricsNode.put("total_combined_tokens", totalCombinedTokens);
+        tokenMetricsNode.put("system_prompt_tokens", systemPromptTokens);
+        tokenMetricsNode.put("user_prompt_tokens", userPromptTokens);
+
+        log.info("[Telemetry Engine] Token pre-check calculated: {} total tokens.", totalCombinedTokens);
+        return objectMapper.writeValueAsString(tokenMetricsNode);
+    }
+
+
     private void saveFileLocally(String fileName, String content) throws IOException {
         log.debug("[I/O Action] Invoking disk write streaming handle operations for file: {}", fileName);
         try (FileWriter file = new FileWriter(fileName)) {
@@ -264,5 +325,117 @@ public class JsonMicroserviceGenerator {
             log.error("[I/O Failure] Encountered severe system disruption writing payload definitions down to disk!", ioException);
             throw ioException;
         }
+    }
+
+    /**
+     * Orchestrates an iterative refinement loop:
+     * 1. Generates JSON from business text.
+     * 2. Audits JSON for accuracy using a secondary LLM call.
+     * 3. Refines JSON based on audit feedback until 95% accuracy is reached.
+     */
+    public String generateValidatedMicroserviceJson(String extractedText, String MJM) {
+        int currentAccuracy = 0;
+        int maxIterations = 5; // Safety cap to prevent infinite loops
+        int iterationCount = 0;
+
+        String microserviceMjmJson = MJM;
+        String feedback = "No issues yet.";
+
+        // The Auditor Prompt Template
+        String auditorPromptTemplate = """
+        You are an expert technical auditor. Compare the Original Business Text against the Generated JSON to calculate accuracy.
+        
+        STRICT SCHEMA DEFINITION:
+        - microservice_name: String identifier.
+        - service_version: String (e.g., 'v2.1').
+        - is_platform_triggered: Boolean.
+        - request_data_extractions: Array of objects {field_name, data_type, purpose}.
+        - eligibility_criteria: Object {rule_name, expression, on_failure}.
+        - workflow_steps: Array of objects (must include step_number, type, evaluation_rules, purpose).
+        - conditional_routing: Array of objects {condition, trigger_microservice, target_version, input_parameters}.
+        - persistence_actions: Array of objects {condition, entity, operation, source_of_uuid, fields}.
+        - test_specification_matrix: Object containing 'scenarios' (must include scenario_id, PRE_EXECUTION, MID_EXECUTION, POST_EXECUTION).
+
+        VALIDATION RULES:
+        1. Accuracy must be 100 if all logic is captured and schema is strictly followed.
+        2. Deduct points heavily for missing required sections, extra unauthorized keys, or incorrect data types.
+        3. Output ONLY a valid JSON object (no markdown, no backticks).
+        4. Schema for output: {"accuracy": <int 0-100>, "issues": ["issue 1", "issue 2"]}
+        
+        ORIGINAL BUSINESS TEXT:
+        %s
+        
+        GENERATED JSON:
+        %s
+        """;
+
+        // The Refiner Prompt Template
+        String refinerPrompt = """
+        You are a deterministic JSON correction engine. Improve the following JSON based strictly on these specific issues: %s
+        
+        STRICT SCHEMA CONTRACT:
+        You MUST preserve the following structure exactly. Do NOT add new keys, remove keys, or change the data types of the following fields:
+        ['microservice_name', 'service_version', 'is_platform_triggered', 'request_data_extractions',
+         'eligibility_criteria', 'workflow_steps', 'conditional_routing', 'persistence_actions',
+         'test_specification_matrix']
+        
+        CURRENT JSON:
+        %s
+        """;
+
+        while (currentAccuracy < 95 && iterationCount < maxIterations) {
+            iterationCount++;
+            log.info("[Iteration {}] Beginning processing...", iterationCount);
+
+            if(iterationCount!=1){
+                log.info("[Iteration {}] Refiner LLM processing corrections.", iterationCount);
+                String refinedPrompt = String.format(refinerPrompt, feedback, microserviceMjmJson) + "\n\nCURRENT JSON:\n" + microserviceMjmJson;
+                microserviceMjmJson = chatClient.prompt(refinedPrompt).call().content();
+                microserviceMjmJson = extractJsonFromLlmResponse(microserviceMjmJson);
+                log.debug("microserviceMjmJson = {}",microserviceMjmJson);
+            }
+
+
+            // 1. AUDITOR PHASE
+            log.info("[Iteration {}] Auditor LLM evaluating accuracy.", iterationCount);
+            String evaluationResultJson = chatClient.prompt(String.format(auditorPromptTemplate, extractedText, microserviceMjmJson)).call().content();
+            evaluationResultJson = extractJsonFromLlmResponse(evaluationResultJson);
+            // 3. PARSE AND DECIDE
+            try {
+                JsonNode evalNode = objectMapper.readTree(evaluationResultJson);
+                currentAccuracy = evalNode.get("accuracy").asInt();
+                feedback = evalNode.get("issues").toString(); // Store issues for the Refiner in the next loop
+
+                log.info("Current Accuracy: {}%", currentAccuracy);
+                log.info("current issues = {}",feedback);
+            } catch (Exception e) {
+                log.error("[Iteration {}] Failed to parse auditor response. Retrying generation.", iterationCount, e);
+                currentAccuracy = 0; // Force another loop iteration
+            }
+        }
+
+        if (currentAccuracy < 95) {
+            log.warn("Max iterations reached. Returning best effort result with {}% accuracy.", currentAccuracy);
+        } else {
+            log.info("Target accuracy of 95%+ reached.");
+        }
+
+        return microserviceMjmJson;
+    }
+
+    private String extractJsonFromLlmResponse(String rawOutput) {
+        if (rawOutput == null || rawOutput.isBlank()) {
+            return "";
+        }
+
+        int startIndex = rawOutput.indexOf('{');
+        int endIndex = rawOutput.lastIndexOf('}');
+
+        if (startIndex != -1 && endIndex != -1 && startIndex <= endIndex) {
+            return rawOutput.substring(startIndex, endIndex + 1);
+        }
+
+        // Fallback just in case it doesn't contain braces (the parser will catch the error)
+        return rawOutput.trim();
     }
 }
