@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pahal Core // Autonomous System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --midnight: #0B0F12;
+            --cyan: #4CC9F0;
+            --cyan-rgb: 76, 201, 240;
+        }
+        body {
+            background-color: var(--midnight);
+            color: #f8fafc;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+        .mono { font-family: 'Space Mono', monospace; }
+
+        /* Cyberpunk Glassmorphism Accents */
+        .cyber-card {
+            background: rgba(11, 15, 18, 0.75);
+            border: 1px solid rgba(var(--cyan-rgb), 0.15);
+            backdrop-filter: blur(8px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .cyber-card:hover {
+            border-color: rgba(var(--cyan-rgb), 0.4);
+            box-shadow: 0 0 30px rgba(var(--cyan-rgb), 0.05);
+        }
+
+        .cyan-glow {
+            text-shadow: 0 0 15px rgba(var(--cyan-rgb), 0.6);
+        }
+        .cyan-border-glow:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 20px rgba(var(--cyan-rgb), 0.2);
+        }
+
+        /* Syntax Highlighting */
+        .code-keyword { color: var(--cyan); font-weight: bold; }
+        .code-string { color: #a5d6ff; }
+        .code-class { color: #b180ff; }
+        .code-comment { color: #57606a; font-style: italic; }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+<body class="min-h-screen w-screen p-6 flex flex-col justify-between relative select-none">
+
+<canvas id="mesh-canvas" class="absolute inset-0 pointer-events-none" style="z-index: 1;"></canvas>
+
+<div class="w-full max-w-[1800px] h-[92vh] flex flex-col gap-6 mx-auto my-auto relative" style="z-index: 10;">
+
+    <header id="header" class="opacity-0 flex justify-between items-end border-b border-white/5 pb-4 bg-transparent">
+        <div>
+            <h1 class="text-4xl font-bold tracking-tight text-white uppercase">PAHAL<span class="text-[#4CC9F0] cyan-glow font-light">CORE</span></h1>
+            <p class="text-[10px] text-white/40 tracking-[0.4em] uppercase mt-1">Next-Gen Codebase Synthesis Matrix</p>
+        </div>
+        <div class="mono text-xs text-white/30 flex items-center gap-2">
+            <span id="status-dot" class="w-2 h-2 rounded-full bg-white/20 transition-all duration-300"></span>
+            <span id="status-text">SYSTEM_READY</span>
+        </div>
+    </header>
+
+    <div id="workspace-wrapper" class="flex w-full flex-grow items-stretch gap-0 transition-all duration-700 ease-out min-h-0">
+
+        <div id="left-panel" class="w-full max-w-xl mx-auto flex flex-col gap-5 justify-center transition-all duration-700 ease-out h-full bg-transparent">
+
+            <div class="cyber-card p-6 rounded-xl flex flex-col gap-4">
+                <div class="text-xs uppercase tracking-widest text-white/50 font-semibold">Target Environment Context</div>
+                <div class="flex gap-3">
+                    <input type="text" id="directoryPath" placeholder="Enter absolute project workspace path..."
+                           class="flex-grow bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-[#4CC9F0] cyan-border-glow-focus outline-none transition-all mono">
+                    <button onclick="executeAnalysisThread()" id="actionBtn"
+                            class="bg-[#4CC9F0]/10 border border-[#4CC9F0]/30 text-[#4CC9F0] px-6 py-3 rounded-lg text-sm font-bold tracking-wider hover:bg-[#4CC9F0] hover:text-[#0B0F12] transition-all duration-300 uppercase cursor-pointer">
+                        INITIATE
+                    </button>
+                </div>
+            </div>
+
+            <div class="cyber-card p-6 rounded-xl flex flex-col h-[280px] relative overflow-hidden group transition-all duration-500">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs uppercase tracking-widest text-white/50 font-semibold">GPU compute cluster</span>
+                    <span id="gpu-txt" class="mono text-xl font-bold text-[#4CC9F0] cyan-glow">0.0%</span>
+                </div>
+                <div class="flex-grow relative min-h-[140px] mt-2">
+                    <canvas id="gpuLiveChart"></canvas>
+                </div>
+            </div>
+
+            <div class="cyber-card p-6 rounded-xl flex flex-col justify-between gap-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase tracking-widest text-white/50 font-semibold">VRAM Layer Allocation</span>
+                    <div class="text-right">
+                        <span id="vram-txt" class="mono text-xl font-bold text-white">248</span>
+                        <span class="text-[10px] text-white/30 mono"> / 8192 MB</span>
+                    </div>
+                </div>
+                <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/5">
+                    <div id="vram-progress" class="h-full bg-[#4CC9F0] w-[3%] transition-all duration-500 shadow-[0_0_15px_#4CC9F0] rounded-full"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="right-panel" class="w-0 opacity-0 overflow-hidden flex flex-col relative transition-all duration-700 ease-out h-full">
+
+            <div id="documentTabs" class="flex justify-between items-center bg-black/30 border border-white/5 border-b-0 rounded-t-xl px-4 h-12 flex-shrink-0 select-none">
+                <div class="flex gap-2 h-full items-end" id="dynamicTabsContainer"></div>
+                <div class="mono text-[10px] text-[#4CC9F0] bg-[#4CC9F0]/10 px-2.5 py-1 rounded border border-[#4CC9F0]/20 animate-pulse uppercase tracking-wider">
+                    Active Data Stream
+                </div>
+            </div>
+
+            <div class="flex-grow bg-black/20 border border-white/5 rounded-b-xl p-6 overflow-hidden relative flex gap-4">
+                <div id="codeWorkspace" class="w-full h-full flex gap-4 opacity-100">
+                    <div id="lineNumbers" class="mono text-white/10 text-right text-xs w-6 border-r border-white/5 pr-3 flex flex-col gap-[2px]"></div>
+                    <div id="codeViewer" class="mono text-xs text-white/80 whitespace-pre-wrap overflow-y-auto flex-grow select-text selection:bg-[#4CC9F0]/30 selection:text-white"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- 1. Vibrant Connected Node Constellation Background Engine ---
+    const canvas = document.getElementById('mesh-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+
+    function resizeCanvasContext() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvasContext);
+    resizeCanvasContext();
+
+    // Dense layout node cluster matching your original blueprint style
+    const nodesArray = Array.from({length: 85}, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5
+    }));
+
+    function executeGridVectorAnimation() {
+        ctx.clearRect(0, 0, w, h);
+
+        // Render bright core points
+        nodesArray.forEach(node => {
+            node.x += node.vx;
+            node.y += node.vy;
+
+            // Rebound physics framework
+            if (node.x < 0 || node.x > w) node.vx *= -1;
+            if (node.y < 0 || node.y > h) node.vy *= -1;
+
+            ctx.fillStyle = 'rgba(76, 201, 240, 0.6)';
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Map and draw structural vector connections
+        ctx.lineWidth = 0.6;
+        for(let i = 0; i < nodesArray.length; i++) {
+            for(let j = i + 1; j < nodesArray.length; j++) {
+                let dx = nodesArray[i].x - nodesArray[j].x;
+                let dy = nodesArray[i].y - nodesArray[j].y;
+                let geometricDistance = Math.sqrt(dx * dx + dy * dy);
+
+                if(geometricDistance < 150) {
+                    // Elevated alpha properties to match your exact vibrant screenshot reference
+                    ctx.strokeStyle = `rgba(76, 201, 240, ${(1 - geometricDistance / 150) * 0.22})`;
+                    ctx.beginPath();
+                    ctx.moveTo(nodesArray[i].x, nodesArray[i].y);
+                    ctx.lineTo(nodesArray[j].x, nodesArray[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(executeGridVectorAnimation);
+    }
+    executeGridVectorAnimation();
+
+    // --- 2. Setup Sequential Screen Entries via GSAP ---
+    gsap.to("#header", { opacity: 1, duration: 0.8, ease: "power2.out" });
+    gsap.to("#left-panel", { opacity: 1, duration: 0.8, delay: 0.1, ease: "power2.out" });
+
+    // --- 3. Hardware Compute Telemetry Simulator Engine (GPU / VRAM) ---
+    let activeProcessingState = false;
+    const chartCtx = document.getElementById('gpuLiveChart').getContext('2d');
+    let lineGradient = chartCtx.createLinearGradient(0, 0, 0, 150);
+    lineGradient.addColorStop(0, 'rgba(76, 201, 240, 0.22)');
+    lineGradient.addColorStop(1, 'rgba(76, 201, 240, 0.0)');
+
+    const telemetryChart = new Chart(chartCtx, {
+        type: 'line',
+        data: {
+            labels: Array(25).fill(''),
+            datasets: [{
+                data: Array(25).fill(1.5),
+                borderColor: '#4CC9F0',
+                borderWidth: 1.5,
+                tension: 0.4,
+                fill: true,
+                backgroundColor: lineGradient,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            scales: { y: { min: 0, max: 100, display: false }, x: { display: false } },
+            plugins: { legend: { display: false }, tooltip: { enabled: false } }
+        }
+    });
+
+    setInterval(() => {
+        const metricsArray = telemetryChart.data.datasets[0].data;
+        let floorLimit = activeProcessingState ? 65 : 1;
+        let ceilingLimit = activeProcessingState ? 94 : 5;
+        let evaluatedMetricValue = Math.random() * (ceilingLimit - floorLimit) + floorLimit;
+
+        metricsArray.push(evaluatedMetricValue);
+        metricsArray.shift();
+        telemetryChart.update();
+
+        document.getElementById('gpu-txt').innerText = evaluatedMetricValue.toFixed(1) + '%';
+
+        let targetDynamicVram = activeProcessingState ? 6420 + Math.random() * 120 : 248 + Math.random() * 12;
+        document.getElementById('vram-txt').innerText = Math.floor(targetDynamicVram);
+        document.getElementById('vram-progress').style.width = `${(targetDynamicVram / 8192) * 100}%`;
+    }, 400);
+
+    // --- 4. Adaptive Split Matrix Window Transformations & Stream Engine ---
+    let documentRegistry = {};
+
+    function syntaxHighlightTransformer(rawTextString) {
+        return rawTextString
+            .replace(/(\/\/.+)/g, '<span class="code-comment">$1</span>')
+            .replace(/\b(new|List|String|void|public|private|class|throws|return|if)\b/g, '<span class="code-keyword">$1</span>')
+            .replace(/\b(XWPFDocument|DocumentExtractor|FsmGenerator|KafkaMetricsPublisher)\b/g, '<span class="code-class">$1</span>')
+            .replace(/(".+?")/g, '<span class="code-string">$1</span>');
+    }
+
+    function syncLineNumbers(textBlock) {
+        const totalLinesCount = textBlock.split('\n').length;
+        const matrixLineContainer = document.getElementById('lineNumbers');
+        matrixLineContainer.innerHTML = Array.from({length: totalLinesCount}, (_, step) => `<div>${String(step + 1).padStart(2, '0')}</div>`).join('');
+    }
+
+    function switchActiveTabContext(targetFileName) {
+        if (!documentRegistry[targetFileName]) return;
+
+        const instancesOfTabs = document.querySelectorAll('#dynamicTabsContainer > div');
+        instancesOfTabs.forEach(tabItem => {
+            if (tabItem.innerText.trim() === targetFileName) {
+                tabItem.className = "px-4 h-full flex items-center bg-[#0B0F12] border-t-2 border-[#4CC9F0] text-[#4CC9F0] text-xs font-semibold rounded-t-lg cursor-pointer transition-all";
+            } else {
+                tabItem.className = "px-4 h-full flex items-center text-white/40 hover:text-white/80 text-xs font-medium cursor-pointer transition-all";
+            }
+        });
+
+        const codeViewer = document.getElementById('codeViewer');
+        codeViewer.innerHTML = syntaxHighlightTransformer(documentRegistry[targetFileName]);
+        syncLineNumbers(documentRegistry[targetFileName]);
+    }
+
+    async function initializeTextTypewriterStream(fileName, completeSourceCodeText) {
+        documentRegistry[fileName] = "";
+
+        const tabsLayoutContainer = document.getElementById('dynamicTabsContainer');
+        const customTabNode = document.createElement('div');
+        customTabNode.onclick = () => switchActiveTabContext(fileName);
+        customTabNode.innerText = fileName;
+        tabsLayoutContainer.appendChild(customTabNode);
+
+        // Dynamically unfold the split layout *only* once documents are initialized and streaming begins
+        if (Object.keys(documentRegistry).length === 1) {
+            const leftPanel = document.getElementById('left-panel');
+            const rightPanel = document.getElementById('right-panel');
+
+            leftPanel.classList.remove('w-full', 'max-w-xl', 'mx-auto', 'justify-center');
+            leftPanel.classList.add('w-[30%]');
+
+            rightPanel.classList.remove('w-0', 'opacity-0');
+            rightPanel.classList.add('w-[70%]', 'opacity-100', 'pl-6');
+
+            setTimeout(() => { telemetryChart.resize(); }, 400);
+        }
+
+        const codeViewer = document.getElementById('codeViewer');
+        let characterIndex = 0;
+
+        return new Promise(resolvedCallback => {
+            const parsingIntervalLoop = setInterval(() => {
+                documentRegistry[fileName] += completeSourceCodeText.charAt(characterIndex);
+                codeViewer.textContent = documentRegistry[fileName];
+                syncLineNumbers(documentRegistry[fileName]);
+
+                codeViewer.scrollTop = codeViewer.scrollHeight;
+                switchActiveTabContext(fileName);
+
+                characterIndex++;
+                if (characterIndex >= completeSourceCodeText.length) {
+                    clearInterval(parsingIntervalLoop);
+                    resolvedCallback();
+                }
+            }, 4);
+        });
+    }
+
+    async function executeAnalysisThread() {
+        if(activeProcessingState) return;
+
+        const actionBtn = document.getElementById('actionBtn');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+
+        activeProcessingState = true;
+        actionBtn.innerText = "STREAMING...";
+        actionBtn.disabled = true;
+
+        statusDot.className = "w-2 h-2 rounded-full bg-[#4CC9F0] shadow-[0_0_10px_#4CC9F0]";
+        statusText.innerText = "MATRIX_COMPUTING";
+        statusText.classList.add('text-[#4CC9F0]', 'cyan-glow');
+
+        // Reset workspace display environments securely
+        document.getElementById('dynamicTabsContainer').innerHTML = "";
+        document.getElementById('codeViewer').innerHTML = "";
+        documentRegistry = {};
+
+        const mockFilesDataStore = [
+            {
+                name: "DocumentExtractor.java",
+                code: `package com.pahal.core.engine;\n\nimport org.apache.poi.xwpf.usermodel.XWPFDocument;\nimport java.io.InputStream;\nimport java.util.ArrayList;\n\npublic class DocumentExtractor {\n    public List<String> processStream(InputStream stream) throws Exception {\n        XWPFDocument document = new XWPFDocument(stream);\n        List<String> lines = new ArrayList<>();\n        \n        document.getParagraphs().forEach(p -> lines.add(p.getText()));\n        document.close();\n        return lines;\n    }\n}`
+            },
+            {
+                name: "FsmGenerator.java",
+                code: `package com.pahal.core.fsm;\n\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class FsmGenerator {\n    private final Map<String, State> matrix = new HashMap<>();\n\n    public void generate(Blueprint blueprint) {\n        State root = new State("INITIAL");\n        blueprint.getTransitions().forEach(t -> {\n            root.addTransition(t.getSource(), t.getTarget());\n        });\n    }\n}`
+            }
+        ];
+
+        for (let dataPacket of mockFilesDataStore) {
+            await initializeTextTypewriterStream(dataPacket.name, dataPacket.code);
+            await new Promise(timerFinished => setTimeout(timerFinished, 400));
+        }
+
+        actionBtn.innerText = "INITIATE";
+        actionBtn.disabled = false;
+        activeProcessingState = false;
+
+        statusDot.className = "w-2 h-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,1)]";
+        statusText.innerText = "MATRIX_SUCCESS";
+        statusText.className = "mono text-xs text-green-400";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yamuna Test Execution</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #050810;
+            --panel-bg: rgba(10, 15, 25, 0.6);
+            --neon-blue: #00d2ff;
+            --neon-cyan: #00ffcc;
+            --text-main: #ffffff;
+            --text-muted: #8892b0;
+            --pass-color: #00e676;
+            --fail-color: #ff3d00;
+            --running-color: #fbc02d;
+            --border-glow: rgba(0, 210, 255, 0.3);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Particle Network Background */
+        #network-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+        }
+
+        .container {
+            max-width: 1500px; margin: 40px auto; padding: 20px;
+            display: flex;
+            justify-content: center; /* Centers the panels */
+            align-items: flex-start;
+            flex-wrap: wrap; /* Allows wrapping on smaller screens */
+            gap: 30px;
+            position: relative; z-index: 1;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            border: 1px dashed var(--border-glow);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 210, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 30px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 700px; /* Fixes the width so it stays clean */
+        }
+
+        h1.title {
+            text-align: center; color: var(--neon-blue);
+            font-size: 2.5rem; font-weight: 800; letter-spacing: 2px;
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-top: 40px; margin-bottom: 20px;
+        }
+
+        h2 { font-size: 1.5rem; color: var(--neon-cyan); margin-top: 0; margin-bottom: 20px; }
+
+        /* Buttons */
+        .btn {
+            background: rgba(0, 210, 255, 0.1); color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 8px 16px; border-radius: 4px; cursor: pointer;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--neon-blue); color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .btn:disabled {
+            border-color: var(--text-muted); color: var(--text-muted);
+            cursor: not-allowed; opacity: 0.5;
+        }
+
+        .btn-execute-all {
+            width: 100%; padding: 15px; font-size: 1.2rem; margin-bottom: 25px;
+            background: linear-gradient(90deg, rgba(0,210,255,0.1) 0%, rgba(0,255,204,0.1) 100%);
+            border-color: var(--neon-cyan); color: var(--neon-cyan);
+        }
+
+        .btn-execute-all:hover:not(:disabled) {
+            background: var(--neon-cyan); color: #000;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        /* Table Styles */
+        .table-container { max-height: 600px; overflow-y: auto; }
+        .table-container::-webkit-scrollbar { width: 8px; }
+        .table-container::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { color: var(--text-muted); position: sticky; top: 0; background: var(--bg-color); z-index: 10;}
+        tr { transition: background 0.2s ease; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+
+        /* Status Indicators */
+        .status { font-weight: bold; letter-spacing: 1px; }
+        .status-idle { color: var(--text-muted); }
+        .status-pass { color: var(--pass-color); text-shadow: 0 0 10px var(--pass-color); }
+        .status-fail { color: var(--fail-color); text-shadow: 0 0 10px var(--fail-color); }
+        .status-running { color: var(--running-color); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* Results Panel */
+        .results-panel {
+            display: none; /* Hidden by default to keep left panel centered */
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results-panel.active {
+            display: flex;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        .log-container {
+            background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px;
+            font-family: monospace; font-size: 0.9rem; max-height: 250px; overflow-y: auto;
+            border-left: 3px solid var(--neon-blue);
+        }
+
+        .log-entry { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .log-label { color: var(--text-muted); }
+
+    </style>
+</head>
+<body>
+
+<canvas id="network-canvas"></canvas>
+
+<h1 class="title">YAMUNA</h1>
+
+<div class="container">
+    <div class="glass-panel">
+        <h2>Test Execution Blueprint</h2>
+        <button id="btn-execute-all" class="btn btn-execute-all" onclick="executeAllTests()">▶ Execute All Tests Sequentially</button>
+
+        <div class="table-container">
+            <table id="test-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Test Case Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="test-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass-panel results-panel" id="results-panel">
+        <h2>Execution Analytics</h2>
+        <div class="chart-container">
+            <canvas id="resultsChart"></canvas>
+        </div>
+
+        <h2 style="margin-top: 20px;">Execution Logs</h2>
+        <div class="log-container" id="log-container">
+            <div style="color: var(--text-muted);">Waiting for execution...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. Background Network Animation with Mouse Interaction ---
+    const canvas = document.getElementById('network-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, particles = [];
+
+    // Mouse tracking
+    let mouse = { x: null, y: null, radius: 150 };
+
+    window.addEventListener('mousemove', function(event) {
+        mouse.x = event.x;
+        mouse.y = event.y;
+    });
+
+    window.addEventListener('mouseout', function() {
+        mouse.x = null;
+        mouse.y = null;
+    });
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            // Increased density to 300 particles as requested
+            for(let i = 0; i < 300; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.3, // Slightly slower movement for more stable feel
+                    vy: (Math.random() - 0.5) * 0.3,
+                    radius: Math.random() * 2 + 0.5
+                });
+            }
+        }
+
+    function drawNetwork() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = 'rgba(0, 210, 255, 0.5)';
+
+        for(let i = 0; i < particles.length; i++) {
+            let p = particles[i];
+            p.x += p.vx; p.y += p.vy;
+
+            // Bounce off edges
+            if(p.x < 0 || p.x > width) p.vx *= -1;
+            if(p.y < 0 || p.y > height) p.vy *= -1;
+
+            // Mouse interaction physics
+            if (mouse.x != null && mouse.y != null) {
+                let dx = mouse.x - p.x;
+                let dy = mouse.y - p.y;
+                let distance = Math.hypot(dx, dy);
+
+                if (distance < mouse.radius) {
+                    // Draw line to mouse
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(0, 210, 255, ${0.8 - distance/mouse.radius})`;
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+
+                    // Push particle away slightly
+                    const forceDirectionX = dx / distance;
+                    const forceDirectionY = dy / distance;
+                    const force = (mouse.radius - distance) / mouse.radius;
+                    const directionX = forceDirectionX * force * 1.5;
+                    const directionY = forceDirectionY * force * 1.5;
+
+                    p.x -= directionX;
+                    p.y -= directionY;
+                }
+            }
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Connect particles to each other
+            for(let j = i + 1; j < particles.length; j++) {
+                let p2 = particles[j];
+                let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                if(dist < 120) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(0, 210, 255, ${1 - dist/120})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(drawNetwork);
+    }
+
+    window.addEventListener('resize', initCanvas);
+    initCanvas(); drawNetwork();
+
+    // --- 2. Test Execution Logic ---
+
+    // Mock Data: Replace this later by fetching from your Spring Boot Backend
+    const mockTests = [
+        { id: "TC-001", name: "Validate User Authentication Token", status: "Idle" },
+        { id: "TC-002", name: "Process Kafka Stream Pipeline", status: "Idle" },
+        { id: "TC-003", name: "Verify Flink Real-time Aggregation", status: "Idle" },
+        { id: "TC-004", name: "Check Database Connection Pool", status: "Idle" },
+        { id: "TC-005", name: "Test API Rate Limiting", status: "Idle" },
+        { id: "TC-006", name: "Validate JSON Payload Schema", status: "Idle" }
+    ];
+
+    let executionStats = { passed: 0, failed: 0, pending: mockTests.length };
+    let resultsChart;
+    let isExecutingAll = false;
+
+    // Render Table
+    function renderTable() {
+        const tbody = document.getElementById('test-tbody');
+        tbody.innerHTML = '';
+        mockTests.forEach((test, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${test.id}</td>
+                <td>${test.name}</td>
+                <td id="status-${index}" class="status status-${test.status.toLowerCase()}">${test.status}</td>
+                <td>
+                    <button id="btn-${index}" class="btn" onclick="executeSingleTest(${index})">Execute</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Initialize Chart.js
+    function initChart() {
+        const ctxChart = document.getElementById('resultsChart').getContext('2d');
+        Chart.defaults.color = '#8892b0';
+        resultsChart = new Chart(ctxChart, {
+            type: 'doughnut',
+            data: {
+                labels: ['Passed', 'Failed', 'Pending'],
+                datasets: [{
+                    data: [0, 0, mockTests.length],
+                    backgroundColor: ['#00e676', '#ff3d00', '#2a3b5c'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } },
+                cutout: '70%'
+            }
+        });
+    }
+
+    // Execute a Single Test
+    async function executeSingleTest(index) {
+        const test = mockTests[index];
+        if(test.status === 'Running') return;
+
+        // Activate Panel
+        document.getElementById('results-panel').classList.add('active');
+
+        // Set UI to Running state
+        updateUIState(index, 'Running');
+
+        // Simulated Delay & Logic for Frontend demo
+        await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+        const isSuccess = Math.random() > 0.3; // 70% chance to pass
+
+        const resultData = {
+            status: isSuccess ? 'Pass' : 'Fail',
+            expected: isSuccess ? "Status Code 200, Valid Token" : "Process Payload successfully",
+            actual: isSuccess ? "Status Code 200, Valid Token" : "Timeout Exception in stream mapping"
+        };
+
+        updateUIState(index, resultData.status);
+        appendLog(test.id, test.name, resultData);
+        updateStats();
+    }
+
+    // Execute All Sequentially
+    async function executeAllTests() {
+        if(isExecutingAll) return;
+        isExecutingAll = true;
+        document.getElementById('btn-execute-all').disabled = true;
+        document.getElementById('results-panel').classList.add('active');
+        document.getElementById('log-container').innerHTML = ''; // Clear logs
+
+        // Reset stats
+        mockTests.forEach((t, i) => updateUIState(i, 'Idle'));
+        updateStats();
+
+        for (let i = 0; i < mockTests.length; i++) {
+            // Disable individual buttons during sequence
+            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+            await executeSingleTest(i);
+        }
+
+        isExecutingAll = false;
+        document.getElementById('btn-execute-all').disabled = false;
+        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+    }
+
+    // Helper: Update UI State
+    function updateUIState(index, status) {
+        mockTests[index].status = status;
+        const statusCell = document.getElementById(`status-${index}`);
+        statusCell.textContent = status;
+        statusCell.className = `status status-${status.toLowerCase()}`;
+
+        const btn = document.getElementById(`btn-${index}`);
+        if(status === 'Running') {
+            btn.textContent = 'Running...';
+            btn.disabled = true;
+        } else {
+            btn.textContent = 'Execute';
+            btn.disabled = false;
+        }
+    }
+
+    // Helper: Append to Log Panel
+    function appendLog(id, name, result) {
+        const logContainer = document.getElementById('log-container');
+        if(logContainer.innerHTML.includes("Waiting for execution")) logContainer.innerHTML = '';
+
+        const logHTML = `
+            <div class="log-entry">
+                <strong style="color: ${result.status === 'Pass' ? 'var(--pass-color)' : 'var(--fail-color)'}">
+                    [${id}] ${result.status.toUpperCase()}
+                </strong> - ${name}<br/>
+                <span class="log-label">Expected:</span> ${result.expected}<br/>
+                <span class="log-label">Actual:</span> <span style="color: ${result.status === 'Fail' ? 'var(--fail-color)' : 'inherit'}">${result.actual}</span>
+            </div>
+        `;
+        logContainer.insertAdjacentHTML('afterbegin', logHTML);
+    }
+
+    // Helper: Update Chart.js Stats
+    function updateStats() {
+        const passed = mockTests.filter(t => t.status === 'Pass').length;
+        const failed = mockTests.filter(t => t.status === 'Fail').length;
+        const pending = mockTests.length - (passed + failed);
+
+        resultsChart.data.datasets[0].data = [passed, failed, pending];
+        resultsChart.update();
+    }
+
+    // Initialize Application
+    window.onload = () => {
+        renderTable();
+        initChart();
+    };
+
+</script>
+</body>
+</html>
