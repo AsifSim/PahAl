@@ -55,4 +55,31 @@ public class FsmConverterController {
                     .body(Map.of("status", "ERROR", "message", "FSM Structural compilation error: " + e.getMessage()));
         }
     }
+
+    @PutMapping("/fsm-structure/{fileName}")
+    public ResponseEntity<?> updateFsmStructure(
+            @PathVariable String fileName,
+            @RequestBody Map<String, Object> updatedFsmJson) {
+
+        logger.info("Received request to update FSM file manually: {}", fileName);
+
+        try {
+            if (updatedFsmJson == null || updatedFsmJson.isEmpty()) {
+                logger.warn("Updated JSON payload is empty");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("status", "ERROR", "message", "JSON content cannot be empty."));
+            }
+
+            // Reuse your existing service method to overwrite the file in the same location
+            fsmGeneratorService.saveFsmJson(updatedFsmJson, fileName);
+            logger.info("FSM structure updated and saved successfully for: {}", fileName);
+
+            return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "FSM structure updated successfully."));
+
+        } catch (Exception e) {
+            logger.error("Error updating FSM JSON: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("status", "ERROR", "message", "Failed to update JSON: " + e.getMessage()));
+        }
+    }
 }

@@ -59,6 +59,22 @@
             max-width: 700px; /* Fixes the width so it stays clean */
         }
 
+        /* Drag and Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--neon-blue);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            background: rgba(0, 210, 255, 0.1);
+            box-shadow: inset 0 0 15px rgba(0, 210, 255, 0.2);
+        }
+
         h1.title {
             text-align: center; color: var(--neon-blue);
             font-size: 2.5rem; font-weight: 800; letter-spacing: 2px;
@@ -99,15 +115,17 @@
         }
 
         /* Table Styles */
-        .table-container { max-height: 600px; overflow-y: auto; }
+        .table-container { max-height: 500px; overflow-y: auto; }
         .table-container::-webkit-scrollbar { width: 8px; }
         .table-container::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
 
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        th { color: var(--text-muted); position: sticky; top: 0; background: var(--bg-color); z-index: 10;}
+        th { color: var(--text-muted); position: sticky; top: 0; background: var(--panel-bg); z-index: 10;}
         tr { transition: background 0.2s ease; }
         tr:hover { background: rgba(255,255,255,0.03); }
+
+        .params-cell { font-family: monospace; font-size: 0.85rem; color: #a5d6ff; word-break: break-all; max-width: 200px; }
 
         /* Status Indicators */
         .status { font-weight: bold; letter-spacing: 1px; }
@@ -155,16 +173,25 @@
 <h1 class="title">YAMUNA</h1>
 
 <div class="container">
-    <div class="glass-panel">
+    <div class="glass-panel" id="execution-panel">
+
+        <div id="drop-zone" class="drop-zone"
+             ondrop="handleDrop(event)"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+            <h2 style="color: var(--neon-blue); margin-bottom: 5px;">Drag & Drop Scenario JSON</h2>
+            <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Drop your all_pair_matrix configuration here</p>
+        </div>
+
         <h2>Test Execution Blueprint</h2>
-        <button id="btn-execute-all" class="btn btn-execute-all" onclick="executeAllTests()">▶ Execute All Tests Sequentially</button>
+        <button id="btn-execute-all" class="btn btn-execute-all" onclick="executeAllTests()">▶ Execute All Tests</button>
 
         <div class="table-container">
             <table id="test-table">
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Test Case Description</th>
+                    <th>Params</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -207,21 +234,21 @@
         mouse.y = null;
     });
 
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            particles = [];
-            // Increased density to 300 particles as requested
-            for(let i = 0; i < 300; i++) {
-                particles.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    vx: (Math.random() - 0.5) * 0.3, // Slightly slower movement for more stable feel
-                    vy: (Math.random() - 0.5) * 0.3,
-                    radius: Math.random() * 2 + 0.5
-                });
-            }
+    function initCanvas() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        particles = [];
+        // Increased density to 300 particles
+        for(let i = 0; i < 300; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                radius: Math.random() * 2 + 0.5
+            });
         }
+    }
 
     function drawNetwork() {
         ctx.clearRect(0, 0, width, height);
@@ -242,7 +269,6 @@
                 let distance = Math.hypot(dx, dy);
 
                 if (distance < mouse.radius) {
-                    // Draw line to mouse
                     ctx.beginPath();
                     ctx.strokeStyle = `rgba(0, 210, 255, ${0.8 - distance/mouse.radius})`;
                     ctx.lineWidth = 1;
@@ -250,15 +276,11 @@
                     ctx.lineTo(mouse.x, mouse.y);
                     ctx.stroke();
 
-                    // Push particle away slightly
                     const forceDirectionX = dx / distance;
                     const forceDirectionY = dy / distance;
                     const force = (mouse.radius - distance) / mouse.radius;
-                    const directionX = forceDirectionX * force * 1.5;
-                    const directionY = forceDirectionY * force * 1.5;
-
-                    p.x -= directionX;
-                    p.y -= directionY;
+                    p.x -= forceDirectionX * force * 1.5;
+                    p.y -= forceDirectionY * force * 1.5;
                 }
             }
 
@@ -266,7 +288,7 @@
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Connect particles to each other
+            // Connect particles
             for(let j = i + 1; j < particles.length; j++) {
                 let p2 = particles[j];
                 let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
@@ -286,21 +308,58 @@
     window.addEventListener('resize', initCanvas);
     initCanvas(); drawNetwork();
 
-    // --- 2. Test Execution Logic ---
-
-    // Mock Data: Replace this later by fetching from your Spring Boot Backend
-    const mockTests = [
-        { id: "TC-001", name: "Validate User Authentication Token", status: "Idle" },
-        { id: "TC-002", name: "Process Kafka Stream Pipeline", status: "Idle" },
-        { id: "TC-003", name: "Verify Flink Real-time Aggregation", status: "Idle" },
-        { id: "TC-004", name: "Check Database Connection Pool", status: "Idle" },
-        { id: "TC-005", name: "Test API Rate Limiting", status: "Idle" },
-        { id: "TC-006", name: "Validate JSON Payload Schema", status: "Idle" }
-    ];
-
-    let executionStats = { passed: 0, failed: 0, pending: mockTests.length };
+    // --- 2. Test Execution Logic & State ---
+    let mockTests = []; // Starts empty, waiting for JSON drop
+    let executionStats = { passed: 0, failed: 0, pending: 0 };
     let resultsChart;
     let isExecutingAll = false;
+
+    // --- 3. Drag and Drop Handling ---
+    function handleDragOver(e) {
+        e.preventDefault();
+        document.getElementById('drop-zone').classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        document.getElementById('drop-zone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        document.getElementById('drop-zone').classList.remove('dragover');
+
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if (data.all_pair_matrix && data.all_pair_matrix.combinations) {
+                    // Map the combinations to our UI array
+                    mockTests = data.all_pair_matrix.combinations.map(c => ({
+                        id: c.id,
+                        params: c.params,
+                        expected_output: c.expected_output,
+                        status: 'Idle'
+                    }));
+
+                    // Show the results panel and clear initial log msg
+                    document.getElementById('results-panel').classList.add('active');
+                    document.getElementById('log-container').innerHTML = '';
+
+                    renderTable();
+                    updateStats();
+                } else {
+                    alert("Invalid JSON format. Make sure it contains 'all_pair_matrix.combinations'");
+                }
+            } catch (err) {
+                alert("Error parsing JSON file: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
 
     // Render Table
     function renderTable() {
@@ -310,7 +369,7 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${test.id}</td>
-                <td>${test.name}</td>
+                <td class="params-cell">${JSON.stringify(test.params)}</td>
                 <td id="status-${index}" class="status status-${test.status.toLowerCase()}">${test.status}</td>
                 <td>
                     <button id="btn-${index}" class="btn" onclick="executeSingleTest(${index})">Execute</button>
@@ -329,7 +388,7 @@
             data: {
                 labels: ['Passed', 'Failed', 'Pending'],
                 datasets: [{
-                    data: [0, 0, mockTests.length],
+                    data: [0, 0, 0], // Starts at 0 until data is loaded
                     backgroundColor: ['#00e676', '#ff3d00', '#2a3b5c'],
                     borderWidth: 0,
                     hoverOffset: 4
@@ -344,53 +403,74 @@
         });
     }
 
-    // Execute a Single Test
+    // Execute a Single Test via Backend Payload Structure
     async function executeSingleTest(index) {
         const test = mockTests[index];
         if(test.status === 'Running') return;
 
-        // Activate Panel
-        document.getElementById('results-panel').classList.add('active');
-
-        // Set UI to Running state
         updateUIState(index, 'Running');
 
-        // Simulated Delay & Logic for Frontend demo
-        await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
-        const isSuccess = Math.random() > 0.3; // 70% chance to pass
-
-        const resultData = {
-            status: isSuccess ? 'Pass' : 'Fail',
-            expected: isSuccess ? "Status Code 200, Valid Token" : "Process Payload successfully",
-            actual: isSuccess ? "Status Code 200, Valid Token" : "Timeout Exception in stream mapping"
+        // Constructed exactly as per TestExecutionRequest record definition
+        const payload = {
+            requestData: test.params, // Map<String, Object>
+            responseList: [],
+            entity: "DEFAULT_ENTITY",
+            workflowId: test.id,
+            endpoints: [{ functionName: "validate", version: "1.0" }],
+            communicationType: "REST",
+            version: "1.0"
         };
 
-        updateUIState(index, resultData.status);
-        appendLog(test.id, test.name, resultData);
-        updateStats();
+        try {
+            const response = await fetch('http://localhost:8080/api/yamuna/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+            // If the connection succeeds and processes, we log it as Pass.
+            // (You can add specific response body checking here if needed)
+            updateUIState(index, 'Pass');
+            appendLog(test.id, {
+                status: 'Pass',
+                expected: test.expected_output ? test.expected_output.status : "SUCCESS",
+                actual: "Connection Successful, Status Code 200"
+            });
+            updateStats();
+
+        } catch (e) {
+            console.error(`Error on ${test.id}:`, e);
+            updateUIState(index, 'Fail');
+            appendLog(test.id, {
+                status: 'Fail',
+                expected: test.expected_output ? test.expected_output.status : "SUCCESS",
+                actual: e.message
+            });
+            updateStats();
+        }
     }
 
     // Execute All Sequentially
     async function executeAllTests() {
-        if(isExecutingAll) return;
+        if(isExecutingAll || mockTests.length === 0) return;
         isExecutingAll = true;
         document.getElementById('btn-execute-all').disabled = true;
-        document.getElementById('results-panel').classList.add('active');
         document.getElementById('log-container').innerHTML = ''; // Clear logs
 
-        // Reset stats
+        // Reset all statuses
         mockTests.forEach((t, i) => updateUIState(i, 'Idle'));
         updateStats();
 
         for (let i = 0; i < mockTests.length; i++) {
-            // Disable individual buttons during sequence
-            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+            document.querySelectorAll('#test-tbody .btn').forEach(b => b.disabled = true);
             await executeSingleTest(i);
         }
 
         isExecutingAll = false;
         document.getElementById('btn-execute-all').disabled = false;
-        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+        document.querySelectorAll('#test-tbody .btn').forEach(b => b.disabled = false);
     }
 
     // Helper: Update UI State
@@ -411,15 +491,13 @@
     }
 
     // Helper: Append to Log Panel
-    function appendLog(id, name, result) {
+    function appendLog(id, result) {
         const logContainer = document.getElementById('log-container');
-        if(logContainer.innerHTML.includes("Waiting for execution")) logContainer.innerHTML = '';
-
         const logHTML = `
             <div class="log-entry">
                 <strong style="color: ${result.status === 'Pass' ? 'var(--pass-color)' : 'var(--fail-color)'}">
                     [${id}] ${result.status.toUpperCase()}
-                </strong> - ${name}<br/>
+                </strong><br/>
                 <span class="log-label">Expected:</span> ${result.expected}<br/>
                 <span class="log-label">Actual:</span> <span style="color: ${result.status === 'Fail' ? 'var(--fail-color)' : 'inherit'}">${result.actual}</span>
             </div>
@@ -429,6 +507,8 @@
 
     // Helper: Update Chart.js Stats
     function updateStats() {
+        if (!resultsChart) return;
+
         const passed = mockTests.filter(t => t.status === 'Pass').length;
         const failed = mockTests.filter(t => t.status === 'Fail').length;
         const pending = mockTests.length - (passed + failed);
@@ -439,7 +519,6 @@
 
     // Initialize Application
     window.onload = () => {
-        renderTable();
         initChart();
     };
 

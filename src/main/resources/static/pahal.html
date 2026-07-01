@@ -1,109 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacred Rivers of India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Poppins:wght@300&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; margin: 0; overflow: hidden; }
-        canvas { position: absolute; top: 0; left: 0; z-index: 0; }
-        .glass-ui {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            transition: all 0.4s ease;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .pulse-glow { animation: pulse 3s infinite; }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.2); } 50% { box-shadow: 0 0 50px rgba(6, 182, 212, 0.4); } }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Container for the split layout */
+        .river-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Individual River Panels */
+        .river-panel {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            overflow: hidden;
+            transition: flex 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+        }
+
+        /* Expand on hover */
+        .river-panel:hover {
+            flex: 2.5;
+        }
+
+        /* River Themes (Gradients) */
+        .ganga {
+            background: linear-gradient(180deg, #a8e6cf 0%, #3498db 100%);
+        }
+
+        .yamuna {
+            background: linear-gradient(180deg, #11998e 0%, #0b486b 100%);
+        }
+
+        .kaveri {
+            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        /* Typography */
+        .river-name {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            transition: transform 0.8s ease, font-size 0.8s ease;
+        }
+
+        .river-desc {
+            font-size: 1.2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            z-index: 10;
+            text-align: center;
+            padding: 0 20px;
+            margin-top: 15px;
+        }
+
+        /* Show description and scale text on hover */
+        .river-panel:hover .river-name {
+            transform: scale(1.2);
+        }
+
+        .river-panel:hover .river-desc {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+
+        /* Fluid Dynamics / Wave Animation at the bottom */
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            min-height: 100px;
+            max-height: 150px;
+            z-index: 5;
+            pointer-events: none; /* Let clicks pass through to the link */
+        }
+
+        /* Parallax Wave Classes */
+        .parallax > use {
+            animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+        }
+        .parallax > use:nth-child(1) {
+            animation-delay: -2s;
+            animation-duration: 7s;
+        }
+        .parallax > use:nth-child(2) {
+            animation-delay: -3s;
+            animation-duration: 10s;
+        }
+        .parallax > use:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 13s;
+        }
+        .parallax > use:nth-child(4) {
+            animation-delay: -5s;
+            animation-duration: 20s;
+        }
+
+        @keyframes move-forever {
+            0% { transform: translate3d(-90px, 0, 0); }
+            100% { transform: translate3d(85px, 0, 0); }
+        }
+
+        /* Overlay to darken panels slightly until hovered */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.8s ease;
+            z-index: 1;
+        }
+
+        .river-panel:hover .overlay {
+            background: rgba(0, 0, 0, 0.0);
+        }
+
+        /* Responsive Design for smaller screens */
+        @media (max-width: 768px) {
+            .river-container {
+                flex-direction: column;
+            }
+            .river-panel:hover {
+                flex: 2;
+            }
+            .river-name {
+                font-size: 2.5rem;
+            }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen w-screen text-white font-sans">
-<canvas id="canvas"></canvas>
+<body>
 
-<div id="content" class="relative z-10 text-center w-full max-w-4xl px-4">
-    <h1 class="text-8xl font-black tracking-tighter uppercase mb-12 text-cyan-500 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]">PahAl</h1>
+<div class="river-container">
 
-    <div id="drop-zone" class="glass-ui pulse-glow w-full h-[400px] rounded-3xl flex flex-col items-center justify-center cursor-pointer border-dashed border-4 border-cyan-900/50 hover:border-cyan-400">
-        <div class="text-cyan-500 text-6xl font-bold mb-4">Generate FSM</div>
-        <p id="status-text" class="text-gray-300 text-2xl font-light">Drop your TBRD blueprint here</p>
-        <input type="file" id="fileInput" class="hidden" accept=".docx">
-    </div>
+    <a href="ganga.html" class="river-panel ganga">
+        <div class="overlay"></div>
+        <h1 class="river-name">Ganga</h1>
+        <p class="river-desc">Just as the Himalayan peaks are the source of the river’s life-giving waters, your legacy codebase holds the "source wisdom" of your business. The transformation is not about discarding the past, but about guiding it into a modern channel where it can reach new "fertile plains" of scalability.</p>
+
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </a>
+
+    <a href="yamuna.html" class="river-panel yamuna">
+        <div class="overlay"></div>
+        <h1 class="river-name">Yamuna</h1>
+        <p class="river-desc">Where logic meets the test of reality;
+            Ensuring the flow remains true, deep, and clear.</p>
+
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </a>
+
+    <a href="kaveri.html" class="river-panel kaveri">
+        <div class="overlay"></div>
+        <h1 class="river-name">Kaveri</h1>
+        <p class="river-desc">Cultivating the digital landscape with vibrant, precise code;
+            From the flow of requirements to the harvest of architecture.</p>
+
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </a>
+
 </div>
 
-<script>
-    const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const mouse = { x: null, y: null };
-    window.onmousemove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
-
-    // 400 particles for high density
-    const particles = Array.from({length: 400}, () => ({
-        x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-        sx: Math.random()*0.4-0.2, sy: Math.random()*0.4-0.2
-    }));
-
-    function animate() {
-        ctx.clearRect(0,0, canvas.width, canvas.height);
-
-        // Link nearby particles
-        ctx.lineWidth = 0.5;
-        for(let i=0; i<particles.length; i++) {
-            for(let j=i+1; j<particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if(dist < 100) {
-                    ctx.strokeStyle = `rgba(6, 182, 212, ${1 - dist/100})`;
-                    ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
-                }
-            }
-        }
-
-        particles.forEach(p => {
-            const dx = mouse.x - p.x, dy = mouse.y - p.y, dist = Math.sqrt(dx*dx + dy*dy);
-            if(dist < 150) { p.x -= dx*0.01; p.y -= dy*0.01; }
-            p.x += p.sx; p.y += p.sy;
-            if(p.x < 0 || p.x > canvas.width) p.sx *= -1;
-            if(p.y < 0 || p.y > canvas.height) p.sy *= -1;
-            ctx.fillStyle = '#0891b2'; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
-        });
-        requestAnimationFrame(animate);
-    }
-    animate();
-
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('fileInput');
-    const statusText = document.getElementById('status-text');
-
-    dropZone.onclick = () => fileInput.click();
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
-    });
-
-    dropZone.addEventListener('drop', (e) => handleFileUpload(e.dataTransfer.files[0]));
-    fileInput.onchange = (e) => handleFileUpload(e.target.files[0]);
-
-    async function handleFileUpload(file) {
-        if (!file) return;
-        statusText.innerText = "Analyzing Blueprint...";
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            const response = await fetch('http://localhost:8080/api/code/fsm-structure', {
-                method: 'POST',
-                body: formData
-            });
-            if (response.ok) {
-                gsap.to("#content", { opacity: 0, scale: 0.9, duration: 1, ease: "power4.inOut" });
-                gsap.to("canvas", { opacity: 0, duration: 2 });
-                setTimeout(() => window.location.href = '/index.html', 1000);
-            } else {
-                statusText.innerText = "Error: Invalid TBRD Format.";
-            }
-        } catch (err) {
-            statusText.innerText = "Connection Failed.";
-        }
-    }
-</script>
 </body>
 </html>

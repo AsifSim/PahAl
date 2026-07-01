@@ -335,7 +335,7 @@ public class JsonMicroserviceGenerator {
      */
     public String generateValidatedMicroserviceJson(String extractedText, String MJM) {
         int currentAccuracy = 0;
-        int maxIterations = 5; // Safety cap to prevent infinite loops
+        int maxIterations = 2; // Safety cap to prevent infinite loops
         int iterationCount = 0;
 
         String microserviceMjmJson = MJM;

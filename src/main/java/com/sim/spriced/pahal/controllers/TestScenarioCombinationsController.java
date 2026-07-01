@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
@@ -173,10 +176,15 @@ public class TestScenarioCombinationsController {
 
         try {
             logger.info("[STEP 1] Parsing incoming payload string...");
+            logger.info("incomingWrapperJson = {}",incomingWrapperJson);
             JsonNode payloadNode = mapper.readTree(incomingWrapperJson);
 
             JsonNode originalJson = payloadNode.path("microservice_json");
             JsonNode allPairMatrix = payloadNode.path("all_pair_matrix");
+
+            // 1. Extract metadata from incoming JSON
+            String microserviceName = originalJson.path("microservice_name").asText("UnknownService");
+            String serviceVersion = originalJson.path("service_version").asText("v1.0");
 
             // Dynamically locate combinations regardless of whether it's double-wrapped or standard
             JsonNode combinations = allPairMatrix.path("combinations");
@@ -194,21 +202,6 @@ public class TestScenarioCombinationsController {
             logger.info("[STEP 2] Structuring prompt templates...");
             String originalJsonStr = mapper.writeValueAsString(originalJson);
             String combinationsStr = mapper.writeValueAsString(combinations);
-
-            // OPTIMIZED PROMPT: Clearer structure, explicit key-value requirements, and explicit element count warning.
-//            String promptTemplate = String.format(
-//                    "You are an expert backend QA automation engine. Your job is to analyze the rules of a microservice and output evaluation statuses for a test matrix.\n\n" +
-//                            "MICROSERVICE CONFIGURATION RULES:\n%s\n\n" +
-//                            "COMBINATIONS LIST TO EVALUATE:\n%s\n\n" +
-//                            "CRITICAL INSTRUCTIONS:\n" +
-//                            "1. Evaluate every item in the combinations list sequentially.\n" +
-//                            "2. Determine if the parameters yield 'SUCCESS', 'HALT_PROCESS', or a specific 'RAISE_ERROR:XYZ' rule based on the configuration context rules.\n" +
-//                            "3. Your response must be a single JSON array containing EXACTLY %d items, matching the order of the incoming scenarios.\n" +
-//                            "4. Each item in the array must be an object with exactly these fields: 'status' and 'description' (or 'reason').\n\n" +
-//                            "Output your response strictly inside a top-level JSON array matching this format example:\n" +
-//                            "[ {\"status\": \"SUCCESS\", \"description\": \"...\"}, {\"status\": \"HALT_PROCESS\", \"reason\": \"...\"} ]",
-//                    originalJsonStr, combinationsStr, combinations.size()
-//            );
 
             String promptTemplate = String.format(
                     "You are an expert backend QA automation engine.\n" +
@@ -288,9 +281,28 @@ public class TestScenarioCombinationsController {
             updatedMatrixNode.set("combinations", evaluatedCombinationsNode);
 
             ObjectNode responseWrapper = mapper.createObjectNode();
+            responseWrapper.put("microservice_name", microserviceName);
+            responseWrapper.put("service_version", serviceVersion);
             responseWrapper.set("all_pair_matrix", updatedMatrixNode);
 
             logger.info("[SUCCESS] Pipeline evaluation matrix assembled cleanly.");
+            logger.info("responseWrapper = {}",responseWrapper);
+            String jsonOutput = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseWrapper);
+            try {
+                Path directory = Paths.get("ExpectedResult");
+                if (!Files.exists(directory)) {
+                    Files.createDirectories(directory);
+                }
+
+                // File naming: ServiceName_Version_Expected.json
+                String fileName = String.format("%s_%s_Expected_Result.json", microserviceName, serviceVersion);
+                Files.writeString(directory.resolve(fileName), jsonOutput);
+                logger.info("[SUCCESS] ExpectedResult saved to: {}", directory.resolve(fileName));
+            } catch (Exception fileEx) {
+                logger.error("[ERROR] Failed to save expected result file:", fileEx);
+                return ResponseEntity.badRequest().body("{\"error\":\"Error while saving the expected result file: " + fileEx.getMessage() + "\"}");
+            }
+
             return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseWrapper));
 
         } catch (Exception e) {
