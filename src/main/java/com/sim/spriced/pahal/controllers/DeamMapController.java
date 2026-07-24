@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,95 +15,103 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class DeamMapController {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private static final Logger log = LoggerFactory.getLogger(DeamMapController.class);
+    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+    private final ObjectMapper jsonMapper = new ObjectMapper();
+
+    public DeamMapController() {
+        log.info("DeamMapController initialized with TBRD YAML support");
+    }
 
     @PostMapping(value = "/api/code/deam-map", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> generateDeamReadMap(@RequestBody String workflowJsonString) {
-        // Create a clear root ObjectNode to hold all clean structured objects ({ "OptionDesignConfigData": {...} })
-        ObjectNode finalRootNode = mapper.createObjectNode();
+    public ResponseEntity<String> generateDeamReadMap(@RequestBody String tbrdYaml) {
+        log.info("Entered generateDeamReadMap()");
+        log.debug("Received TBRD YAML length = {}", tbrdYaml != null ? tbrdYaml.length() : 0);
+
+        ObjectNode finalRootNode = jsonMapper.createObjectNode();
 
         try {
-            JsonNode rootNode = mapper.readTree(workflowJsonString);
-            JsonNode steps = rootNode.path("workflow_steps");
+            // Parse the TBRD YAML
+            JsonNode rootNode = yamlMapper.readTree(tbrdYaml);
+            log.debug("Parsed TBRD YAML successfully");
 
-            if (steps.isArray()) {
-                for (JsonNode step : steps) {
-                    // Only process database lookup actions
-                    if ("DATABASE_LOOKUP".equals(step.path("type").asText())) {
-                        String entityName = step.path("target_entity").asText();
-                        String filterName = step.path("filter_name").asText();
+            JsonNode enrichments = rootNode.path("dataEnrichment");
 
-                        // 1. Build the single 'where' criteria object
-                        ObjectNode whereCondition = mapper.createObjectNode();
-                        whereCondition.put("scope", "");
-                        whereCondition.put("operator", "=");
+            if (enrichments.isArray()) {
+                log.debug("Found {} enrichment entries", enrichments.size());
 
-                        // Extract attribute name from where clause parameters
-                        JsonNode params = step.path("where_clause_parameters");
-                        String attributeName = "short_part_number"; // Fallback default
-                        if (params.isArray() && params.size() > 0) {
-                            String paramVal = params.get(0).asText();
-                            if (paramVal.contains(".")) {
-                                attributeName = paramVal.substring(paramVal.lastIndexOf(".") + 1);
-                            } else {
-                                attributeName = paramVal;
+                for (JsonNode enrichment : enrichments) {
+                    String enrichmentName = enrichment.path("name").asText();
+                    String targetEntity = enrichment.path("entity").asText();
+                    log.debug("Processing enrichment: {} -> entity: {}", enrichmentName, targetEntity);
+
+                    // Build where condition
+                    JsonNode whereClause = enrichment.path("where");
+                    String field = whereClause.path("field").asText();
+                    String operator = whereClause.path("operator").asText();
+
+                    ObjectNode whereCondition = jsonMapper.createObjectNode();
+                    whereCondition.put("scope", "");
+                    whereCondition.put("operator", operator.isEmpty() ? "=" : operator);
+                    whereCondition.put("attributeName", field);
+                    ArrayNode attributeValueArray = jsonMapper.createArrayNode();
+                    whereCondition.set("attributeValue", attributeValueArray);
+                    whereCondition.put("logicalOperator", "");
+
+                    ArrayNode whereArray = jsonMapper.createArrayNode();
+                    whereArray.add(whereCondition);
+
+                    // Build attributeNames from produces
+                    ArrayNode attributeNamesArray = jsonMapper.createArrayNode();
+                    JsonNode produces = enrichment.path("produces");
+                    if (produces.isArray()) {
+                        for (JsonNode prod : produces) {
+                            String colName = prod.path("alias").asText();
+                            if (colName.isEmpty()) {
+                                colName = prod.path("name").asText();
                             }
+                            attributeNamesArray.add(colName);
                         }
-                        whereCondition.put("attributeName", attributeName);
-                        whereCondition.putArray("attributeValue"); // []
-                        whereCondition.put("logicalOperator", "");
-
-                        ArrayNode whereArray = mapper.createArrayNode();
-                        whereArray.add(whereCondition);
-
-                        // 2. Extract selected columns arrays
-                        ArrayNode attributeNamesArray = mapper.createArrayNode();
-                        JsonNode columns = step.path("columns_to_fetch");
-                        if (columns.isArray()) {
-                            for (JsonNode col : columns) {
-                                attributeNamesArray.add(col.asText());
-                            }
-                        }
-
-                        // 3. Assemble the basic filter root framework
-                        ObjectNode filterContainer = mapper.createObjectNode();
-                        filterContainer.putObject("join");      // {}
-                        filterContainer.putNull("limit");
-                        filterContainer.putNull("offset");
-                        filterContainer.putObject("orderBy");   // {}
-                        filterContainer.set("where", whereArray);
-                        filterContainer.set("attributeNames", attributeNamesArray);
-
-                        // 4. Construct complete deamReads element structure
-                        ObjectNode readElement = mapper.createObjectNode();
-                        readElement.put("filterName", filterName);
-                        readElement.set("filter", filterContainer);
-
-                        ArrayNode deamReadsArray = mapper.createArrayNode();
-                        deamReadsArray.add(readElement);
-
-                        // 5. Build the entity wrapper containing entityName property explicitly
-                        ObjectNode entityWrapper = mapper.createObjectNode();
-                        entityWrapper.put("entityName", entityName);
-                        entityWrapper.set("deamReads", deamReadsArray);
-
-                        // Set directly under the entity name key context inside the root node
-                        finalRootNode.set(entityName, entityWrapper);
                     }
+
+                    // Build filter container
+                    ObjectNode filterContainer = jsonMapper.createObjectNode();
+                    filterContainer.putObject("join");
+                    filterContainer.putNull("limit");
+                    filterContainer.putNull("offset");
+                    filterContainer.putObject("orderBy");
+                    filterContainer.set("where", whereArray);
+                    filterContainer.set("attributeNames", attributeNamesArray);
+
+                    // Build deamReads array
+                    ObjectNode readElement = jsonMapper.createObjectNode();
+                    readElement.put("filterName", enrichmentName);
+                    readElement.set("filter", filterContainer);
+
+                    ArrayNode deamReadsArray = jsonMapper.createArrayNode();
+                    deamReadsArray.add(readElement);
+
+                    // Entity wrapper
+                    ObjectNode entityWrapper = jsonMapper.createObjectNode();
+                    entityWrapper.put("entityName", targetEntity);
+                    entityWrapper.set("deamReads", deamReadsArray);
+
+                    // Set in root under the target entity name
+                    finalRootNode.set(targetEntity, entityWrapper);
                 }
             }
 
-            // --- THE CRITICAL FIX ---
-            // Serialize explicitly to a plain JSON string. This prevents the UI from reading internal Jackson field properties!
-            String cleanJsonOutput = mapper.writeValueAsString(finalRootNode);
-            System.out.println("cleanJsonOutput = "+cleanJsonOutput);
+            String cleanJsonOutput = jsonMapper.writeValueAsString(finalRootNode);
+            log.debug("Generated DEAM map JSON length = {}", cleanJsonOutput.length());
+            log.info("Exiting generateDeamReadMap()");
             return ResponseEntity.ok(cleanJsonOutput);
 
         } catch (Exception e) {
+            log.error("Failed to generate DEAM map from TBRD YAML", e);
             try {
-                ObjectNode errorNode = mapper.createObjectNode();
-                errorNode.put("error", "Failed parsing engine blueprint: " + e.getMessage());
-                return ResponseEntity.badRequest().body(mapper.writeValueAsString(errorNode));
+                ObjectNode errorNode = jsonMapper.createObjectNode();
+                errorNode.put("error", "Failed parsing TBRD YAML: " + e.getMessage());
+                return ResponseEntity.badRequest().body(jsonMapper.writeValueAsString(errorNode));
             } catch (Exception ignored) {
                 return ResponseEntity.badRequest().body("{\"error\":\"Critical serialization failure.\"}");
             }

@@ -3,218 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sacred Rivers of India</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Poppins:wght@300&display=swap" rel="stylesheet">
+    <title>PahAl • Development Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg: #f7f8fc;
+            --surface: #ffffff;
+            --surface-alt: #fafbfd;
+            --surface-hover: #f0f2f8;
+            --text: #11141f;
+            --text-secondary: #4a4f63;
+            --text-muted: #888da8;
+            --border: #e4e7f2;
+            --border-light: #f0f2f8;
+            --blue: #4f6ef7;
+            --blue-dark: #3651d5;
+            --blue-light: #eef1ff;
+            --blue-glow: rgba(79, 110, 247, 0.25);
+            --teal: #0ea882;
+            --teal-light: #e6f7f3;
+            --purple: #7c5cfc;
+            --purple-light: #f3efff;
+            --orange: #f2674a;
+            --orange-light: #fef0ed;
+            --amber: #f0a92e;
+            --amber-light: #fef7eb;
+            --green: #22c55e;
+            --green-light: #e6f9ef;
+            --red: #ef4444;
+            --red-light: #fef0ed;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow: 0 4px 6px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 10px 20px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.03);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.08);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --transition-smooth: 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-            background-color: #000;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text);
+            height: 100vh; overflow: hidden;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Container for the split layout */
-        .river-container {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
+        .cursor { width: 28px; height: 28px; border: 2px solid var(--blue); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: width 0.2s, height 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s; transform: translate(-50%, -50%); }
+        .cursor.hover { width: 52px; height: 52px; background: rgba(79,110,247,0.06); border-color: var(--blue-dark); box-shadow: 0 0 30px var(--blue-glow); }
+        .cursor.click { width: 34px; height: 34px; background: rgba(79,110,247,0.18); box-shadow: 0 0 20px var(--blue-glow); transition: width 0.1s, height 0.1s, background-color 0.1s; }
+        .cursor-dot { width: 5px; height: 5px; background: var(--blue-dark); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); box-shadow: 0 0 8px var(--blue-glow); }
+        .cursor-trail { position: fixed; pointer-events: none; z-index: 9997; width: 8px; height: 8px; background: rgba(79,110,247,0.3); border-radius: 50%; transform: translate(-50%, -50%); }
+        #rippleCanvas { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 9998; }
+        .particles-bg { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle { position: absolute; border-radius: 50%; animation: floatParticle 12s infinite ease-in-out; opacity: 0; }
+        @keyframes floatParticle { 0%{transform:translateY(105vh) translateX(0) scale(0) rotate(0deg);opacity:0} 5%{opacity:0.5} 15%{transform:translateY(80vh) translateX(30px) scale(1) rotate(90deg);opacity:0.4} 40%{transform:translateY(40vh) translateX(-40px) scale(0.6) rotate(180deg);opacity:0.3} 70%{transform:translateY(15vh) translateX(20px) scale(1.2) rotate(270deg);opacity:0.2} 90%{opacity:0.05} 100%{transform:translateY(-10vh) translateX(-10px) scale(0) rotate(360deg);opacity:0} }
 
-        /* Individual River Panels */
-        .river-panel {
-            flex: 1;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            color: white;
-            overflow: hidden;
-            transition: flex 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-            cursor: pointer;
-        }
+        .app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
 
-        /* Expand on hover */
-        .river-panel:hover {
-            flex: 2.5;
-        }
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-light); flex-shrink: 0; position: relative; z-index: 100; gap: 8px; }
+        .navbar::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--blue), var(--purple), var(--teal), transparent); opacity: 0.5; animation: shimmerBorder 4s ease-in-out infinite; }
+        @keyframes shimmerBorder { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+        .navbar-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); flex-shrink: 0; }
+        .navbar-logo { width: 34px; height: 34px; background: linear-gradient(135deg, var(--blue), var(--purple)); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 1rem; letter-spacing: 1px; animation: logoGlow 3s ease-in-out infinite; }
+        @keyframes logoGlow { 0%,100%{box-shadow:0 0 15px rgba(79,110,247,0.3)} 50%{box-shadow:0 0 30px rgba(124,92,252,0.5)} }
+        .navbar-name { font-weight: 700; font-size: 1.15rem; letter-spacing: -0.3px; background: linear-gradient(135deg, var(--text), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .navbar-nav { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; overflow-x: auto; flex-wrap: nowrap; }
+        .nav-link { padding: 6px 14px; border-radius: var(--radius-sm); font-weight: 500; font-size: 0.82rem; color: var(--text-secondary); text-decoration: none; transition: var(--transition); display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
+        .nav-link:hover { background: var(--surface-hover); color: var(--text); transform: translateY(-1px); }
+        .nav-link.active { background: var(--blue); color: white; box-shadow: 0 4px 15px rgba(79,110,247,0.3); animation: activePulse 2s ease-in-out infinite; }
+        @keyframes activePulse { 0%,100%{box-shadow:0 4px 15px rgba(79,110,247,0.3)} 50%{box-shadow:0 6px 25px rgba(79,110,247,0.5)} }
+        .nav-link .nav-icon { font-size: 0.8rem; width: 16px; text-align: center; transition: var(--transition-bounce); }
+        .nav-link:hover .nav-icon { transform: scale(1.15) rotate(-5deg); }
+        .navbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .workspace-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface-hover); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: var(--transition-bounce); color: var(--text-secondary); white-space: nowrap; }
+        .workspace-btn:hover { border-color: var(--blue); color: var(--text); background: var(--surface); transform: translateY(-1px); box-shadow: var(--shadow); }
+        .workspace-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: dotPulse 2s ease-in-out infinite; }
+        @keyframes dotPulse { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)} 50%{box-shadow:0 0 0 6px rgba(34,197,94,0)} }
+        .user-btn { display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; background: var(--surface-hover); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: var(--transition-bounce); white-space: nowrap; }
+        .user-btn:hover { background: var(--surface); box-shadow: var(--shadow); transform: translateY(-1px); }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.7rem; }
+        .user-name { font-size: 0.8rem; font-weight: 500; }
 
-        /* River Themes (Gradients) */
-        .ganga {
-            background: linear-gradient(180deg, #a8e6cf 0%, #3498db 100%);
-        }
+        .progress-section { padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border-light); flex-shrink: 0; cursor: pointer; transition: var(--transition); }
+        .progress-section:hover { background: var(--surface-alt); }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .progress-label { font-weight: 600; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.2px; display: flex; align-items: center; gap: 6px; }
+        .progress-phase-icon { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); animation: phaseBlink 1.5s ease-in-out infinite; }
+        @keyframes phaseBlink { 0%,100%{opacity:1;box-shadow:0 0 6px var(--blue)} 50%{opacity:0.4;box-shadow:0 0 12px var(--blue)} }
+        .progress-value { font-weight: 700; font-size: 0.85rem; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+        .progress-bar { width: 100%; height: 6px; background: var(--border-light); border-radius: 20px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple), var(--teal)); background-size: 200% 100%; border-radius: 20px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); animation: progressShimmer 2.5s ease-in-out infinite; position: relative; }
+        @keyframes progressShimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        .progress-fill::after { content: ''; position: absolute; top: 0; right: 0; width: 40px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); animation: sweepLight 1.8s infinite; }
+        @keyframes sweepLight { 0%{transform:translateX(-100%);opacity:0} 40%{opacity:1} 100%{transform:translateX(500%);opacity:0} }
+        .progress-steps { display: flex; justify-content: space-between; margin-top: 6px; }
+        .step-indicator { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .step-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); border: 2px solid var(--border-light); transition: all 0.4s ease; }
+        .step-dot.active { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 12px rgba(79,110,247,0.5); animation: stepPulse 2s infinite; }
+        @keyframes stepPulse { 0%,100%{box-shadow:0 0 12px rgba(79,110,247,0.5)} 50%{box-shadow:0 0 24px rgba(79,110,247,0.8)} }
+        .step-dot.completed { background: var(--teal); border-color: var(--teal); }
+        .step-label { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+        .step-label.active { color: var(--blue); font-weight: 600; }
 
-        .yamuna {
-            background: linear-gradient(180deg, #11998e 0%, #0b486b 100%);
-        }
+        .main-content { flex: 1; overflow-y: auto; padding: 20px 24px; min-height: 0; }
+        .dashboard { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; max-width: 1300px; margin: 0 auto; }
+        .welcome-card { background: linear-gradient(135deg, #1a2744 0%, #1e3050 30%, #1a2a4a 60%, #152040 100%); background-size: 300% 300%; border-radius: var(--radius-xl); padding: 28px 32px; color: white; position: relative; overflow: hidden; animation: welcomeBgShift 8s ease-in-out infinite; }
+        @keyframes welcomeBgShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 100%} }
+        .welcome-card::before { content: ''; position: absolute; top: -40%; right: -15%; width: 280px; height: 280px; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%); border-radius: 50%; animation: welcomeOrb 10s linear infinite; }
+        @keyframes welcomeOrb { from{transform:rotate(0deg) scale(1)} 50%{transform:rotate(180deg) scale(1.3)} to{transform:rotate(360deg) scale(1)} }
+        .welcome-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 16px; font-size: 0.72rem; font-weight: 500; margin-bottom: 12px; position: relative; z-index: 1; }
+        .welcome-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; position: relative; z-index: 1; }
+        .welcome-subtitle { font-size: 0.85rem; opacity: 0.7; margin-bottom: 18px; position: relative; z-index: 1; }
+        .welcome-actions { display: flex; gap: 8px; position: relative; z-index: 1; flex-wrap: wrap; }
+        .btn { padding: 8px 18px; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: var(--transition-bounce); border: none; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; position: relative; overflow: hidden; white-space: nowrap; }
+        .btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent); transform: translateX(-100%); transition: transform 0.6s ease; }
+        .btn:hover::after { transform: translateX(100%); }
+        .btn-white { background: white; color: var(--text); box-shadow: var(--shadow); }
+        .btn-white:hover { background: #f0f2f5; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-outline-white { background: transparent; border: 1px solid rgba(255,255,255,0.35); color: white; }
+        .btn-outline-white:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.6); transform: translateY(-2px); }
+        .btn-primary { background: var(--blue); color: white; box-shadow: 0 4px 12px rgba(79,110,247,0.25); }
+        .btn-primary:hover { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79,110,247,0.4); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none!important; }
+        .btn-sm { padding: 5px 12px; font-size: 0.75rem; }
+        .btn-danger { background: var(--red); color: white; }
+        .btn-danger:hover { background: #dc2626; box-shadow: 0 4px 15px rgba(239,68,68,0.3); }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; position: relative; z-index: 1; }
+        .stat-item { background: rgba(255,255,255,0.06); padding: 14px 16px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.08); transition: var(--transition-bounce); cursor: default; }
+        .stat-item:hover { background: rgba(255,255,255,0.12); transform: translateY(-3px); border-color: rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .stat-value { font-size: 1.3rem; font-weight: 700; }
+        .stat-label { font-size: 0.7rem; opacity: 0.6; margin-top: 2px; }
+        .card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border-light); padding: 20px; box-shadow: var(--shadow-xs); transition: var(--transition-smooth); }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-header { font-weight: 600; font-size: 0.88rem; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .card-title { display: flex; align-items: center; gap: 6px; }
+        .dropzone { border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 28px; text-align: center; cursor: pointer; transition: var(--transition-bounce); background: var(--surface-alt); position: relative; overflow: hidden; }
+        .dropzone::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, var(--blue-light), transparent); opacity: 0; transition: opacity 0.4s ease; }
+        .dropzone:hover { border-color: var(--blue); background: var(--surface); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .dropzone:hover::before { opacity: 1; }
+        .dropzone.drag-over { border-color: var(--green); background: var(--green-light); transform: scale(1.02); }
+        .dropzone.has-file { border-color: var(--green); background: var(--green-light); }
+        .dropzone-icon { font-size: 2rem; color: var(--blue); margin-bottom: 8px; position: relative; z-index: 1; transition: var(--transition-bounce); }
+        .dropzone:hover .dropzone-icon { transform: translateY(-5px) scale(1.1); }
+        .dropzone-text { font-weight: 600; margin-bottom: 2px; position: relative; z-index: 1; font-size: 0.9rem; }
+        .dropzone-hint { font-size: 0.75rem; color: var(--text-muted); position: relative; z-index: 1; }
+        .dropzone-file-name { margin-top: 10px; font-weight: 500; font-size: 0.8rem; color: var(--green); display: none; position: relative; z-index: 1; }
 
-        .kaveri {
-            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
-        }
+        .activity-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-light); transition: var(--transition); cursor: default; border-radius: var(--radius-sm); margin: 0 -10px; }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-item:hover { background: var(--surface-hover); transform: translateX(3px); }
+        .activity-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; transition: var(--transition-bounce); }
+        .activity-item:hover .activity-icon { transform: scale(1.15) rotate(-10deg); }
+        .activity-icon.blue{background:var(--blue-light);color:var(--blue)}.activity-icon.teal{background:var(--teal-light);color:var(--teal)}.activity-icon.purple{background:var(--purple-light);color:var(--purple)}.activity-icon.orange{background:var(--orange-light);color:var(--orange)}
+        .activity-info { flex: 1; min-width: 0; }
+        .activity-name { font-weight: 500; font-size: 0.8rem; }
+        .activity-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+        .quick-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+        .quick-link { padding: 12px 14px; background: var(--surface-alt); border-radius: var(--radius); text-decoration: none; color: var(--text); font-weight: 500; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; transition: var(--transition-bounce); border: 1px solid transparent; position: relative; overflow: hidden; }
+        .quick-link::after { content: ''; position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(79,110,247,0.05), transparent); transform: translateX(-100%); transition: transform 0.5s ease; }
+        .quick-link:hover::after { transform: translateX(100%); }
+        .quick-link:hover { background: var(--surface); border-color: var(--border); box-shadow: var(--shadow); transform: translateY(-2px); }
+        .quick-link-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: var(--transition-bounce); flex-shrink: 0; }
+        .quick-link:hover .quick-link-icon { transform: scale(1.2) rotate(-8deg); }
+        .quick-link-icon.blue{background:var(--blue-light);color:var(--blue)}.quick-link-icon.teal{background:var(--teal-light);color:var(--teal)}.quick-link-icon.purple{background:var(--purple-light);color:var(--purple)}.quick-link-icon.orange{background:var(--orange-light);color:var(--orange)}
 
-        /* Typography */
-        .river-name {
-            font-family: 'Cinzel', serif;
-            font-size: 4rem;
-            font-weight: 700;
-            letter-spacing: 5px;
-            text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 10;
-            transition: transform 0.8s ease, font-size 0.8s ease;
-        }
-
-        .river-desc {
-            font-size: 1.2rem;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-            z-index: 10;
-            text-align: center;
-            padding: 0 20px;
-            margin-top: 15px;
-        }
-
-        /* Show description and scale text on hover */
-        .river-panel:hover .river-name {
-            transform: scale(1.2);
-        }
-
-        .river-panel:hover .river-desc {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.3s;
-        }
-
-        /* Fluid Dynamics / Wave Animation at the bottom */
-        .waves {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 15vh;
-            min-height: 100px;
-            max-height: 150px;
-            z-index: 5;
-            pointer-events: none; /* Let clicks pass through to the link */
-        }
-
-        /* Parallax Wave Classes */
-        .parallax > use {
-            animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
-        }
-        .parallax > use:nth-child(1) {
-            animation-delay: -2s;
-            animation-duration: 7s;
-        }
-        .parallax > use:nth-child(2) {
-            animation-delay: -3s;
-            animation-duration: 10s;
-        }
-        .parallax > use:nth-child(3) {
-            animation-delay: -4s;
-            animation-duration: 13s;
-        }
-        .parallax > use:nth-child(4) {
-            animation-delay: -5s;
-            animation-duration: 20s;
-        }
-
-        @keyframes move-forever {
-            0% { transform: translate3d(-90px, 0, 0); }
-            100% { transform: translate3d(85px, 0, 0); }
-        }
-
-        /* Overlay to darken panels slightly until hovered */
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            transition: background 0.8s ease;
-            z-index: 1;
-        }
-
-        .river-panel:hover .overlay {
-            background: rgba(0, 0, 0, 0.0);
-        }
-
-        /* Responsive Design for smaller screens */
-        @media (max-width: 768px) {
-            .river-container {
-                flex-direction: column;
-            }
-            .river-panel:hover {
-                flex: 2;
-            }
-            .river-name {
-                font-size: 2.5rem;
-            }
-        }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1d28; color: white; padding: 10px 20px; border-radius: 24px; font-size: 0.8rem; font-weight: 500; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        @media (max-width:1024px) { .dashboard{grid-template-columns:1fr} .navbar-nav .nav-link span{display:none} .nav-link{padding:6px 10px} }
     </style>
 </head>
 <body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+<canvas id="rippleCanvas"></canvas>
+<div class="particles-bg" id="particlesBg"></div>
 
-<div class="river-container">
+<!-- Hidden file input -->
+<input type="file" id="fileInput" style="display:none;" accept=".docx">
 
-    <a href="ganga.html" class="river-panel ganga">
-        <div class="overlay"></div>
-        <h1 class="river-name">Ganga</h1>
-        <p class="river-desc">Just as the Himalayan peaks are the source of the river’s life-giving waters, your legacy codebase holds the "source wisdom" of your business. The transformation is not about discarding the past, but about guiding it into a modern channel where it can reach new "fertile plains" of scalability.</p>
+<div class="app">
+    <nav class="navbar">
+        <a href="pahal.html" class="navbar-brand"><div class="navbar-logo">P</div><span class="navbar-name">PahAl</span></a>
+        <div class="navbar-nav">
+            <a href="pahal.html" class="nav-link active"><i class="fas fa-grid-2 nav-icon"></i><span>Dashboard</span></a>
+            <a href="ganga.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span>Analytics</span></a>
+            <a href="kaveri.html" class="nav-link"><i class="fas fa-code nav-icon"></i><span>Maps & Code</span></a>
+            <a href="yamuna.html" class="nav-link"><i class="fas fa-flask nav-icon"></i><span>Testing</span></a>
+            <a href="sangam.html" class="nav-link"><i class="fas fa-rocket nav-icon"></i><span>Deploy</span></a>
+            <a href="#" class="nav-link"><i class="fas fa-box-archive nav-icon"></i><span>Assets</span></a>
+            <a href="chatAgent.html" class="nav-link"><i class="fas fa-message-smile nav-icon"></i><span>AI Agent</span></a>
+        </div>
+        <div class="navbar-right">
+            <div class="workspace-btn" id="workspaceBtn"><span class="workspace-dot"></span><span id="workspaceName">Project Mercury</span><i class="fas fa-chevron-down" style="font-size:0.6rem;"></i></div>
+            <div class="user-btn" id="userBtn"><div class="user-avatar">AK</div><span class="user-name">Arjun Kumar</span></div>
+        </div>
+    </nav>
 
-        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
-            <defs>
-                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
-            </defs>
-            <g class="parallax">
-                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
-                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
-                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
-            </g>
-        </svg>
-    </a>
+    <div class="progress-section">
+        <div class="progress-header"><span class="progress-label"><span class="progress-phase-icon"></span><span id="phaseLabel">Upload Phase</span></span><span class="progress-value" id="progressPercent">5%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:5%;"></div></div>
+        <div class="progress-steps">
+            <div class="step-indicator"><div class="step-dot active" id="step1"></div><div class="step-label active">Upload</div></div>
+            <div class="step-indicator"><div class="step-dot" id="step2"></div><div class="step-label">Maps</div></div>
+            <div class="step-indicator"><div class="step-dot" id="step3"></div><div class="step-label">Code</div></div>
+            <div class="step-indicator"><div class="step-dot" id="step4"></div><div class="step-label">Test</div></div>
+            <div class="step-indicator"><div class="step-dot" id="step5"></div><div class="step-label">Deploy</div></div>
+        </div>
+    </div>
 
-    <a href="yamuna.html" class="river-panel yamuna">
-        <div class="overlay"></div>
-        <h1 class="river-name">Yamuna</h1>
-        <p class="river-desc">Where logic meets the test of reality;
-            Ensuring the flow remains true, deep, and clear.</p>
-
-        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
-            <g class="parallax">
-                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
-                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
-                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
-            </g>
-        </svg>
-    </a>
-
-    <a href="kaveri.html" class="river-panel kaveri">
-        <div class="overlay"></div>
-        <h1 class="river-name">Kaveri</h1>
-        <p class="river-desc">Cultivating the digital landscape with vibrant, precise code;
-            From the flow of requirements to the harvest of architecture.</p>
-
-        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
-            <g class="parallax">
-                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
-                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
-                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
-                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
-            </g>
-        </svg>
-    </a>
-
+    <div class="main-content">
+        <div class="dashboard">
+            <div>
+                <div class="welcome-card">
+                    <div class="welcome-badge"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:dotPulse 2s ease-in-out infinite;"></span> All systems operational</div>
+                    <h1 class="welcome-title">Welcome back, Arjun</h1>
+                    <p class="welcome-subtitle">Upload your TBRD document to start the pipeline</p>
+                    <div class="welcome-actions">
+                        <button class="btn btn-white" id="heroUploadBtn"><i class="fas fa-upload"></i> Upload TBRD</button>
+                        <a href="kaveri.html" class="btn btn-outline-white" id="heroStartBtn" style="display:none;"><i class="fas fa-play"></i> Start Processing</a>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item"><div class="stat-value" id="activeProjectsCount">4</div><div class="stat-label">Workspaces</div></div>
+                        <div class="stat-item"><div class="stat-value">97.8%</div><div class="stat-label">Success Rate</div></div>
+                        <div class="stat-item"><div class="stat-value">1</div><div class="stat-label">Ready to Process</div></div>
+                    </div>
+                </div>
+                <div class="card" style="margin-top:16px;">
+                    <div class="card-header"><div class="card-title"><i class="fas fa-bolt" style="color:var(--amber);"></i> Quick Start</div><span style="font-size:0.7rem;color:var(--text-muted);">TBRD Processor</span></div>
+                    <div class="dropzone" id="dropZone">
+                        <div class="dropzone-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                        <div class="dropzone-text">Drop TBRD Document Here</div>
+                        <div class="dropzone-hint">or click to browse • .docx format</div>
+                        <div class="dropzone-file-name" id="dropzoneFileName"></div>
+                    </div>
+                    <div style="text-align:center;margin-top:12px;">
+                        <button class="btn btn-primary" id="startProcessingBtn" disabled>
+                            <i class="fas fa-arrow-right"></i> Start Processing
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-header"><div class="card-title"><i class="fas fa-clock-rotate-left" style="color:var(--text-muted);"></i> Recent Activity</div></div>
+                    <div class="activity-item"><div class="activity-icon blue"><i class="fas fa-code"></i></div><div class="activity-info"><div class="activity-name">Code generation completed</div><div class="activity-time">3 minutes ago</div></div></div>
+                    <div class="activity-item"><div class="activity-icon teal"><i class="fas fa-circle-check"></i></div><div class="activity-info"><div class="activity-name">All unit tests passed</div><div class="activity-time">18 minutes ago</div></div></div>
+                    <div class="activity-item"><div class="activity-icon purple"><i class="fas fa-rocket"></i></div><div class="activity-info"><div class="activity-name">Deployed to staging</div><div class="activity-time">1 hour ago</div></div></div>
+                    <div class="activity-item"><div class="activity-icon orange"><i class="fas fa-file-import"></i></div><div class="activity-info"><div class="activity-name">TBRD document uploaded</div><div class="activity-time">2 hours ago</div></div></div>
+                </div>
+                <div class="card" style="margin-top:16px;">
+                    <div class="card-header"><div class="card-title"><i class="fas fa-link" style="color:var(--text-muted);"></i> Quick Links</div></div>
+                    <div class="quick-links">
+                        <a href="kaveri.html" class="quick-link"><div class="quick-link-icon blue"><i class="fas fa-diagram-project"></i></div>Maps & Code</a>
+                        <a href="yamuna.html" class="quick-link"><div class="quick-link-icon teal"><i class="fas fa-flask"></i></div>Run Tests</a>
+                        <a href="sangam.html" class="quick-link"><div class="quick-link-icon purple"><i class="fas fa-cloud-arrow-up"></i></div>Deploy</a>
+                        <a href="chatAgent.html" class="quick-link"><div class="quick-link-icon orange"><i class="fas fa-robot"></i></div>AI Agent</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
+<script>
+    // CURSOR
+    const cursor = document.getElementById('cursor'), cursorDot = document.getElementById('cursorDot'), cursorTrail = document.getElementById('cursorTrail');
+    let mouseX=0, mouseY=0, cursorX=0, cursorY=0, trailX=0, trailY=0;
+    document.addEventListener('mousemove',(e)=>{mouseX=e.clientX;mouseY=e.clientY;cursorDot.style.left=mouseX+'px';cursorDot.style.top=mouseY+'px';});
+    document.querySelectorAll('a,button,.btn,.nav-link,.dropzone,.workspace-btn,.user-btn,.quick-link,input,textarea,select,.stat-item').forEach(el=>{el.addEventListener('mouseenter',()=>cursor.classList.add('hover'));el.addEventListener('mouseleave',()=>cursor.classList.remove('hover'));});
+    document.addEventListener('mousedown',()=>cursor.classList.add('click'));
+    document.addEventListener('mouseup',()=>cursor.classList.remove('click'));
+    (function animateCursor(){cursorX+=(mouseX-cursorX)*0.1;cursorY+=(mouseY-cursorY)*0.1;trailX+=(mouseX-trailX)*0.04;trailY+=(mouseY-trailY)*0.04;cursor.style.left=cursorX+'px';cursor.style.top=cursorY+'px';cursorTrail.style.left=trailX+'px';cursorTrail.style.top=trailY+'px';requestAnimationFrame(animateCursor);})();
+
+    // RIPPLE
+    const canvas=document.getElementById('rippleCanvas'),ctx=canvas.getContext('2d');
+    let ripples=[],rippleParticles=[];
+    function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    resizeCanvas();window.addEventListener('resize',resizeCanvas);
+    document.addEventListener('click',(e)=>{for(let i=0;i<5;i++)ripples.push({x:e.clientX,y:e.clientY,radius:0,maxRadius:25+i*20,opacity:0.6-i*0.1,speed:2+i*0.8});for(let i=0;i<12;i++){const a=(Math.PI*2/12)*i,v=2+Math.random()*4;rippleParticles.push({x:e.clientX,y:e.clientY,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,size:1+Math.random()*3});}});
+    let lastAutoRipple=0;
+    document.addEventListener('mousemove',(e)=>{const n=Date.now();if(n-lastAutoRipple>150&&(Math.abs(e.movementX)>3||Math.abs(e.movementY)>3)){ripples.push({x:e.clientX,y:e.clientY,radius:0,maxRadius:12,opacity:0.3,speed:1.5});lastAutoRipple=n;}});
+    function drawRipples(){ctx.clearRect(0,0,canvas.width,canvas.height);const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,22);g.addColorStop(0,'rgba(79,110,247,0.07)');g.addColorStop(1,'transparent');ctx.beginPath();ctx.arc(mouseX,mouseY,22,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ripples=ripples.filter(r=>{r.radius+=r.speed;r.opacity-=0.02;if(r.opacity>0&&r.radius<r.maxRadius){ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(79,110,247,${r.opacity})`;ctx.lineWidth=1.5;ctx.stroke();return true;}return false;});rippleParticles=rippleParticles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.03;p.vx*=0.96;p.vy*=0.96;if(p.life>0){ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(79,110,247,${p.life*0.6})`;ctx.fill();return true;}return false;});requestAnimationFrame(drawRipples);}
+    drawRipples();
+
+    // PARTICLES
+    (function(){const c=document.getElementById('particlesBg'),cols=['#4f6ef7','#7c5cfc','#0ea882','#f0a92e','#f2674a'];for(let i=0;i<25;i++){const p=document.createElement('div');p.className='particle';p.style.width=(Math.random()*6+2)+'px';p.style.height=p.style.width;p.style.left=Math.random()*100+'%';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.animationDelay=Math.random()*12+'s';p.style.animationDuration=(Math.random()*10+8)+'s';c.appendChild(p);}})();
+
+    function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._timeout);t._timeout=setTimeout(()=>t.classList.remove('show'),2500);}
+
+    // ============================================
+    // FILE UPLOAD & PASS TO KAVERI
+    // ============================================
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const startBtn = document.getElementById('startProcessingBtn');
+    const heroStartBtn = document.getElementById('heroStartBtn');
+    const heroUploadBtn = document.getElementById('heroUploadBtn');
+    const dropzoneFileName = document.getElementById('dropzoneFileName');
+    let selectedFile = null;
+
+    // Click dropzone to open file picker
+    dropZone.addEventListener('click', () => fileInput.click());
+    heroUploadBtn.addEventListener('click', () => fileInput.click());
+
+    // File selected via picker
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+        if (!file.name.toLowerCase().endsWith('.docx')) {
+            showToast('❌ Please select a .docx file');
+            return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+            showToast('❌ File too large. Maximum 50MB.');
+            return;
+        }
+        selectedFile = file;
+        dropzoneFileName.textContent = '📎 ' + file.name + ' (' + formatSize(file.size) + ')';
+        dropzoneFileName.style.display = 'block';
+        dropZone.classList.add('has-file');
+        startBtn.disabled = false;
+        heroStartBtn.style.display = 'inline-flex';
+        showToast('✅ File ready: ' + file.name);
+    }
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // Pass file to kaveri.html via sessionStorage
+    function goToKaveri() {
+        if (!selectedFile) { showToast('Please select a file first'); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            sessionStorage.setItem('tbrdFileData', e.target.result);
+            sessionStorage.setItem('tbrdFileName', selectedFile.name);
+            window.location.href = 'kaveri.html';
+        };
+        reader.readAsDataURL(selectedFile);
+    }
+
+    startBtn.addEventListener('click', goToKaveri);
+    heroStartBtn.addEventListener('click', goToKaveri);
+
+    // Workspace switcher (simplified)
+    const workspaces = ['Project Mercury','Project Apollo','Project Artemis','Project Nova'];
+    let wsIdx = 0;
+    document.getElementById('workspaceBtn').addEventListener('click',()=>{wsIdx=(wsIdx+1)%workspaces.length;document.getElementById('workspaceName').textContent=workspaces[wsIdx];showToast('Switched to '+workspaces[wsIdx]);});
+    document.getElementById('userBtn').addEventListener('click',()=>showToast('User profile • Settings'));
+</script>
 </body>
 </html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacred Rivers of India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Poppins:wght@300&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Container for the split layout */
+        .river-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Individual River Panels */
+        .river-panel {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            overflow: hidden;
+            transition: flex 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+        }
+
+        /* Expand on hover */
+        .river-panel:hover {
+            flex: 2.5;
+        }
+
+        /* River Themes (Gradients) */
+        .ganga {
+            background: linear-gradient(180deg, #a8e6cf 0%, #3498db 100%);
+        }
+
+        .yamuna {
+            background: linear-gradient(180deg, #11998e 0%, #0b486b 100%);
+        }
+
+        .kaveri {
+            background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        /* Typography */
+        .river-name {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            transition: transform 0.8s ease, font-size 0.8s ease;
+        }
+
+        .river-desc {
+            font-size: 1.2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            z-index: 10;
+            text-align: center;
+            padding: 0 20px;
+            margin-top: 15px;
+        }
+
+        /* Show description and scale text on hover */
+        .river-panel:hover .river-name {
+            transform: scale(1.2);
+        }
+
+        .river-panel:hover .river-desc {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+
+        /* Fluid Dynamics / Wave Animation at the bottom */
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            min-height: 100px;
+            max-height: 150px;
+            z-index: 5;
+            pointer-events: none; /* Let clicks pass through to the link */
+        }
+
+        /* Parallax Wave Classes */
+        .parallax > use {
+            animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
+        }
+        .parallax > use:nth-child(1) {
+            animation-delay: -2s;
+            animation-duration: 7s;
+        }
+        .parallax > use:nth-child(2) {
+            animation-delay: -3s;
+            animation-duration: 10s;
+        }
+        .parallax > use:nth-child(3) {
+            animation-delay: -4s;
+            animation-duration: 13s;
+        }
+        .parallax > use:nth-child(4) {
+            animation-delay: -5s;
+            animation-duration: 20s;
+        }
+
+        @keyframes move-forever {
+            0% { transform: translate3d(-90px, 0, 0); }
+            100% { transform: translate3d(85px, 0, 0); }
+        }
+
+        /* Overlay to darken panels slightly until hovered */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.8s ease;
+            z-index: 1;
+        }
+
+        .river-panel:hover .overlay {
+            background: rgba(0, 0, 0, 0.0);
+        }
+
+        /* Responsive Design for smaller screens */
+        @media (max-width: 768px) {
+            .river-container {
+                flex-direction: column;
+            }
+            .river-panel:hover {
+                flex: 2;
+            }
+            .river-name {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="river-container">
+
+    <a href="ganga.html" class="river-panel ganga">
+        <div class="overlay"></div>
+        <h1 class="river-name">Ganga</h1>
+        <p class="river-desc">Just as the Himalayan peaks are the source of the river’s life-giving waters, your legacy codebase holds the "source wisdom" of your business. The transformation is not about discarding the past, but about guiding it into a modern channel where it can reach new "fertile plains" of scalability.</p>
+
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+            </defs>
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </a>
+
+    <a href="yamuna.html" class="river-panel yamuna">
+        <div class="overlay"></div>
+        <h1 class="river-name">Yamuna</h1>
+        <p class="river-desc">Where logic meets the test of reality;
+            Ensuring the flow remains true, deep, and clear.</p>
+
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </a>
+
+    <a href="kaveri.html" class="river-panel kaveri">
+        <div class="overlay"></div>
+        <h1 class="river-name">Kaveri</h1>
+        <p class="river-desc">Cultivating the digital landscape with vibrant, precise code;
+            From the flow of requirements to the harvest of architecture.</p>
+
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <g class="parallax">
+                <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+                <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+                <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+                <use xlink:href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+            </g>
+        </svg>
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBRD to Test Matrix & DEAM Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; font-family: 'Inter', sans-serif; background-color: #022c22;
+        }
+
+        #river-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .atmospheric-overlay {
+            position: fixed; inset: 0; pointer-events: none; z-index: 1;
+            background: radial-gradient(circle at center, rgba(2, 44, 34, 0.1) 0%, rgba(2, 44, 34, 0.85) 100%);
+        }
+
+        h1 { font-family: 'Cinzel', serif; }
+        .font-code { font-family: 'Fira Code', monospace; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.8); }
+
+        /* --- Dropzone Styles --- */
+        .basin-container {
+            position: relative; background: rgba(4, 47, 46, 0.6); border-radius: 30px;
+            border: 8px solid rgba(15, 118, 110, 0.3); backdrop-filter: blur(12px);
+            transform: translateZ(0); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-height: 280px; width: 100%; max-width: 42rem; margin: 0 auto;
+        }
+        .basin-container:hover { border-color: rgba(20, 184, 166, 0.6); }
+
+        .water-surface {
+            position: absolute; inset: -20px; z-index: 0; opacity: 0.85; pointer-events: none;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.3), rgba(13, 148, 136, 0.6)); filter: url(#water-ripple);
+        }
+
+        /* --- Workspace & Glass Panels --- */
+        #workspace-area {
+            position: relative; z-index: 20;
+            width: 100%; height: calc(100vh - 100px);
+            padding: 2rem 2rem 0 2rem;
+            opacity: 0; pointer-events: none; display: none;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+            display: flex; flex-direction: column; overflow: hidden;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(45, 212, 191, 0.4);
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Artifact Navigator (Sidebar) --- */
+        .artifact-item {
+            padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer;
+            border-left: 3px solid transparent; background: rgba(255,255,255,0.02);
+            transition: all 0.2s ease; display: flex; items-center; gap: 0.5rem;
+            color: rgba(209, 213, 219, 0.7); font-size: 0.85rem; font-weight: 500; tracking-wide; uppercase;
+        }
+        .artifact-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .artifact-item.active {
+            background: rgba(20, 184, 166, 0.15); border-left-color: #2dd4bf; color: #fff;
+            box-shadow: inset 0 0 15px rgba(20,184,166,0.1);
+        }
+
+        .panel-textarea {
+            flex-grow: 1; background: rgba(0,0,0,0.2); color: #d1d5db; resize: none; outline: none;
+            padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); transition: background 0.3s;
+            line-height: 1.6;
+        }
+        .panel-textarea:not([readonly]) {
+            background: rgba(45, 212, 191, 0.1); color: #fff; box-shadow: inset 0 0 15px rgba(20, 184, 166, 0.2);
+        }
+
+        /* --- Animations & Loaders --- */
+        @keyframes gradient-x { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+        .animate-bg-pan { animation: gradient-x 2.5s linear infinite; }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+        .loader-ring {
+            width: 100px; height: 100px; border-radius: 50%; position: relative;
+            border: 4px solid transparent; border-top-color: #2dd4bf; border-bottom-color: #2dd4bf;
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        .loader-ring::before {
+            content: ''; position: absolute; inset: 8px; border-radius: 50%;
+            border: 4px solid transparent; border-left-color: #0f766e; border-right-color: #0f766e;
+            animation: spin-reverse 2s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+
+        #action-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 90px;
+            background: linear-gradient(to top, rgba(2, 44, 34, 0.95), transparent);
+            z-index: 50; display: flex; align-items: center; justify-content: center;
+            pointer-events: none; opacity: 0; transform: translateY(20px);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-white">
+
+<canvas id="river-canvas"></canvas>
+<div class="atmospheric-overlay"></div>
+
+<svg style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+    <filter id="water-ripple">
+        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.025" numOctaves="3" result="noise" id="turbulence">
+            <animate attributeName="baseFrequency" values="0.015 0.025; 0.02 0.035; 0.015 0.025" dur="8s" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G">
+            <animate attributeName="scale" values="25; 40; 25" dur="6s" repeatCount="indefinite"/>
+        </feDisplacementMap>
+    </filter>
+</svg>
+
+<!-- INTRO/UPLOAD WRAPPER -->
+<div id="intro-container" class="relative z-10 w-full h-full flex flex-col items-center justify-center pt-16 transition-all duration-700">
+    <div id="header-area" class="mb-10 text-center drop-shadow-2xl">
+        <h1 class="text-5xl md:text-7xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-teal-100 to-teal-500 mb-2 drop-shadow-[0_4px_10px_rgba(20,184,166,0.4)] uppercase">
+            Matrix Generator
+        </h1>
+        <h2 class="text-sm md:text-base text-teal-300/80 tracking-[0.3em] uppercase drop-shadow-lg font-medium">TBRD Blueprint Engine</h2>
+    </div>
+
+    <div id="drop-zone" class="basin-container flex flex-col items-center justify-center cursor-pointer group px-6">
+        <div class="water-surface"></div>
+        <div class="relative z-10 flex flex-col items-center justify-center w-full">
+            <svg class="w-16 h-16 text-teal-300 mb-4 drop-shadow-[0_0_15px_rgba(45,212,191,0.8)] float-anim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+            </svg>
+            <h3 class="text-teal-50 text-3xl font-semibold mb-2 tracking-tight group-hover:text-white transition-colors">Drop TBRD YAML</h3>
+            <p id="status-text" class="text-teal-100/90 text-base font-light">Drag and drop your .yaml file to initialize</p>
+        </div>
+        <input type="file" id="fileInput" class="hidden" accept=".yaml, .yml">
+    </div>
+</div>
+
+<!-- WORKSPACE MASTER-DETAIL SPLIT -->
+<div id="workspace-area" class="flex gap-6">
+
+    <!-- Artifact List Sidebar -->
+    <div class="glass-panel w-1/4 max-w-[320px] min-w-[240px] flex flex-col h-full relative z-20">
+        <div class="px-5 py-4 bg-black/40 border-b border-white/10 flex items-center gap-3">
+            <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+            <span class="text-teal-50 text-sm font-bold tracking-widest uppercase">Artifacts</span>
+        </div>
+        <div id="sidebar-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+            <!-- Dynamically populated list items -->
+        </div>
+    </div>
+
+    <!-- Main Editor Panel -->
+    <div class="glass-panel flex-1 flex flex-col h-full relative z-20">
+        <div class="flex items-center justify-between px-6 py-4 bg-black/40 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-teal-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                <span id="editor-title" class="text-teal-50 text-sm font-bold tracking-widest uppercase">No Artifact Selected</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 px-6 py-2.5 bg-black/20 border-b border-white/5">
+            <button id="btn-edit" class="px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded bg-white/5 hover:bg-teal-600 border border-white/10 hover:border-teal-400 text-white transition-colors" disabled>Edit</button>
+            <button id="btn-copy" class="px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded bg-white/5 hover:bg-teal-600 border border-white/10 hover:border-teal-400 text-white transition-colors" disabled>Copy</button>
+            <button id="btn-save" class="px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded border border-teal-500/40 bg-teal-900/50 hover:bg-teal-600 text-teal-100 transition-colors ml-auto flex items-center gap-1.5" disabled>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg> Save
+            </button>
+        </div>
+
+        <textarea id="editor-textarea" class="panel-textarea font-code text-sm" readonly spellcheck="false" placeholder="Waiting for pipeline generation..."></textarea>
+    </div>
+</div>
+
+<!-- FULLSCREEN LOADER -->
+<div id="loading-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none opacity-0 hidden bg-black/60 backdrop-blur-sm">
+    <div class="loader-ring mb-6"></div>
+    <h2 id="loader-text" class="text-teal-300 text-xl font-semibold tracking-widest uppercase animate-pulse drop-shadow-[0_0_10px_rgba(45,212,191,0.6)]">Synthesizing...</h2>
+</div>
+
+<!-- ACTION FOOTER -->
+<div id="action-footer"></div>
+
+<script>
+    /* =========================================
+       CANVAS FLUID DYNAMICS
+       ========================================= */
+    const canvas = document.getElementById('river-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, time = 0;
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    const mouse = { x: -1000, y: -1000 };
+    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    const waves = [
+        { amplitude: 40, frequency: 0.002, speed: 0.015, color: 'rgba(6, 78, 59, 0.4)', yOffset: 0.3 },
+        { amplitude: 60, frequency: 0.0015, speed: 0.02, color: 'rgba(15, 118, 110, 0.3)', yOffset: 0.5 },
+        { amplitude: 35, frequency: 0.003, speed: 0.01, color: 'rgba(4, 47, 46, 0.5)', yOffset: 0.7 },
+        { amplitude: 50, frequency: 0.001, speed: 0.025, color: 'rgba(20, 184, 166, 0.15)', yOffset: 0.8 }
+    ];
+    const particles = Array.from({ length: 60 }, () => ({
+        x: Math.random() * width, y: Math.random() * height,
+        size: Math.random() * 2 + 0.5, speedX: Math.random() * 1.5 + 0.5, offset: Math.random() * Math.PI * 2
+    }));
+
+    function drawRiver() {
+        ctx.clearRect(0, 0, width, height);
+        waves.forEach((wave, index) => {
+            ctx.beginPath(); ctx.moveTo(0, height);
+            for (let x = 0; x <= width; x += 20) {
+                let y = height * wave.yOffset + Math.sin(x * wave.frequency + time * wave.speed) * wave.amplitude;
+                let dx = x - mouse.x, dy = y - mouse.y; let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 200) y += (200 - dist) * 0.2 * (index % 2 === 0 ? 1 : -1);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(width, height); ctx.lineTo(0, height); ctx.fillStyle = wave.color; ctx.fill();
+        });
+        ctx.fillStyle = 'rgba(153, 246, 228, 0.6)';
+        particles.forEach(p => {
+            p.x += p.speedX; p.y += Math.sin(p.x * 0.01 + p.offset) * 1.5;
+            let dx = p.x - mouse.x, dy = p.y - mouse.y, dist = Math.sqrt(dx * dx + dy * dy);
+            if(dist < 100) { p.x += dx * 0.02; p.y += dy * 0.02; }
+            if (p.x > width + 10) p.x = -10;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+        time += 1; requestAnimationFrame(drawRiver);
+    }
+    drawRiver();
+
+    /* =========================================
+       STATE & ARTIFACT MANAGEMENT
+       ========================================= */
+    let stepState = 0;
+    let artifacts = [];
+    let activeArtifactId = null;
+
+    /* DOM Elements */
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('fileInput');
+    const turbulence = document.getElementById('turbulence');
+    const introContainer = document.getElementById('intro-container');
+    const workspaceArea = document.getElementById('workspace-area');
+    const actionFooter = document.getElementById('action-footer');
+    const sidebarList = document.getElementById('sidebar-list');
+
+    // Editor Elements
+    const editorTitle = document.getElementById('editor-title');
+    const editorTextarea = document.getElementById('editor-textarea');
+    const btnEdit = document.getElementById('btn-edit');
+    const btnCopy = document.getElementById('btn-copy');
+    const btnSave = document.getElementById('btn-save');
+
+    /* --- File Upload Handling --- */
+    dropZone.onclick = () => { if(stepState === 0) fileInput.click(); };
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); }));
+    ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, () => {
+        if(stepState > 0) return;
+        gsap.to(turbulence, { attr: { baseFrequency: "0.04 0.06" }, duration: 0.5 });
+    }));
+    ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, () => {
+        if(stepState > 0) return;
+        gsap.to(turbulence, { attr: { baseFrequency: "0.015 0.025" }, duration: 1 });
+    }));
+
+    dropZone.addEventListener('drop', (e) => processFile(e.dataTransfer.files[0]));
+    fileInput.onchange = (e) => processFile(e.target.files[0]);
+
+    function processFile(file) {
+        if (!file || stepState > 0) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            initiatePipeline(file.name, e.target.result);
+        };
+        reader.readAsText(file);
+    }
+
+    function initiatePipeline(fileName, fileContent) {
+        stepState = 1;
+
+        // Hide Intro Wrapper (Title + Dropzone) to free up the entire screen space
+        gsap.to(introContainer, {
+            opacity: 0,
+            scale: 0.95,
+            duration: 0.5,
+            ease: "power2.in",
+            onComplete: () => {
+                introContainer.style.display = 'none';
+
+                // Show Workspace Area Layout
+                workspaceArea.style.display = 'flex';
+                gsap.to(workspaceArea, { opacity: 1, pointerEvents: "auto", duration: 0.8 });
+
+                // Add first artifact
+                addArtifact("tbrd_base", "TBRD Blueprint", fileContent, fileName);
+
+                // Setup initial footer action
+                renderActionButton("Generate Test Scenario Map", generateTestMatrix);
+            }
+        });
+    }
+
+    /* =========================================
+       MASTER-DETAIL CONTROLLERS
+       ========================================= */
+    function addArtifact(id, title, content, filename) {
+        const existing = artifacts.findIndex(a => a.id === id);
+        if (existing > -1) {
+            artifacts[existing] = { id, title, content, filename };
+        } else {
+            artifacts.push({ id, title, content, filename });
+        }
+
+        renderSidebar();
+        selectArtifact(id);
+    }
+
+    function renderSidebar() {
+        sidebarList.innerHTML = '';
+        artifacts.forEach(art => {
+            const item = document.createElement('div');
+            item.className = `artifact-item ${art.id === activeArtifactId ? 'active' : ''}`;
+            item.innerHTML = `
+                <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                ${art.title}
+            `;
+            item.onclick = () => selectArtifact(art.id);
+            sidebarList.appendChild(item);
+        });
+    }
+
+    function selectArtifact(id) {
+        activeArtifactId = id;
+        const art = artifacts.find(a => a.id === id);
+        if(!art) return;
+
+        // UI Update
+        renderSidebar(); // refresh active state on list
+        editorTitle.innerText = art.title;
+
+        // Editor Update & Animation reset
+        gsap.to(editorTextarea, {opacity: 0, duration: 0.1, onComplete: () => {
+                editorTextarea.value = art.content;
+                editorTextarea.readOnly = true;
+                btnEdit.innerText = "Edit";
+                btnEdit.classList.remove('bg-red-500/50');
+                gsap.to(editorTextarea, {opacity: 1, duration: 0.3});
+            }});
+
+        // Enable toolbar
+        [btnEdit, btnCopy, btnSave].forEach(btn => btn.removeAttribute('disabled'));
+    }
+
+    /* --- Toolbar Event Listeners --- */
+    btnEdit.onclick = () => {
+        editorTextarea.readOnly = !editorTextarea.readOnly;
+        btnEdit.innerText = editorTextarea.readOnly ? "Edit" : "Lock";
+        btnEdit.classList.toggle('bg-red-500/50', !editorTextarea.readOnly);
+    };
+
+    btnCopy.onclick = () => {
+        navigator.clipboard.writeText(editorTextarea.value);
+        const orig = btnCopy.innerText;
+        btnCopy.innerText = "Copied!";
+        setTimeout(() => btnCopy.innerText = orig, 1500);
+    };
+
+    btnSave.onclick = async () => {
+        const art = artifacts.find(a => a.id === activeArtifactId);
+        if(!art) return;
+
+        const dataToSave = editorTextarea.value;
+        art.content = dataToSave; // Sync state
+
+        try {
+            if ('showSaveFilePicker' in window) {
+                const handle = await window.showSaveFilePicker({ suggestedName: art.filename });
+                const writable = await handle.createWritable();
+                await writable.write(dataToSave);
+                await writable.close();
+            } else {
+                const blob = new Blob([dataToSave], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = art.filename; a.click();
+                URL.revokeObjectURL(url);
+            }
+        } catch(e) { }
+    };
+
+    /* =========================================
+       JSON BEAUTIFIER UTILITY
+       ========================================= */
+    function formatBeautifyJson(rawData) {
+        try {
+            const parsedObj = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+            return JSON.stringify(parsedObj, null, 4);
+        } catch (error) {
+            return rawData;
+        }
+    }
+
+    /* =========================================
+       ACTION FOOTER BUTTON RENDERING
+       ========================================= */
+    function renderActionButton(label, clickHandler, isFinal = false) {
+        actionFooter.innerHTML = '';
+        gsap.to(actionFooter, { opacity: 1, y: 0, pointerEvents: "auto", duration: 0.5 });
+
+        const btn = document.createElement('button');
+        if(!isFinal) {
+            btn.className = "group relative px-8 py-3.5 font-bold text-xs tracking-widest uppercase rounded-full overflow-hidden shadow-[0_0_20px_rgba(20,184,166,0.4)] hover:shadow-[0_0_40px_rgba(45,212,191,0.9)] transition-all duration-300 pointer-events-auto bg-[#022c22]";
+            btn.innerHTML = `
+                <div class="absolute inset-0 bg-gradient-to-r from-teal-600 via-teal-200 to-teal-600 bg-[length:200%_100%] animate-bg-pan"></div>
+                <div class="absolute inset-[2px] bg-[#022c22] rounded-full z-10 group-hover:bg-[#064e3b] transition-colors duration-500"></div>
+                <div class="absolute inset-0 z-20 w-full h-full bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                <span class="relative z-30 flex items-center gap-3 text-teal-300 group-hover:text-white transition-colors duration-300">
+                    <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    ${label}
+                </span>
+            `;
+        } else {
+            btn.className = "group relative px-12 py-5 font-bold text-sm tracking-widest uppercase rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(45,212,191,1)] transition-all duration-300 pointer-events-auto";
+            btn.innerHTML = `
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 z-0"></div>
+                <div class="absolute inset-0 z-10 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
+                <span class="relative z-20 flex items-center gap-3 text-white drop-shadow-md">
+                    ${label}
+                    <svg class="w-6 h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </span>
+            `;
+        }
+
+        btn.onclick = clickHandler;
+        actionFooter.appendChild(btn);
+        gsap.fromTo(btn, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.5)" });
+    }
+
+    /* =========================================
+       API & PIPELINE SIMULATION
+       ========================================= */
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loaderText = document.getElementById('loader-text');
+
+    async function generateTestMatrix() {
+        stepState = 2;
+        showLoader("Generating Test Scenario Map...");
+
+        // Grab currently edited TBRD payload to send
+        const tbrdPayload = artifacts.find(a => a.id === 'tbrd_base').content;
+        let responseData = null;
+        try {
+            const res = await fetch('/generate-test-matrix', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: tbrdPayload
+            });
+            if (res.ok) {
+                const textResult = await res.text();
+                responseData = formatBeautifyJson(textResult);
+            } else throw new Error("Endpoint missing");
+        } catch (e) {
+            await new Promise(r => setTimeout(r, 2000));
+            const mockJson = {
+                "testScenarioMap": {
+                    "id": "TBRD-MATRIX-099", "status": "GENERATED",
+                    "scenarios": [
+                        { "id": "SCN-1", "type": "Integration", "description": "Validate bindings." },
+                        { "id": "SCN-2", "type": "Boundary", "description": "Assess timeout conditions." }
+                    ]
+                }
+            };
+            responseData = formatBeautifyJson(mockJson);
+        }
+
+        hideLoader();
+        addArtifact("map_test", "Test Scenario Map", responseData, "test-matrix.json");
+        renderActionButton("Generate DEAM Read Map", generateDeamMap);
+    }
+
+    async function generateDeamMap() {
+        stepState = 3;
+        showLoader("Parsing YAML for DEAM Architecture...");
+
+        const tbrdPayload = artifacts.find(a => a.id === 'tbrd_base').content;
+        let responseData = null;
+
+        try {
+            const res = await fetch('/api/code/deam-map', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: tbrdPayload
+            });
+            if (res.ok) {
+                const textResult = await res.text();
+                responseData = formatBeautifyJson(textResult);
+            } else throw new Error("Endpoint missing");
+        } catch (e) {
+            await new Promise(r => setTimeout(r, 2500));
+            const mockJson = {
+                "deamReadMap": {
+                    "module": "Core Processing",
+                    "dataEnrichment": [
+                        { "source": "API_GATEWAY", "transform": "JWT_DECODE", "target": "AUTH_CTX" },
+                        { "source": "DB_CACHE", "transform": "JSON_FLATTEN", "target": "TRANS_REQ" }
+                    ],
+                    "status": "VALIDATED"
+                }
+            };
+            responseData = formatBeautifyJson(mockJson);
+        }
+
+        hideLoader();
+        addArtifact("map_deam", "DEAM Read Map", responseData, "deam-read-map.json");
+
+        renderActionButton("GENERATE CODE", () => {
+            gsap.to(document.body, { opacity: 0, duration: 1, onComplete: () => {
+                    window.location.href = 'microservice.html';
+                }});
+        }, true);
+    }
+
+    function showLoader(msg) {
+        loaderText.innerText = msg;
+        loadingOverlay.classList.remove('hidden');
+        gsap.to(actionFooter, { opacity: 0, pointerEvents: "none", duration: 0.3 });
+        gsap.to(loadingOverlay, { opacity: 1, duration: 0.4 });
+        gsap.to(turbulence, { attr: { baseFrequency: "0.08 0.12" }, duration: 1 });
+    }
+
+    function hideLoader() {
+        gsap.to(loadingOverlay, { opacity: 0, duration: 0.4, onComplete: () => loadingOverlay.classList.add('hidden') });
+        gsap.to(turbulence, { attr: { baseFrequency: "0.015 0.025" }, duration: 2 });
+    }
+
+</script>
+</body>
+</html>

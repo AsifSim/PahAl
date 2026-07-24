@@ -1,0 +1,27 @@
+{
+  "chatId" : "chat_1784630863231",
+  "sessionId" : "sess_001",
+  "chatTitle" : "Hi List Products",
+  "summary" : "Chat",
+  "messages" : [ {
+    "sender" : "USER",
+    "thoughtChain" : null,
+    "content" : "Show 15 records from product table",
+    "timestamp" : [ 2026, 7, 21, 10, 48, 41, 963723936 ]
+  }, {
+    "sender" : "ASSISTANT",
+    "thoughtChain" : "Executing standard inference...",
+    "content" : "The product with code P-100 has the following price history:\n\n```\n{ \"type\": \"jsonb\", \"value\": \"[120, 115, 110, 105] \", \"null\": false }\n```",
+    "timestamp" : [ 2026, 7, 21, 10, 48, 41, 963802474 ]
+  }, {
+    "sender" : "USER",
+    "thoughtChain" : null,
+    "content" : "Hi",
+    "timestamp" : [ 2026, 7, 21, 10, 56, 42, 519061804 ]
+  }, {
+    "sender" : "ASSISTANT",
+    "thoughtChain" : "Executing standard inference...",
+    "content" : "Sure! Could you please provide more details about the product or query you'd like to investigate?",
+    "timestamp" : [ 2026, 7, 21, 10, 56, 42, 519155727 ]
+  } ]
+}

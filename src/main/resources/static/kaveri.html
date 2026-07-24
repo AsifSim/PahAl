@@ -3,477 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaveri - The Source (Fluid Edition)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-
+    <title>Kaveri • Maps & Code Generation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            background-color: #022c22;
+        :root {
+            --bg: #f8faf7;
+            --surface: #ffffff;
+            --surface-alt: #fafdfa;
+            --surface-hover: #f0f5f1;
+            --text: #0d1a12;
+            --text-secondary: #3d5545;
+            --text-muted: #6b8573;
+            --border: #d4e4d8;
+            --border-light: #e8f2ea;
+            --accent: #0ea882;
+            --accent-dark: #089170;
+            --accent-light: #d1fae5;
+            --accent-glow: rgba(14, 168, 130, 0.25);
+            --teal: #0ea882;
+            --teal-light: #e6f7f3;
+            --purple: #7c5cfc;
+            --purple-light: #f3efff;
+            --orange: #f2674a;
+            --orange-light: #fef0ed;
+            --amber: #f0a92e;
+            --amber-light: #fef7eb;
+            --green: #22c55e;
+            --green-light: #e6f9ef;
+            --red: #ef4444;
+            --red-light: #fef0ed;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow: 0 4px 6px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 10px 20px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.03);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.08);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --transition-smooth: 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text);
+            height: 100vh; overflow: hidden;
+            -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
         }
 
-        #river-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
+        .cursor { width: 28px; height: 28px; border: 2px solid var(--accent); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: width 0.2s, height 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s; transform: translate(-50%, -50%); }
+        .cursor.hover { width: 52px; height: 52px; background: rgba(14,168,130,0.06); border-color: var(--accent-dark); box-shadow: 0 0 30px var(--accent-glow); }
+        .cursor.click { width: 34px; height: 34px; background: rgba(14,168,130,0.18); box-shadow: 0 0 20px var(--accent-glow); transition: width 0.1s, height 0.1s, background-color 0.1s; }
+        .cursor-dot { width: 5px; height: 5px; background: var(--accent-dark); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); box-shadow: 0 0 8px var(--accent-glow); }
+        .cursor-trail { position: fixed; pointer-events: none; z-index: 9997; width: 8px; height: 8px; background: rgba(14,168,130,0.3); border-radius: 50%; transform: translate(-50%, -50%); }
+        #rippleCanvas { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 9998; }
+        .particles-bg { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle { position: absolute; border-radius: 50%; animation: floatParticle 12s infinite ease-in-out; opacity: 0; }
+        @keyframes floatParticle { 0% { transform: translateY(105vh) translateX(0) scale(0) rotate(0deg); opacity:0; } 5% { opacity:0.5; } 15% { transform: translateY(80vh) translateX(30px) scale(1) rotate(90deg); opacity:0.4; } 40% { transform: translateY(40vh) translateX(-40px) scale(0.6) rotate(180deg); opacity:0.3; } 70% { transform: translateY(15vh) translateX(20px) scale(1.2) rotate(270deg); opacity:0.2; } 90% { opacity:0.05; } 100% { transform: translateY(-10vh) translateX(-10px) scale(0) rotate(360deg); opacity:0; } }
+        .app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
 
-        .atmospheric-overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, rgba(2, 44, 34, 0.1) 0%, rgba(2, 44, 34, 0.85) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
+        /* Navbar */
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-light); flex-shrink: 0; position: relative; z-index: 100; gap: 8px; }
+        .navbar::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), var(--purple), var(--amber), transparent); opacity: 0.5; animation: shimmerBorder 4s ease-in-out infinite; }
+        @keyframes shimmerBorder { 0%,100% { opacity:0.3; } 50% { opacity:0.8; } }
+        .navbar-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); flex-shrink: 0; }
+        .navbar-logo { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), #14d4a6); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 1rem; letter-spacing: 1px; animation: logoGlow 3s ease-in-out infinite; }
+        @keyframes logoGlow { 0%,100% { box-shadow: 0 0 15px rgba(14,168,130,0.3); } 50% { box-shadow: 0 0 30px rgba(20,212,166,0.5); } }
+        .navbar-name { font-weight: 700; font-size: 1.15rem; letter-spacing: -0.3px; background: linear-gradient(135deg, var(--text), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .navbar-nav { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; overflow-x: auto; flex-wrap: nowrap; }
+        .nav-link { padding: 6px 14px; border-radius: var(--radius-sm); font-weight: 500; font-size: 0.82rem; color: var(--text-secondary); text-decoration: none; transition: var(--transition); display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
+        .nav-link:hover { background: var(--surface-hover); color: var(--text); transform: translateY(-1px); }
+        .nav-link.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(14,168,130,0.3); animation: activePulse 2s ease-in-out infinite; }
+        @keyframes activePulse { 0%,100% { box-shadow: 0 4px 15px rgba(14,168,130,0.3); } 50% { box-shadow: 0 6px 25px rgba(14,168,130,0.5); } }
+        .nav-link .nav-icon { font-size: 0.8rem; width: 16px; text-align: center; transition: var(--transition-bounce); }
+        .nav-link:hover .nav-icon { transform: scale(1.15) rotate(-5deg); }
+        .navbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .workspace-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface-hover); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: var(--transition-bounce); color: var(--text-secondary); white-space: nowrap; }
+        .workspace-btn:hover { border-color: var(--accent); color: var(--text); background: var(--surface); transform: translateY(-1px); box-shadow: var(--shadow); }
+        .workspace-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: dotPulse 2s ease-in-out infinite; }
+        @keyframes dotPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } }
+        .user-btn { display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; background: var(--surface-hover); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: var(--transition-bounce); white-space: nowrap; }
+        .user-btn:hover { background: var(--surface); box-shadow: var(--shadow); transform: translateY(-1px); }
+        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #14d4a6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.7rem; }
+        .user-name { font-size: 0.8rem; font-weight: 500; }
 
-        h1 { font-family: 'Cinzel', serif; }
+        /* Global Progress */
+        .progress-section { padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border-light); flex-shrink: 0; cursor: pointer; transition: var(--transition); }
+        .progress-section:hover { background: var(--surface-alt); }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .progress-label { font-weight: 600; font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.2px; display: flex; align-items: center; gap: 6px; }
+        .progress-phase-icon { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: phaseBlink 1.5s ease-in-out infinite; }
+        @keyframes phaseBlink { 0%,100% { opacity:1; box-shadow:0 0 6px var(--accent); } 50% { opacity:0.4; box-shadow:0 0 12px var(--accent); } }
+        .progress-value { font-weight: 700; font-size: 0.85rem; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+        .progress-bar { width: 100%; height: 8px; background: var(--border-light); border-radius: 20px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #14d4a6, var(--accent-dark)); background-size: 200% 100%; border-radius: 20px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); animation: progressShimmer 2.5s ease-in-out infinite; position: relative; }
+        @keyframes progressShimmer { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
+        .progress-fill::after { content: ''; position: absolute; top: 0; right: 0; width: 50px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); animation: sweepLight 1.8s infinite; }
+        @keyframes sweepLight { 0% { transform:translateX(-100%); opacity:0; } 40% { opacity:1; } 100% { transform:translateX(500%); opacity:0; } }
+        .progress-steps { display: flex; justify-content: space-between; margin-top: 10px; }
+        .step-indicator { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .step-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border); border: 2px solid var(--border-light); transition: all 0.4s ease; }
+        .step-dot.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 14px rgba(14,168,130,0.5); animation: stepPulse 2s infinite; }
+        @keyframes stepPulse { 0%,100% { box-shadow:0 0 14px rgba(14,168,130,0.5); } 50% { box-shadow:0 0 28px rgba(14,168,130,0.8); } }
+        .step-dot.completed { background: var(--accent-dark); border-color: var(--accent-dark); }
+        .step-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+        .step-label.active { color: var(--accent); font-weight: 600; }
 
-        /* Font for JSON Editor */
-        .font-code { font-family: 'Fira Code', monospace; }
+        /* Main Content */
+        .main-content { flex:1; overflow-y:auto; padding:24px 28px; min-height:0; }
+        .page-container { max-width:1200px; margin:0 auto; }
+        .section { margin-bottom:28px; }
+        .section-header { text-align:center; margin-bottom:20px; animation: fadeSlideIn 0.5s ease-out; }
+        @keyframes fadeSlideIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .section-icon { font-size:2.6rem; color:var(--accent); margin-bottom:8px; animation: floatIcon 3s ease-in-out infinite; }
+        @keyframes floatIcon { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+        .section-title { font-size:1.6rem; font-weight:700; margin-bottom:4px; }
+        .section-subtitle { font-size:0.88rem; color:var(--text-muted); }
+        .sub-progress-wrap { max-width:500px; margin:0 auto 20px; text-align:center; }
+        .sub-progress-wrap .progress-bar { height:8px; margin:8px 0; }
+        .sub-progress-text { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent); font-size:0.9rem; }
+        .card { background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:20px; box-shadow:var(--shadow-xs); transition:var(--transition-smooth); animation: cardAppear 0.5s ease-out both; }
+        .card:hover { box-shadow:var(--shadow-md); }
+        @keyframes cardAppear { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .card-header { font-weight:600; font-size:0.9rem; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+        .card-title { display:flex; align-items:center; gap:8px; }
+        .maps-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
+        .map-card { background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); overflow:hidden; transition:var(--transition-smooth); box-shadow:var(--shadow-xs); animation: cardAppear 0.5s ease-out both; }
+        .map-card:nth-child(1){animation-delay:0.08s}.map-card:nth-child(2){animation-delay:0.16s}.map-card:nth-child(3){animation-delay:0.24s}.map-card:nth-child(4){animation-delay:0.32s}
+        .map-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--accent); }
+        .map-card-header { padding:14px 18px; background:var(--surface-alt); border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center; }
+        .map-card-title { font-weight:600; font-size:0.88rem; display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+        .map-card-title .map-name-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .map-badge { font-size:0.65rem; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+        .map-badge.deam{background:var(--accent-light);color:var(--accent-dark)}.map-badge.workflow{background:var(--purple-light);color:var(--purple)}.map-badge.fsm{background:#eef1ff;color:#4f6ef7}
+        .map-card-actions { display:flex; gap:4px; flex-shrink:0; }
+        .icon-btn { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); color:var(--text-muted); font-size:0.7rem; }
+        .icon-btn:hover { background:var(--accent); color:white; border-color:var(--accent); transform:scale(1.1); }
+        .map-card-body { padding:16px; max-height:200px; overflow:hidden; transition:max-height 0.4s ease, padding 0.4s ease; }
+        .map-card-body.minimized { max-height:0; padding:0 16px; overflow:hidden; }
+        .map-card-body.editing { max-height:none; }
+        .map-card-body.editing .code-block { display:none; }
+        .map-card-body.editing .edit-textarea { display:block; }
+        .edit-textarea { display:none; width:100%; min-height:180px; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text-secondary); background:var(--surface-alt); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--accent); outline:none; resize:vertical; line-height:1.5; }
+        .edit-actions { display:none; gap:6px; margin-top:8px; }
+        .map-card-body.editing .edit-actions { display:flex; }
+        .code-block { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text-secondary); background:var(--surface-alt); padding:12px; border-radius:var(--radius-sm); white-space:pre-wrap; line-height:1.5; }
+        .code-block.dark { background:#1a2722; color:#d1fae5; min-height:120px; max-height:350px; overflow-y:auto; }
 
-        .basin-container {
-            position: relative;
-            background: rgba(4, 47, 46, 0.6);
-            border-radius: 40px;
-            border: 12px solid rgba(15, 118, 110, 0.3);
-            box-shadow:
-                0 30px 60px rgba(0,0,0,0.8),
-                inset 0 20px 40px rgba(0,0,0,0.6),
-                inset 0 -10px 20px rgba(255,255,255,0.05),
-                0 0 40px rgba(20, 184, 166, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            overflow: hidden;
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.4s ease;
-        }
+        /* Fullscreen Overlay */
+        .fullscreen-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); animation:fadeIn 0.2s ease; }
+        .fullscreen-overlay.show { display:flex; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .fullscreen-modal { background:var(--surface); border-radius:var(--radius-xl); width:92vw; height:90vh; max-width:1400px; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,0.2); animation:modalSlideUp 0.35s cubic-bezier(0.22,1,0.36,1); }
+        @keyframes modalSlideUp { from{transform:translateY(40px) scale(0.96);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+        .fullscreen-header { padding:18px 24px; border-bottom:1px solid var(--border-light); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+        .fullscreen-title { font-weight:700; font-size:1.1rem; display:flex; align-items:center; gap:10px; }
+        .fullscreen-actions { display:flex; gap:8px; }
+        .fullscreen-close { width:36px; height:36px; border-radius:50%; border:none; background:var(--surface-hover); cursor:pointer; font-size:1.1rem; transition:var(--transition); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); }
+        .fullscreen-close:hover { background:#fef0ed; color:#ef4444; }
+        .fullscreen-body { flex:1; overflow-y:auto; padding:24px; }
+        .fullscreen-body .code-block { font-size:0.85rem; max-height:none; height:auto; min-height:300px; }
 
-        .basin-container:hover {
-            transform: scale(1.03) translateY(-8px);
-            border-color: rgba(20, 184, 166, 0.6);
-            box-shadow:
-                0 40px 70px rgba(0,0,0,0.9),
-                inset 0 20px 40px rgba(0,0,0,0.6),
-                inset 0 -10px 20px rgba(255,255,255,0.1),
-                0 0 60px rgba(20, 184, 166, 0.3);
-        }
+        .btn { padding:10px 22px; border-radius:var(--radius-sm); font-weight:600; font-size:0.88rem; cursor:pointer; transition:var(--transition-bounce); border:none; display:inline-flex; align-items:center; gap:7px; text-decoration:none; position:relative; overflow:hidden; white-space:nowrap; }
+        .btn::after { content:''; position:absolute; inset:0; background:linear-gradient(45deg,transparent,rgba(255,255,255,0.2),transparent); transform:translateX(-100%); transition:transform 0.6s ease; }
+        .btn:hover::after { transform:translateX(100%); }
+        .btn-primary { background:var(--accent); color:white; box-shadow:0 4px 12px rgba(14,168,130,0.25); }
+        .btn-primary:hover { background:var(--accent-dark); transform:translateY(-2px); box-shadow:0 8px 25px rgba(14,168,130,0.4); }
+        .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none!important; box-shadow:none; }
+        .btn-outline { background:var(--surface); border:1px solid var(--border); color:var(--text); }
+        .btn-outline:hover { border-color:var(--accent); color:var(--accent); transform:translateY(-1px); box-shadow:var(--shadow); }
+        .btn-sm { padding:6px 14px; font-size:0.75rem; }
+        .button-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px; }
+        .divider { text-align:center; margin:28px 0 20px; position:relative; }
+        .divider::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:var(--border); }
+        .divider span { background:var(--bg); padding:0 16px; position:relative; font-weight:600; font-size:0.8rem; color:var(--text-muted); display:inline-flex; align-items:center; gap:6px; }
+        .arrow-icon { animation:arrowBounce 1.5s infinite; color:var(--accent); }
+        @keyframes arrowBounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(6px); } }
 
-        .water-surface {
-            position: absolute;
-            inset: -30px;
-            background: linear-gradient(135deg, rgba(20, 184, 166, 0.3), rgba(13, 148, 136, 0.6));
-            filter: url(#water-ripple);
-            z-index: 0;
-            opacity: 0.85;
-            transition: opacity 0.5s ease, background 0.5s ease;
-        }
-
-        .basin-container:hover .water-surface {
-            opacity: 1;
-            background: linear-gradient(135deg, rgba(45, 212, 191, 0.4), rgba(15, 118, 110, 0.8));
-        }
-
-        .basin-content {
-            position: relative;
-            z-index: 10;
-        }
-
-        .float-anim {
-            animation: float 4s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-            100% { transform: translateY(0px); }
-        }
-
-        /* Custom scrollbar for JSON editor */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(15, 118, 110, 0.5); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.8); }
-
-        /* Fluid background animation for the panel */
-        .panel-fluid-bg {
-            background: linear-gradient(120deg, rgba(1, 26, 20, 0.9), rgba(4, 47, 46, 0.8), rgba(2, 44, 34, 0.9));
-            background-size: 200% 200%;
-            animation: fluidPan 15s ease infinite;
-        }
-
-        @keyframes fluidPan {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
+        .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1a1d28; color:white; padding:10px 20px; border-radius:24px; font-size:0.8rem; font-weight:500; z-index:10000; opacity:0; pointer-events:none; transition:opacity 0.3s,transform 0.4s cubic-bezier(0.34,1.56,0.64,1); box-shadow:0 10px 40px rgba(0,0,0,0.25); }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(-6px); }
+        .toast.error { background:#ef4444; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+        @media (max-width:768px) { .maps-grid{grid-template-columns:1fr} .fullscreen-modal{width:96vw;height:94vh} }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen text-white">
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+<canvas id="rippleCanvas"></canvas>
+<div class="particles-bg" id="particlesBg"></div>
 
-<canvas id="river-canvas"></canvas>
-
-<div class="atmospheric-overlay"></div>
-
-<svg style="width:0;height:0;position:absolute;">
-    <filter id="water-ripple">
-        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.025" numOctaves="3" result="noise" id="turbulence">
-            <animate attributeName="baseFrequency" values="0.015 0.025; 0.02 0.035; 0.015 0.025" dur="8s" repeatCount="indefinite"/>
-        </feTurbulence>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G">
-            <animate attributeName="scale" values="25; 40; 25" dur="6s" repeatCount="indefinite"/>
-        </feDisplacementMap>
-    </filter>
-</svg>
-
-<div id="content-wrapper" class="relative z-10 text-center w-full max-w-5xl px-6 flex flex-col items-center pointer-events-none transition-transform duration-700 ease-out">
-
-    <div class="mb-12 text-center drop-shadow-2xl pointer-events-auto">
-        <h1 class="text-6xl md:text-8xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-teal-100 to-teal-500 mb-2 drop-shadow-[0_4px_10px_rgba(20,184,166,0.4)] uppercase">
-            Kaveri
-        </h1>
-        <h2 class="text-lg md:text-xl text-teal-300/80 tracking-[0.3em] uppercase mb-6 drop-shadow-lg font-medium">Dakshina-Ganga</h2>
-
-        <p class="text-sm md:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed font-light drop-shadow-md">
-            Revered as the vibrant, life-giving flow of the southern plains, the Kaveri river transforms arid lands into fertile ecosystems.
-            <br><br>
-            Similarly, this engine channels your legacy blueprints, generating the robust, modern architecture needed to nourish and sustain your platform's future.
-        </p>
-    </div>
-
-    <div id="drop-zone" class="basin-container w-full max-w-2xl h-[320px] flex flex-col items-center justify-center cursor-pointer group pointer-events-auto mb-8">
-        <div class="water-surface"></div>
-        <div class="basin-content flex flex-col items-center">
-            <svg class="w-16 h-16 text-teal-300 mb-4 float-anim drop-shadow-[0_0_15px_rgba(45,212,191,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-            </svg>
-            <h3 class="text-teal-50 text-4xl md:text-5xl font-semibold mb-3 tracking-tight drop-shadow-lg group-hover:text-white transition-colors">Generate FSM</h3>
-            <p id="status-text" class="text-teal-100/90 text-base md:text-lg font-light drop-shadow-md">Drop your TBRD blueprint here to begin the flow</p>
+<!-- Fullscreen Maximize Overlay -->
+<div class="fullscreen-overlay" id="fullscreenOverlay">
+    <div class="fullscreen-modal">
+        <div class="fullscreen-header">
+            <div class="fullscreen-title" id="fullscreenTitle"><span>📄</span> Map Details</div>
+            <div class="fullscreen-actions">
+                <button class="icon-btn" onclick="editInFullscreen()" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="icon-btn" onclick="saveFullscreenEdit()" title="Save" id="fullscreenSaveBtn" style="display:none;"><i class="fas fa-save"></i></button>
+                <button class="icon-btn" onclick="copyFullscreenContent()" title="Copy"><i class="fas fa-copy"></i></button>
+                <button class="icon-btn" onclick="saveFullscreenContent()" title="Download"><i class="fas fa-download"></i></button>
+                <button class="fullscreen-close" onclick="closeFullscreen()"><i class="fas fa-times"></i></button>
+            </div>
         </div>
-        <input type="file" id="fileInput" class="hidden" accept=".docx, .pdf, .txt, .json">
-    </div>
-
-    <button id="proceed-btn" class="hidden pointer-events-auto group relative px-8 py-4 bg-[#042f2e]/80 border border-teal-500/50 rounded-full shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_30px_rgba(20,184,166,0.6)] hover:bg-[#0f766e]/80 transition-all duration-300 backdrop-blur-md overflow-hidden">
-        <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-teal-400/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-        <span class="relative z-10 text-teal-100 font-medium tracking-wide uppercase text-sm flex items-center gap-2">
-            Proceed to generation of maps and code
-            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </span>
-    </button>
-</div>
-
-<div id="json-panel" class="fixed inset-y-0 right-0 w-full md:w-[60%] lg:w-[45%] panel-fluid-bg backdrop-blur-3xl border-l border-teal-500/30 shadow-[-20px_0_60px_rgba(2,44,34,0.9)] z-50 transform translate-x-full flex flex-col pointer-events-auto">
-
-    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-teal-400 to-transparent opacity-50"></div>
-
-    <div class="flex justify-between items-center px-6 py-5 border-b border-teal-800/60 bg-black/20 backdrop-blur-md relative z-10">
-        <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-            <h3 class="text-teal-100 text-sm font-semibold tracking-widest uppercase drop-shadow-md">Generated FSM Payload</h3>
-        </div>
-        <div class="space-x-3 flex items-center">
-            <button id="btn-copy" class="px-4 py-2 text-xs tracking-wider uppercase font-medium bg-white/5 hover:bg-white/10 text-teal-200 rounded-lg border border-teal-700/50 hover:border-teal-400 transition-all duration-300">Copy</button>
-            <button id="btn-save" class="px-4 py-2 text-xs tracking-wider uppercase font-medium bg-teal-600 hover:bg-teal-400 text-white rounded-lg shadow-[0_0_15px_rgba(13,148,136,0.5)] hover:shadow-[0_0_25px_rgba(45,212,191,0.8)] transition-all duration-300 relative overflow-hidden group">
-                <span class="relative z-10">Save</span>
-                <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-            </button>
-            <button id="btn-close" class="ml-2 p-2 text-teal-600 hover:text-teal-300 hover:bg-white/5 rounded-full transition-all duration-300">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-    </div>
-
-    <div class="flex-grow p-6 overflow-hidden relative z-10 flex flex-col">
-        <div class="relative flex-grow bg-black/40 rounded-xl border border-teal-900/50 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] overflow-hidden group">
-            <textarea id="json-editor" class="w-full h-full bg-transparent text-teal-50/90 font-code text-[13px] p-6 focus:outline-none resize-none leading-relaxed" spellcheck="false"></textarea>
-
-            <div class="absolute inset-0 rounded-xl pointer-events-none border border-teal-500/0 group-focus-within:border-teal-500/30 transition-colors duration-500"></div>
-        </div>
-
-        <div id="toast-msg" class="absolute bottom-10 right-1/2 translate-x-1/2 bg-teal-500 text-white px-6 py-3 text-sm font-medium tracking-wide rounded-full shadow-[0_10px_25px_rgba(20,184,166,0.4)] opacity-0 transition-opacity duration-300 pointer-events-none transform translate-y-4">
-            Saved successfully!
+        <div class="fullscreen-body" id="fullscreenBody">
+            <div class="code-block" id="fullscreenCodeBlock">Loading...</div>
         </div>
     </div>
 </div>
+
+<div class="app">
+    <nav class="navbar">
+        <a href="pahal.html" class="navbar-brand"><div class="navbar-logo">P</div><span class="navbar-name">PahAl</span></a>
+        <div class="navbar-nav">
+            <a href="pahal.html" class="nav-link"><i class="fas fa-grid-2 nav-icon"></i><span>Dashboard</span></a>
+            <a href="ganga.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span>Analytics</span></a>
+            <a href="kaveri.html" class="nav-link active"><i class="fas fa-code nav-icon"></i><span>Maps & Code</span></a>
+            <a href="yamuna.html" class="nav-link"><i class="fas fa-flask nav-icon"></i><span>Testing</span></a>
+            <a href="sangam.html" class="nav-link"><i class="fas fa-rocket nav-icon"></i><span>Deploy</span></a>
+            <a href="#" class="nav-link"><i class="fas fa-box-archive nav-icon"></i><span>Assets</span></a>
+            <a href="chatAgent.html" class="nav-link"><i class="fas fa-message-smile nav-icon"></i><span>AI Agent</span></a>
+        </div>
+        <div class="navbar-right">
+            <div class="workspace-btn" id="workspaceBtn"><span class="workspace-dot"></span><span id="workspaceName">Project Kaveri</span><i class="fas fa-chevron-down" style="font-size:0.6rem;"></i></div>
+            <div class="user-btn" id="userBtn"><div class="user-avatar">AK</div><span class="user-name">Arjun Kumar</span></div>
+        </div>
+    </nav>
+
+    <div class="progress-section" id="progressSection">
+        <div class="progress-header"><span class="progress-label"><span class="progress-phase-icon"></span><span id="globalPhaseLabel">Maps Generation</span></span><span class="progress-value" id="globalProgressPercent">30%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="globalProgressFill" style="width:30%;"></div></div>
+        <div class="progress-steps">
+            <div class="step-indicator"><div class="step-dot completed" id="gstep1"></div><div class="step-label">Upload</div></div>
+            <div class="step-indicator"><div class="step-dot active" id="gstep2"></div><div class="step-label active">Maps</div></div>
+            <div class="step-indicator"><div class="step-dot" id="gstep3"></div><div class="step-label">Code</div></div>
+            <div class="step-indicator"><div class="step-dot" id="gstep4"></div><div class="step-label">Test</div></div>
+            <div class="step-indicator"><div class="step-dot" id="gstep5"></div><div class="step-label">Deploy</div></div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-container">
+            <div class="section" id="mapsSection">
+                <div class="section-header"><div class="section-icon"><i class="fas fa-diagram-project"></i></div><h2 class="section-title">Configuration Maps</h2><p class="section-subtitle">Generating DEAM, Workflow Maps & FSM from uploaded TBRD document</p></div>
+                <div class="sub-progress-wrap"><div class="progress-bar"><div class="progress-fill" id="mapProgressFill" style="width:0%;"></div></div><p class="sub-progress-text" id="mapProgressText">Initializing...</p></div>
+                <div class="maps-grid" id="mapsGrid">
+                    <div class="map-card" style="grid-column:1/-1;text-align:center;padding:30px;">
+                        <div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Processing TBRD document...</div>
+                    </div>
+                </div>
+                <div class="button-row" id="mapsButtons">
+                    <button class="btn btn-outline" onclick="window.location.href='pahal.html'"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                    <button class="btn btn-primary" id="proceedToCodeBtn" disabled><i class="fas fa-arrow-right"></i> Proceed to Code Generation</button>
+                </div>
+            </div>
+            <div class="divider" id="sectionDivider" style="display:none;"><span><i class="fas fa-arrow-down arrow-icon"></i> Sequential Flow <i class="fas fa-arrow-down arrow-icon"></i></span></div>
+            <div class="section" id="codeSection" style="display:none;">
+                <div class="section-header"><div class="section-icon"><i class="fas fa-code"></i></div><h2 class="section-title">Code Synthesis</h2><p class="section-subtitle">Generating production-ready code from configuration maps</p></div>
+                <div class="sub-progress-wrap"><div class="progress-bar"><div class="progress-fill" id="codeProgressFill" style="width:0%;"></div></div><p class="sub-progress-text" id="codeProgressText">0%</p></div>
+                <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-file-code" style="color:var(--accent);"></i> Generated Code</div><div style="display:flex;gap:4px;"><button class="icon-btn" onclick="copyCode()"><i class="fas fa-copy"></i></button><button class="icon-btn" onclick="saveCode()"><i class="fas fa-save"></i></button></div></div><div class="code-block dark" id="generatedCode">// Waiting for map generation to complete...</div></div>
+                <div class="button-row"><button class="btn btn-outline" onclick="window.location.href='pahal.html'"><i class="fas fa-arrow-left"></i> Back</button><button class="btn btn-primary" id="proceedToTestBtn" disabled><i class="fas fa-arrow-right"></i> Proceed to Testing</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
-    /* =========================================
-       CANVAS FLUID DYNAMICS (RIVER BACKGROUND)
-       ========================================= */
-    const canvas = document.getElementById('river-canvas');
-    const ctx = canvas.getContext('2d');
+    const API_BASE_URL = 'http://localhost:8080/api';
+    let generatedMaps = [], mapsGenerated = false;
+    let fullscreenMapIndex = -1;
+    let editingIndex = -1;
+    let originalContent = '';
+    let isFullscreenEditing = false;
 
-    let width, height;
-    let time = 0;
+    // CURSOR
+    const cursor = document.getElementById('cursor'), cursorDot = document.getElementById('cursorDot'), cursorTrail = document.getElementById('cursorTrail');
+    let mouseX=0, mouseY=0, cursorX=0, cursorY=0, trailX=0, trailY=0;
+    document.addEventListener('mousemove',(e)=>{mouseX=e.clientX;mouseY=e.clientY;cursorDot.style.left=mouseX+'px';cursorDot.style.top=mouseY+'px';});
+    document.querySelectorAll('a,button,.btn,.nav-link,.workspace-btn,.user-btn,input,textarea,select,.map-card,.card,.icon-btn,.progress-section,.fullscreen-overlay,.fullscreen-close').forEach(el=>{el.addEventListener('mouseenter',()=>cursor.classList.add('hover'));el.addEventListener('mouseleave',()=>cursor.classList.remove('hover'));});
+    document.addEventListener('mousedown',()=>cursor.classList.add('click'));
+    document.addEventListener('mouseup',()=>cursor.classList.remove('click'));
+    (function animateCursor(){cursorX+=(mouseX-cursorX)*0.1;cursorY+=(mouseY-cursorY)*0.1;trailX+=(mouseX-trailX)*0.04;trailY+=(mouseY-trailY)*0.04;cursor.style.left=cursorX+'px';cursor.style.top=cursorY+'px';cursorTrail.style.left=trailX+'px';cursorTrail.style.top=trailY+'px';requestAnimationFrame(animateCursor);})();
 
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
+    // RIPPLE
+    const canvas=document.getElementById('rippleCanvas'),ctx=canvas.getContext('2d');
+    let ripples=[],rippleParticles=[];
+    function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    resizeCanvas();window.addEventListener('resize',resizeCanvas);
+    document.addEventListener('click',(e)=>{for(let i=0;i<5;i++)ripples.push({x:e.clientX,y:e.clientY,radius:0,maxRadius:25+i*20,opacity:0.6-i*0.1,speed:2+i*0.8});for(let i=0;i<12;i++){const a=(Math.PI*2/12)*i,v=2+Math.random()*4;rippleParticles.push({x:e.clientX,y:e.clientY,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,size:1+Math.random()*3});}});
+    let lastAutoRipple=0;
+    document.addEventListener('mousemove',(e)=>{const n=Date.now();if(n-lastAutoRipple>150&&(Math.abs(e.movementX)>3||Math.abs(e.movementY)>3)){ripples.push({x:e.clientX,y:e.clientY,radius:0,maxRadius:12,opacity:0.3,speed:1.5});lastAutoRipple=n;}});
+    function drawRipples(){ctx.clearRect(0,0,canvas.width,canvas.height);const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,22);g.addColorStop(0,'rgba(14,168,130,0.07)');g.addColorStop(1,'transparent');ctx.beginPath();ctx.arc(mouseX,mouseY,22,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ripples=ripples.filter(r=>{r.radius+=r.speed;r.opacity-=0.02;if(r.opacity>0&&r.radius<r.maxRadius){ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(14,168,130,${r.opacity})`;ctx.lineWidth=1.5;ctx.stroke();return true;}return false;});rippleParticles=rippleParticles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.03;p.vx*=0.96;p.vy*=0.96;if(p.life>0){ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(14,168,130,${p.life*0.6})`;ctx.fill();return true;}return false;});requestAnimationFrame(drawRipples);}
+    drawRipples();
+
+    // PARTICLES
+    (function(){const c=document.getElementById('particlesBg'),cols=['#0ea882','#14d4a6','#089170','#7c5cfc','#f0a92e'];for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';p.style.width=(Math.random()*5+2)+'px';p.style.height=p.style.width;p.style.left=Math.random()*100+'%';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.animationDelay=Math.random()*12+'s';p.style.animationDuration=(Math.random()*10+8)+'s';c.appendChild(p);}})();
+
+    function showToast(m,e){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');if(e)t.classList.add('error');else t.classList.remove('error');clearTimeout(t._timeout);t._timeout=setTimeout(()=>{t.classList.remove('show','error');},3000);}
+
+    const workspaces=['Project Kaveri','Project Ganga','Project Yamuna','Project Sangam'];let wsIdx=0;
+    document.getElementById('workspaceBtn').addEventListener('click',()=>{wsIdx=(wsIdx+1)%workspaces.length;document.getElementById('workspaceName').textContent=workspaces[wsIdx];showToast('Switched to '+workspaces[wsIdx]);});
+    document.getElementById('userBtn').addEventListener('click',()=>showToast('User profile'));
+
+    function updateGlobalProgress(pct,phase,step){
+        document.getElementById('globalProgressFill').style.width=pct+'%';document.getElementById('globalProgressPercent').textContent=pct+'%';document.getElementById('globalPhaseLabel').textContent=phase;
+        for(let i=1;i<=5;i++){const d=document.getElementById('gstep'+i),l=d.parentElement.querySelector('.step-label');d.classList.remove('active','completed');l.classList.remove('active');if(i<step)d.classList.add('completed');if(i===step){d.classList.add('active');l.classList.add('active');}}
     }
-    window.addEventListener('resize', resize);
-    resize();
 
-    const mouse = { x: -1000, y: -1000 };
-    window.addEventListener('mousemove', (e) => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    });
+    // FULLSCREEN FUNCTIONS
+    const fullscreenOverlay=document.getElementById('fullscreenOverlay');
+    const fullscreenTitle=document.getElementById('fullscreenTitle');
+    const fullscreenCodeBlock=document.getElementById('fullscreenCodeBlock');
+    const fullscreenSaveBtn=document.getElementById('fullscreenSaveBtn');
 
-    const waves = [
-        { amplitude: 40, frequency: 0.002, speed: 0.015, color: 'rgba(6, 78, 59, 0.4)', yOffset: 0.3 },
-        { amplitude: 60, frequency: 0.0015, speed: 0.02, color: 'rgba(15, 118, 110, 0.3)', yOffset: 0.5 },
-        { amplitude: 35, frequency: 0.003, speed: 0.01, color: 'rgba(4, 47, 46, 0.5)', yOffset: 0.7 },
-        { amplitude: 50, frequency: 0.001, speed: 0.025, color: 'rgba(20, 184, 166, 0.15)', yOffset: 0.8 }
-    ];
-
-    const particles = Array.from({ length: 80 }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        size: Math.random() * 2 + 0.5,
-        speedX: Math.random() * 1.5 + 0.5,
-        offset: Math.random() * Math.PI * 2
-    }));
-
-    function drawRiver() {
-        ctx.clearRect(0, 0, width, height);
-
-        waves.forEach((wave, index) => {
-            ctx.beginPath();
-            ctx.moveTo(0, height);
-
-            for (let x = 0; x <= width; x += 20) {
-                let y = height * wave.yOffset + Math.sin(x * wave.frequency + time * wave.speed) * wave.amplitude;
-                let dx = x - mouse.x;
-                let dy = y - mouse.y;
-                let dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 200) {
-                    y += (200 - dist) * 0.2 * (index % 2 === 0 ? 1 : -1);
-                }
-                ctx.lineTo(x, y);
-            }
-
-            ctx.lineTo(width, height);
-            ctx.lineTo(0, height);
-            ctx.fillStyle = wave.color;
-            ctx.fill();
-        });
-
-        ctx.fillStyle = 'rgba(153, 246, 228, 0.6)';
-        particles.forEach(p => {
-            p.x += p.speedX;
-            p.y += Math.sin(p.x * 0.01 + p.offset) * 1.5;
-
-            let dx = p.x - mouse.x;
-            let dy = p.y - mouse.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
-            if(dist < 100) {
-                p.x += dx * 0.02;
-                p.y += dy * 0.02;
-            }
-
-            if (p.x > width + 10) p.x = -10;
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
-        });
-
-        time += 1;
-        requestAnimationFrame(drawRiver);
+    function openFullscreen(index){
+        if(index<0||index>=generatedMaps.length)return;
+        fullscreenMapIndex=index;
+        isFullscreenEditing=false;
+        fullscreenSaveBtn.style.display='none';
+        const map=generatedMaps[index];
+        const icons={deam:'📐',workflow:'🔄',fsm:'🧠'};
+        fullscreenTitle.innerHTML=`<span>${icons[map.type]||'📄'}</span> ${map.title} <span class="map-badge ${map.type}" style="font-size:0.7rem;padding:3px 10px;">${map.type.toUpperCase()}</span>`;
+        fullscreenCodeBlock.textContent=map.content;
+        fullscreenCodeBlock.contentEditable='false';
+        fullscreenCodeBlock.style.border='none';
+        fullscreenCodeBlock.style.outline='none';
+        fullscreenCodeBlock.style.background='var(--surface-alt)';
+        fullscreenOverlay.classList.add('show');
+        document.body.style.overflow='hidden';
     }
-    drawRiver();
-
-    /* =========================================
-       UI ANIMATIONS, DRAG/DROP & JSON LOGIC
-       ========================================= */
-    gsap.from("#content-wrapper", { opacity: 0, y: 40, duration: 1.5, ease: "power3.out", delay: 0.2 });
-    gsap.from(".basin-container", { scale: 0.9, opacity: 0, duration: 1.5, ease: "elastic.out(1, 0.5)", delay: 0.5 });
-
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('fileInput');
-    const statusText = document.getElementById('status-text');
-    const turbulence = document.getElementById('turbulence');
-    const proceedBtn = document.getElementById('proceed-btn');
-    const jsonPanel = document.getElementById('json-panel');
-    const jsonEditor = document.getElementById('json-editor');
-    const contentWrapper = document.getElementById('content-wrapper');
-
-    let currentFileName = "";
-
-    dropZone.onclick = () => fileInput.click();
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+    function closeFullscreen(){
+        fullscreenOverlay.classList.remove('show');fullscreenMapIndex=-1;isFullscreenEditing=false;fullscreenSaveBtn.style.display='none';
+        fullscreenCodeBlock.contentEditable='false';fullscreenCodeBlock.style.border='none';fullscreenCodeBlock.style.outline='none';fullscreenCodeBlock.style.background='var(--surface-alt)';
+        document.body.style.overflow='';
+    }
+    function editInFullscreen(){
+        if(fullscreenMapIndex<0)return;isFullscreenEditing=true;
+        fullscreenCodeBlock.contentEditable='true';fullscreenCodeBlock.style.border='1px solid var(--accent)';fullscreenCodeBlock.style.outline='none';fullscreenCodeBlock.style.background='#fffff9';
+        fullscreenCodeBlock.focus();fullscreenSaveBtn.style.display='flex';showToast('✏️ Editing enabled - click save icon when done');
+    }
+    function saveFullscreenEdit(){
+        if(fullscreenMapIndex<0||!isFullscreenEditing)return;
+        const newContent=fullscreenCodeBlock.textContent;generatedMaps[fullscreenMapIndex].content=newContent;
+        const cardCodeBlock=document.querySelector(`#mapBody${fullscreenMapIndex} .code-block`);if(cardCodeBlock)cardCodeBlock.textContent=newContent;
+        isFullscreenEditing=false;fullscreenCodeBlock.contentEditable='false';fullscreenCodeBlock.style.border='none';fullscreenCodeBlock.style.outline='none';fullscreenCodeBlock.style.background='var(--surface-alt)';
+        fullscreenSaveBtn.style.display='none';showToast('💾 Map saved!');
+    }
+    function copyFullscreenContent(){if(fullscreenMapIndex>=0)navigator.clipboard.writeText(generatedMaps[fullscreenMapIndex].content).then(()=>showToast('📋 Content copied!'));}
+    async function saveFullscreenContent(){
+        if(fullscreenMapIndex<0)return;const map=generatedMaps[fullscreenMapIndex];
+        try{const h=await window.showSaveFilePicker({suggestedName:map.title+'.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]});const w=await h.createWritable();await w.write(map.content);await w.close();showToast('💾 Saved!');}
+        catch(err){if(err.name==='AbortError')return;const b=new Blob([map.content],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=map.title+'.json';a.click();URL.revokeObjectURL(u);showToast('💾 Downloaded!');}
+    }
+    fullscreenOverlay.addEventListener('click',(e)=>{if(e.target===fullscreenOverlay)closeFullscreen();});
+    document.addEventListener('keydown',(e)=>{
+        if(e.key==='Escape'&&fullscreenOverlay.classList.contains('show')){if(isFullscreenEditing&&!confirm('Unsaved changes. Close anyway?'))return;closeFullscreen();}
+        if((e.ctrlKey||e.metaKey)&&e.key==='s'&&fullscreenOverlay.classList.contains('show')&&isFullscreenEditing){e.preventDefault();saveFullscreenEdit();}
     });
 
-    ['dragenter', 'dragover'].forEach(evt => {
-        dropZone.addEventListener(evt, () => {
-            gsap.to(turbulence, { attr: { baseFrequency: "0.04 0.06" }, duration: 0.5 });
-            statusText.innerText = "Release to channel the blueprint...";
-            statusText.classList.add("text-teal-300");
-        });
-    });
+    // INLINE EDIT
+    function startInlineEdit(index){
+        if(editingIndex>=0)cancelInlineEdit(editingIndex);editingIndex=index;originalContent=generatedMaps[index].content;
+        const body=document.getElementById('mapBody'+index);body.classList.add('editing');
+        const textarea=body.querySelector('.edit-textarea');textarea.value=originalContent;textarea.focus();
+    }
+    function saveInlineEdit(index){
+        const body=document.getElementById('mapBody'+index);const textarea=body.querySelector('.edit-textarea');const newContent=textarea.value;
+        generatedMaps[index].content=newContent;const codeBlock=body.querySelector('.code-block');codeBlock.textContent=newContent;
+        if(fullscreenMapIndex===index)fullscreenCodeBlock.textContent=newContent;
+        body.classList.remove('editing');editingIndex=-1;showToast('✏️ Map updated!');
+    }
+    function cancelInlineEdit(index){
+        const body=document.getElementById('mapBody'+index);generatedMaps[index].content=originalContent;body.classList.remove('editing');editingIndex=-1;
+    }
 
-    ['dragleave', 'drop'].forEach(evt => {
-        dropZone.addEventListener(evt, () => {
-            gsap.to(turbulence, { attr: { baseFrequency: "0.015 0.025" }, duration: 1 });
-            if (evt === 'dragleave') {
-                statusText.innerText = "Drop your TBRD blueprint here to begin the flow";
-                statusText.classList.remove("text-teal-300");
-            }
-        });
-    });
-
-    dropZone.addEventListener('drop', (e) => handleFileUpload(e.dataTransfer.files[0]));
-    fileInput.onchange = (e) => handleFileUpload(e.target.files[0]);
-
-    async function handleFileUpload(file) {
-        if (!file) return;
-
-        gsap.to(".basin-content", { y: 25, opacity: 0.7, duration: 0.4, yoyo: true, repeat: 1 });
-        gsap.to(turbulence, { attr: { baseFrequency: "0.06 0.09" }, duration: 0.2 });
-
-        statusText.innerText = "Submerging architecture... Generating Code.";
-        statusText.classList.add("text-teal-300", "animate-pulse");
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            const response = await fetch('http://localhost:8080/api/code/fsm-structure', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const responseData = await response.json();
-
-                statusText.innerText = "Flow Established. Review payload or proceed.";
-                statusText.classList.remove("animate-pulse");
-                gsap.to(turbulence, { attr: { baseFrequency: "0.015 0.025" }, duration: 1 });
-
-                currentFileName = file.name.replace(/\.[^/.]+$/, "");
-
-                // Open JSON Panel smoothly with GSAP
-                jsonEditor.value = JSON.stringify(responseData, null, 2);
-
-                // Shift main content slightly to the left for balance
-                gsap.to(contentWrapper, { x: "-15%", duration: 0.8, ease: "power3.out" });
-
-                // Slide in the panel
-                gsap.to(jsonPanel, { x: "0%", duration: 0.8, ease: "power3.out", delay: 0.1 });
-
-                // Reveal Proceed Button
-                proceedBtn.classList.remove('hidden');
-                gsap.fromTo(proceedBtn,
-                    { opacity: 0, y: 20 },
-                    { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", delay: 0.4 }
-                );
-
-            } else {
-                showError("Current blocked: Invalid Format.");
-            }
-        } catch (err) {
-            showError("The source cannot be reached (Connection Failed).");
+    // BACKEND API
+    async function processFile(file){
+        const grid=document.getElementById('mapsGrid'),mf=document.getElementById('mapProgressFill'),mt=document.getElementById('mapProgressText');
+        grid.innerHTML='<div class="map-card" style="grid-column:1/-1;text-align:center;padding:30px;"><div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Calling backend API...</div></div>';
+        mf.style.width='15%';mt.textContent='Uploading...';
+        const fd=new FormData();fd.append('file',file);
+        try{
+            mf.style.width='30%';mt.textContent='Processing...';
+            const res=await fetch(`${API_BASE_URL}/tbrd/process-docx`,{method:'POST',body:fd});
+            mf.style.width='60%';mt.textContent='Parsing response...';
+            if(!res.ok)throw new Error(`Backend error (${res.status})`);
+            const data=await res.json();
+            mf.style.width='80%';mt.textContent='Building maps...';
+            generatedMaps=[];
+            if(data.DEAMs&&data.DEAMs.length>0)data.DEAMs.forEach(d=>generatedMaps.push({title:d.entity||'DEAM_Entity',type:'deam',content:JSON.stringify(d,null,2)}));
+            if(data.WFMs&&data.WFMs.length>0)data.WFMs.forEach(w=>generatedMaps.push({title:w.workflowName||'Workflow_Map',type:'workflow',content:JSON.stringify(w,null,2)}));
+            if(data.FSM)generatedMaps.push({title:'FSM_'+(data.FSM.document_name||'Structure'),type:'fsm',content:JSON.stringify(data.FSM,null,2)});
+            if(generatedMaps.length===0)generatedMaps.push({title:'TBRD_Result',type:'fsm',content:JSON.stringify(data,null,2)});
+            renderMaps();
+            mf.style.width='100%';mt.textContent='100%';mapsGenerated=true;
+            updateGlobalProgress(45,'Maps Complete',2);document.getElementById('proceedToCodeBtn').disabled=false;
+            showToast(`✅ Generated ${generatedMaps.length} maps!`);
+        }catch(err){
+            console.error(err);mf.style.width='100%';mt.textContent='Fallback';
+            showToast('⚠️ Backend unavailable - demo maps',true);loadDemoMaps();
         }
     }
 
-    function showError(msg) {
-        statusText.innerText = msg;
-        statusText.classList.replace("text-teal-300", "text-red-400");
-        statusText.classList.remove("animate-pulse");
-        gsap.to(turbulence, { attr: { baseFrequency: "0.015 0.025" }, duration: 1 });
+    function loadDemoMaps(){
+        generatedMaps=[{title:'DEAM_User_Entity',type:'deam',content:'{"entity":"User","attributesList":[{"name":"uuid","type":"string","businessKey":true},{"name":"email","type":"string"}]}'},{title:'DEAM_Order_Entity',type:'deam',content:'{"entity":"Order","attributesList":[{"name":"order_id","type":"string","businessKey":true}]}'},{title:'WORKFLOW_MAP_OrderProcessing',type:'workflow',content:'{"workflowName":"OrderProcessing","subWorkflowExecution":[{"entityName":"Order","sourceType":"API_SOURCE"}]}'},{title:'FSM_StateMachine',type:'fsm',content:'{"model":"TBRD_FSM","states":["INIT","VALIDATION","PROCESSING","COMPLETE"]}'}];
+        renderMaps();document.getElementById('mapProgressFill').style.width='100%';document.getElementById('mapProgressText').textContent='100% (Demo)';
+        mapsGenerated=true;updateGlobalProgress(45,'Maps Complete',2);document.getElementById('proceedToCodeBtn').disabled=false;showToast('📋 Demo maps loaded');
     }
 
-    /* --- Proceed Button Logic --- */
-    proceedBtn.addEventListener('click', () => {
-        // Close panel smoothly
-        gsap.to(jsonPanel, { x: "100%", duration: 0.6, ease: "power2.in" });
-        gsap.to(contentWrapper, { x: "0%", duration: 0.6, ease: "power2.inOut" });
+    function renderMaps(){
+        const grid=document.getElementById('mapsGrid');
+        const icons={deam:'📐',workflow:'🔄',fsm:'🧠'},labels={deam:'DEAM',workflow:'Workflow',fsm:'FSM'};
+        grid.innerHTML=generatedMaps.map((m,i)=>`
+        <div class="map-card" style="animation-delay:${i*0.08}s">
+            <div class="map-card-header">
+                <div class="map-card-title"><span>${icons[m.type]||'📄'}</span><span class="map-name-text">${m.title}</span><span class="map-badge ${m.type}">${labels[m.type]||m.type}</span></div>
+                <div class="map-card-actions">
+                    <button class="icon-btn" onclick="toggleMinimize(${i})" title="Minimize"><i class="fas fa-minimize"></i></button>
+                    <button class="icon-btn" onclick="openFullscreen(${i})" title="Maximize"><i class="fas fa-maximize"></i></button>
+                    <button class="icon-btn" onclick="copyMap(${i})" title="Copy"><i class="fas fa-copy"></i></button>
+                    <button class="icon-btn" onclick="saveMap(${i})" title="Save"><i class="fas fa-save"></i></button>
+                    <button class="icon-btn" onclick="startInlineEdit(${i})" title="Edit"><i class="fas fa-edit"></i></button>
+                </div>
+            </div>
+            <div class="map-card-body" id="mapBody${i}">
+                <div class="code-block">${m.content}</div>
+                <textarea class="edit-textarea" spellcheck="false"></textarea>
+                <div class="edit-actions">
+                    <button class="btn btn-primary btn-sm" onclick="saveInlineEdit(${i})"><i class="fas fa-check"></i> Save</button>
+                    <button class="btn btn-outline btn-sm" onclick="cancelInlineEdit(${i})"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    }
 
-        // Deep dive transition out
-        gsap.to("#content-wrapper", { opacity: 0, scale: 1.1, duration: 1.5, ease: "power2.inOut", delay: 0.3 });
-        gsap.to(canvas, { opacity: 0, duration: 1.5, delay: 0.3 });
+    window.toggleMinimize=(i)=>{document.getElementById('mapBody'+i).classList.toggle('minimized');};
+    window.copyMap=(i)=>navigator.clipboard.writeText(generatedMaps[i].content).then(()=>showToast('📋 Map copied!'));
+    window.saveMap=async(i)=>{
+        try{const h=await window.showSaveFilePicker({suggestedName:generatedMaps[i].title+'.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]});const w=await h.createWritable();await w.write(generatedMaps[i].content);await w.close();showToast('💾 Map saved!');}
+        catch(err){if(err.name==='AbortError')return;const b=new Blob([generatedMaps[i].content],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=generatedMaps[i].title+'.json';a.click();URL.revokeObjectURL(u);showToast('💾 Map downloaded!');}
+    };
+    window.copyCode=()=>navigator.clipboard.writeText(document.getElementById('generatedCode').textContent).then(()=>showToast('📋 Code copied!'));
+    window.saveCode=async()=>{
+        const c=document.getElementById('generatedCode').textContent;
+        try{const h=await window.showSaveFilePicker({suggestedName:'generated_code.txt',types:[{description:'Code',accept:{'text/plain':['.txt','.js','.py','.ts']}}]});const w=await h.createWritable();await w.write(c);await w.close();showToast('💾 Code saved!');}
+        catch(err){if(err.name==='AbortError')return;const b=new Blob([c],{type:'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='generated_code.txt';a.click();URL.revokeObjectURL(u);showToast('💾 Code downloaded!');}
+    };
 
-        // Redirect
-        setTimeout(() => window.location.href = '/index.html', 1800);
+    // CODE GENERATION
+    const sampleCode=`// Generated Service Module\nimport { Injectable } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\n\n@Injectable({ providedIn: 'root' })\nexport class DataService {\n  private apiUrl = 'https://api.example.com/v1';\n  constructor(private http: HttpClient) {}\n  getData(id: string): Observable<any> {\n    return this.http.get(\`\${this.apiUrl}/data/\${id}\`);\n  }\n}`;
+    document.getElementById('proceedToCodeBtn').addEventListener('click',()=>{
+        if(!mapsGenerated){showToast('⚠️ Generate maps first!',true);return;}
+        document.getElementById('mapsButtons').style.display='none';document.getElementById('sectionDivider').style.display='block';document.getElementById('codeSection').style.display='block';
+        updateGlobalProgress(50,'Code Generation',3);
+        const cf=document.getElementById('codeProgressFill'),ct=document.getElementById('codeProgressText'),cb=document.getElementById('generatedCode');
+        let v=0;const iv=setInterval(()=>{v+=Math.random()*14+7;if(v>=100){v=100;clearInterval(iv);cf.style.width='100%';ct.textContent='100%';cb.textContent=sampleCode;updateGlobalProgress(70,'Code Complete',3);document.getElementById('proceedToTestBtn').disabled=false;showToast('💻 Code synthesis complete!');}else{cf.style.width=v+'%';ct.textContent=Math.floor(v)+'%';if(v>25)cb.textContent=sampleCode.substring(0,Math.floor(v*sampleCode.length/100));}},180);
     });
+    document.getElementById('proceedToTestBtn').addEventListener('click',()=>{window.location.href='yamuna.html';});
+    document.getElementById('progressSection').addEventListener('click',()=>showToast('📊 Progress: '+document.getElementById('globalProgressPercent').textContent));
 
-    /* --- JSON Panel Interactions --- */
-    document.getElementById('btn-close').onclick = () => {
-        gsap.to(jsonPanel, { x: "100%", duration: 0.6, ease: "power2.in" });
-        gsap.to(contentWrapper, { x: "0%", duration: 0.8, ease: "power3.out" });
-    };
+    // ============================================
+    // INIT - Get file from sessionStorage & process
+    // ============================================
+    async function init(){
+        updateGlobalProgress(30,'Maps Generation',2);
 
-    document.getElementById('btn-copy').onclick = () => {
-        navigator.clipboard.writeText(jsonEditor.value);
-        showToast("Copied to clipboard!");
-    };
+        // Try to get file data from sessionStorage (passed from pahal.html)
+        const fileData = sessionStorage.getItem('tbrdFileData');
+        const fileName = sessionStorage.getItem('tbrdFileName');
 
-    document.getElementById('btn-save').onclick = async () => {
-        const updatedJson = jsonEditor.value;
-        const btnSave = document.getElementById('btn-save').querySelector('span');
-        const originalText = btnSave.innerText;
+        if(fileData && fileName){
+            try{
+                // Convert base64 back to blob
+                const byteString = atob(fileData.split(',')[1]);
+                const mimeType = fileData.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for(let i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);
+                const blob = new Blob([ab],{type:mimeType});
+                const file = new File([blob],fileName,{type:mimeType});
 
-        try {
-            const parsedData = JSON.parse(updatedJson);
-            btnSave.innerText = "SAVING...";
+                // Clear sessionStorage
+                sessionStorage.removeItem('tbrdFileData');
+                sessionStorage.removeItem('tbrdFileName');
 
-            const response = await fetch(`http://localhost:8080/api/code/fsm-structure/${currentFileName}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(parsedData)
-            });
-
-            if (response.ok) {
-                showToast("Saved successfully!");
-            } else {
-                alert("Failed to save changes to the backend.");
+                await processFile(file);
+            }catch(err){
+                console.error('Failed to process file from session:',err);
+                loadDemoMaps();
             }
-        } catch (e) {
-            alert("Invalid JSON format. Please correct syntax errors before saving.");
-        } finally {
-            btnSave.innerText = originalText;
+        }else{
+            // No file passed - try demo or show message
+            console.log('No file in sessionStorage, trying demo');
+            loadDemoMaps();
         }
-    };
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast-msg');
-        toast.innerText = msg;
-
-        // Pop in animation for toast
-        gsap.to(toast, {
-            opacity: 1,
-            y: 0,
-            duration: 0.4,
-            ease: "back.out(1.7)"
-        });
-
-        // Fade out
-        setTimeout(() => {
-            gsap.to(toast, {
-                opacity: 0,
-                y: 16,
-                duration: 0.4,
-                ease: "power2.in"
-            });
-        }, 2500);
     }
+
+    init();
 </script>
 </body>
 </html>

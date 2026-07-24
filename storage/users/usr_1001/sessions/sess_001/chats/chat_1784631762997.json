@@ -1,0 +1,17 @@
+{
+  "chatId" : "chat_1784631762997",
+  "sessionId" : "sess_001",
+  "chatTitle" : "Here are the first 10 records from the product entity P100 Himalayan Marmot Plushie  Price history 120 115 110 105 Current price 105 P200 Bengaluru Transit Pass  Price history 50 55 52 48 Current price 48",
+  "summary" : "Chat",
+  "messages" : [ {
+    "sender" : "USER",
+    "thoughtChain" : null,
+    "content" : "Fetch 10 records from product entity",
+    "timestamp" : [ 2026, 7, 21, 11, 4, 13, 32827643 ]
+  }, {
+    "sender" : "ASSISTANT",
+    "thoughtChain" : "Executing standard inference...",
+    "content" : "Here are the first 10 records from product entity P-100:\n- Product Code: P-100\n  - Name: Himalayan Marmot Plushie\n    - Price History: [120, 115, 110, 105]\n    - Current Price: 105\n  - Name: Bengaluru Transit Pass\n    - Price History: [50, 55, 52, 48]\n    - Current Price: 48\n\nAnd here are the first 10 records from product entity P-200:\n- Product Code: P-200\n  - Name: Bengaluru Transit Pass\n    - Price History: [50, 55, 52, 48]\n    - Current Price: 48",
+    "timestamp" : [ 2026, 7, 21, 11, 4, 13, 33138490 ]
+  } ]
+}

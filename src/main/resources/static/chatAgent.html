@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Agent Workspace Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0b1120; --card: rgba(30, 41, 59, 0.7); --accent: #8b5cf6;
+      --user-msg: #3b82f6; --text: #f8fafc; --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    
+    html, body {
+      background: radial-gradient(circle at top right, #1e1b4b, var(--bg)); color: var(--text);
+      height: 100dvh; width: 100vw; display: flex; flex-direction: column; overflow: hidden;
+    }
+    
+    header { flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 10; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .menu-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 5px; }
+    .badge { background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; border: 1px solid rgba(34,197,94,0.3); }
+    
+    /* Sidebar */
+    #sidebar { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: #0f172a; transition: left 0.3s ease; z-index: 20; padding: 20px; box-shadow: 2px 0 15px rgba(0,0,0,0.8); overflow-y: auto; border-right: 1px solid rgba(255,255,255,0.05); }
+    #sidebar.open { left: 0; }
+    .close-sidebar { background: none; border: none; color: white; font-size: 1.8rem; position: absolute; top: 10px; right: 15px; cursor: pointer; }
+    .history-item { padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    #sidebar-overlay { position: fixed; top:0; left:0; width:100vw; height:100%; background: rgba(0,0,0,0.6); z-index: 15; display: none; }
+    .new-chat-btn { width: 100%; background: var(--accent); border: none; color: white; padding: 10px; border-radius: 8px; margin-bottom: 20px; cursor: pointer; font-weight: bold; }
+
+    /* Suggestions Area */
+    #suggestions-container { display: flex; gap: 10px; padding: 12px 15px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .suggestion-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 20px; font-size: 0.8rem; white-space: nowrap; cursor: pointer; }
+    
+    /* Chat Area */
+    #chat-container { flex: 1 1 auto; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+    
+    /* FIX FOR MESSAGE SHRINKAGE */
+    .msg { 
+        max-width: 90%; padding: 14px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; 
+        flex-shrink: 0; /* Prevents vertical collapsing */
+        min-height: min-content;
+        animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    }
+    
+    .msg.user { align-self: flex-end; background: linear-gradient(135deg, var(--user-msg), #2563eb); border-bottom-right-radius: 4px; }
+    .msg.assistant { align-self: flex-start; background: var(--card); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(8px); border-bottom-left-radius: 4px; overflow-x: auto;}
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; font-size: 0.85rem; }
+    th, td { border: 1px solid rgba(255,255,255,0.2); padding: 8px 10px; text-align: left; }
+    th { background: rgba(255,255,255,0.1); font-weight: bold; color: #a5b4fc; }
+    
+    .thought-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--accent); padding: 10px; margin-bottom: 10px; font-size: 0.8rem; color: var(--muted); border-radius: 6px; }
+    
+    /* Input Area */
+    .input-area { flex: 0 0 auto; padding: 12px 15px; background: rgba(15, 23, 42, 0.8); border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; padding-bottom: env(safe-area-inset-bottom, 12px); }
+    input { flex: 1; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 25px; color: white; font-size: 1rem; outline: none; }
+    button.send-btn { background: linear-gradient(135deg, var(--accent), #6d28d9); border: none; color: white; padding: 0 20px; border-radius: 25px; font-weight: bold; cursor: pointer; }
+
+    @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .typing { display: flex; gap: 4px; padding: 12px 16px; background: var(--card); border-radius: 16px; width: fit-content; align-self: flex-start; flex-shrink: 0; }
+    .dot { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h3 style="font-size:1.1rem; background: linear-gradient(90deg, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Agent Workspace</h3>
+    </div>
+    <div class="badge">● DB Connected</div>
+  </header>
+
+  <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <div id="sidebar">
+    <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+    <button class="new-chat-btn" onclick="startNewChat()">+ New Investigation</button>
+    <h3 style="margin-bottom: 15px; font-size: 0.9rem; color: #a5b4fc;">Chat History</h3>
+    <div id="history-list"></div>
+  </div>
+
+  <div id="suggestions-container"></div>
+
+  <div id="chat-container">
+    <div class="msg assistant">System online. I can investigate PostgreSQL data, output tables, or generate graphs.<br><br>Try: <i>"Fetch 10 records from the product entity."</i> or <i>"Investigate P-100 and show a bar graph of its price drops."</i></div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Ask agent to investigate..." onkeydown="if(event.key==='Enter') sendMessage()" autocomplete="off" />
+    <button class="send-btn" onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const userId = "usr_1001";
+    const sessionId = "sess_001";
+    let currentChatId = "chat_" + Date.now();
+    let chartQueue = []; // Holds charts to render after DOM update
+
+    marked.setOptions({ breaks: true, gfm: true });
+
+    async function loadSuggestions() {
+      try {
+        const res = await fetch(`/api/suggestions/${userId}`);
+        const activities = await res.json();
+        const container = document.getElementById('suggestions-container');
+        container.innerHTML = '';
+        if (activities.length === 0) { container.style.display = 'none'; return; }
+        container.style.display = 'flex';
+        
+        activities.forEach(act => {
+          const chip = document.createElement('div');
+          chip.className = 'suggestion-chip';
+          chip.innerHTML = `▶ Replay: ${act.activityName}`;
+          chip.onclick = () => { document.getElementById('userInput').value = `Replay investigation for product code ${act.targetCode}`; sendMessage(); };
+          container.appendChild(chip);
+        });
+      } catch (e) { }
+    }
+
+    function formatMessage(text) {
+      if (text.includes("=== THOUGHT CHAIN ===")) {
+        const parts = text.split("=== RESPONSE ===");
+        const thought = parts[0].replace("=== THOUGHT CHAIN ===", "").trim();
+        let main = parts[1] ? parts[1].trim() : "";
+        
+        // 1. Extract <chart> tags and replace with Canvas containers
+        main = main.replace(/<chart>(.*?)<\/chart>/gs, (match, jsonString) => {
+            const chartId = 'chart_' + Date.now() + Math.floor(Math.random() * 1000);
+            try {
+                const config = JSON.parse(jsonString);
+                chartQueue.push({ id: chartId, config: config });
+                return `<div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 10px 0;"><canvas id="${chartId}"></canvas></div>`;
+            } catch(e) {
+                return `<i>[Failed to render graph data]</i>`;
+            }
+        });
+
+        // 2. Parse Markdown (for tables, bolding, etc.)
+        const htmlMain = marked.parse(main);
+        return `<div class="thought-box"><b>AI Reasoning & Tool Status</b><br>${thought}</div><div class="markdown-body">${htmlMain}</div>`;
+      }
+      return marked.parse(text);
+    }
+
+    function appendMsg(sender, text) {
+      const div = document.createElement('div');
+      div.className = `msg ${sender}`;
+      div.innerHTML = sender === 'assistant' ? formatMessage(text) : text;
+      
+      const container = document.getElementById('chat-container');
+      container.appendChild(div);
+      
+      // Render any charts that were found in the text
+      while(chartQueue.length > 0) {
+          let c = chartQueue.pop();
+          const ctx = document.getElementById(c.id);
+          if (ctx) {
+              new Chart(ctx, {
+                  type: c.config.type || 'bar',
+                  data: {
+                      labels: c.config.labels,
+                      datasets: [{
+                          label: c.config.label || 'Data',
+                          data: c.config.data,
+                          backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                          borderColor: 'rgba(139, 92, 246, 1)',
+                          borderWidth: 1,
+                          borderRadius: 4
+                      }]
+                  },
+                  options: {
+                      responsive: true,
+                      plugins: { legend: { labels: { color: 'white' } } },
+                      scales: {
+                          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                      }
+                  }
+              });
+          }
+      }
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+      appendMsg('user', text);
+      input.value = '';
+      
+      const typingId = "typing-" + Date.now();
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'typing';
+      typingDiv.id = typingId;
+      typingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+      document.getElementById('chat-container').appendChild(typingDiv);
+      document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, sessionId, chatId: currentChatId, query: text })
+        });
+        const data = await res.json();
+        
+        document.getElementById(typingId).remove();
+        appendMsg('assistant', data.response);
+        loadSuggestions();
+        loadSidebar(); 
+      } catch (e) {
+        document.getElementById(typingId).remove();
+        appendMsg('assistant', "Connection Error.");
+      }
+    }
+
+    // Sidebar Logic
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isOpen = sb.classList.contains('open');
+      if(isOpen) {
+        sb.classList.remove('open');
+        overlay.style.display = 'none';
+      } else {
+        sb.classList.add('open');
+        overlay.style.display = 'block';
+        loadSidebar();
+      }
+    }
+
+    async function loadSidebar() {
+      const res = await fetch(`/api/chats/${userId}/${sessionId}`);
+      const chats = await res.json();
+      const list = document.getElementById('history-list');
+      list.innerHTML = '';
+      chats.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerText = c.title;
+        div.onclick = () => loadChatHistory(c.chatId);
+        list.appendChild(div);
+      });
+    }
+
+    async function loadChatHistory(chatId) {
+      toggleSidebar();
+      currentChatId = chatId;
+      const res = await fetch(`/api/chat/${userId}/${sessionId}/${chatId}`);
+      const chat = await res.json();
+      const container = document.getElementById('chat-container');
+      container.innerHTML = ''; 
+      chat.messages.forEach(m => {
+        if (m.sender === 'USER') appendMsg('user', m.content);
+        else appendMsg('assistant', "=== THOUGHT CHAIN ===\n" + (m.thoughtChain||"") + "\n=== RESPONSE ===\n" + m.content);
+      });
+    }
+
+    function startNewChat() {
+      currentChatId = "chat_" + Date.now();
+      document.getElementById('chat-container').innerHTML = '<div class="msg assistant">New investigation started. How can I assist?</div>';
+      if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+    }
+
+    // Init
+    loadSuggestions();
+    loadSidebar();
+  </script>
+</body>
+</html>

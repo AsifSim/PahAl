@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yamuna • Test Execution</title>
+    <title>Sangam • Deployment</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --bg: #f8f7fa;
+            --bg: #faf8f6;
             --surface: #ffffff;
-            --surface-alt: #faf9fc;
-            --surface-hover: #f3f0f8;
-            --text: #110d1a;
-            --text-secondary: #4a3d5c;
-            --text-muted: #7a6b8c;
-            --border: #e0d8e8;
-            --border-light: #f0ebf4;
-            --accent: #7c5cfc;
-            --accent-dark: #6544e0;
-            --accent-light: #f3efff;
-            --accent-glow: rgba(124, 92, 252, 0.25);
+            --surface-alt: #fdfaf8;
+            --surface-hover: #f5f0eb;
+            --text: #1a1008;
+            --text-secondary: #5c4532;
+            --text-muted: #8c7260;
+            --border: #e8ddd0;
+            --border-light: #f2ebe3;
+            --accent: #e17055;
+            --accent-dark: #c9553b;
+            --accent-light: #fef0ed;
+            --accent-glow: rgba(225, 112, 85, 0.25);
             --teal: #0ea882;
             --teal-light: #e6f7f3;
-            --orange: #f2674a;
-            --orange-light: #fef0ed;
+            --purple: #7c5cfc;
+            --purple-light: #f3efff;
             --amber: #f0a92e;
             --amber-light: #fef7eb;
             --green: #22c55e;
@@ -76,14 +76,14 @@
         .cursor.hover {
             width: 52px;
             height: 52px;
-            background: rgba(124, 92, 252, 0.06);
+            background: rgba(225, 112, 85, 0.06);
             border-color: var(--accent-dark);
             box-shadow: 0 0 30px var(--accent-glow);
         }
         .cursor.click {
             width: 34px;
             height: 34px;
-            background: rgba(124, 92, 252, 0.18);
+            background: rgba(225, 112, 85, 0.18);
             box-shadow: 0 0 20px var(--accent-glow);
             transition: width 0.1s ease, height 0.1s ease, background-color 0.1s ease;
         }
@@ -104,7 +104,7 @@
             z-index: 9997;
             width: 8px;
             height: 8px;
-            background: rgba(124, 92, 252, 0.3);
+            background: rgba(225, 112, 85, 0.3);
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
@@ -194,7 +194,7 @@
             left: 0;
             width: 100%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), var(--teal), var(--amber), transparent);
+            background: linear-gradient(90deg, transparent, var(--accent), var(--amber), var(--purple), transparent);
             opacity: 0.5;
             animation: shimmerBorder 4s ease-in-out infinite;
         }
@@ -217,7 +217,7 @@
         .navbar-logo {
             width: 34px;
             height: 34px;
-            background: linear-gradient(135deg, var(--accent), #9d7cfc);
+            background: linear-gradient(135deg, var(--accent), #f08a70);
             border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
@@ -230,10 +230,10 @@
         }
         @keyframes logoGlow {
             0%, 100% {
-                box-shadow: 0 0 15px rgba(124, 92, 252, 0.3);
+                box-shadow: 0 0 15px rgba(225, 112, 85, 0.3);
             }
             50% {
-                box-shadow: 0 0 30px rgba(157, 124, 252, 0.5);
+                box-shadow: 0 0 30px rgba(240, 138, 112, 0.5);
             }
         }
         .navbar-name {
@@ -276,15 +276,15 @@
         .nav-link.active {
             background: var(--accent);
             color: white;
-            box-shadow: 0 4px 15px rgba(124, 92, 252, 0.3);
+            box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
             animation: activePulse 2s ease-in-out infinite;
         }
         @keyframes activePulse {
             0%, 100% {
-                box-shadow: 0 4px 15px rgba(124, 92, 252, 0.3);
+                box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
             }
             50% {
-                box-shadow: 0 6px 25px rgba(124, 92, 252, 0.5);
+                box-shadow: 0 6px 25px rgba(225, 112, 85, 0.5);
             }
         }
         .nav-link .nav-icon {
@@ -360,7 +360,7 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), #9d7cfc);
+            background: linear-gradient(135deg, var(--accent), #f08a70);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -434,7 +434,7 @@
         }
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), #9d7cfc, var(--accent-dark));
+            background: linear-gradient(90deg, var(--accent), #f08a70, var(--accent-dark));
             background-size: 200% 100%;
             border-radius: 20px;
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -494,15 +494,15 @@
         .step-dot.active {
             background: var(--accent);
             border-color: var(--accent);
-            box-shadow: 0 0 14px rgba(124, 92, 252, 0.5);
+            box-shadow: 0 0 14px rgba(225, 112, 85, 0.5);
             animation: stepPulse 2s infinite;
         }
         @keyframes stepPulse {
             0%, 100% {
-                box-shadow: 0 0 14px rgba(124, 92, 252, 0.5);
+                box-shadow: 0 0 14px rgba(225, 112, 85, 0.5);
             }
             50% {
-                box-shadow: 0 0 28px rgba(124, 92, 252, 0.8);
+                box-shadow: 0 0 28px rgba(225, 112, 85, 0.8);
             }
         }
         .step-dot.completed {
@@ -629,10 +629,131 @@
             gap: 8px;
         }
 
+        /* Deploy Pipeline */
+        .pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            padding-left: 36px;
+        }
+        .pipeline::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: var(--border);
+            border-radius: 1px;
+        }
+        .pipeline-step {
+            position: relative;
+            padding: 16px 0 16px 20px;
+            transition: var(--transition);
+            border-radius: var(--radius-sm);
+            cursor: default;
+        }
+        .pipeline-step:hover {
+            background: var(--surface-hover);
+        }
+        .pipeline-step::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 22px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            z-index: 1;
+            transition: var(--transition);
+        }
+        .pipeline-step.completed::before {
+            background: var(--green);
+            border-color: var(--green);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+        }
+        .pipeline-step.active::before {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 14px rgba(225, 112, 85, 0.5);
+            animation: stepPulse 2s infinite;
+        }
+        .pipeline-step-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .pipeline-step-status {
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .pipeline-step-status.success {
+            background: var(--green-light);
+            color: #0d8a4a;
+        }
+        .pipeline-step-status.running {
+            background: var(--accent-light);
+            color: var(--accent-dark);
+        }
+        .pipeline-step-status.pending {
+            background: var(--border-light);
+            color: var(--text-muted);
+        }
+        .pipeline-step-detail {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Log Terminal */
+        .log-terminal {
+            background: #1a1512;
+            color: #fef0ed;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            min-height: 160px;
+            max-height: 350px;
+            overflow-y: auto;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .log-terminal .log-line {
+            opacity: 0;
+            animation: logAppear 0.15s ease forwards;
+        }
+        @keyframes logAppear {
+            from {
+                opacity: 0;
+                transform: translateX(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .log-terminal .log-success {
+            color: #22c55e;
+        }
+        .log-terminal .log-info {
+            color: #f0a92e;
+        }
+        .log-terminal .log-highlight {
+            color: #e17055;
+        }
+
         /* Stats Row */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -655,9 +776,6 @@
         .stat-card:nth-child(3) {
             animation-delay: 0.15s;
         }
-        .stat-card:nth-child(4) {
-            animation-delay: 0.2s;
-        }
         .stat-card:hover {
             box-shadow: var(--shadow-md);
             transform: translateY(-3px);
@@ -667,124 +785,10 @@
             font-weight: 700;
             color: var(--accent);
         }
-        .stat-value.green {
-            color: var(--green);
-        }
-        .stat-value.red {
-            color: var(--red);
-        }
-        .stat-value.amber {
-            color: var(--amber);
-        }
         .stat-label {
             font-size: 0.78rem;
             color: var(--text-muted);
             margin-top: 2px;
-        }
-
-        /* Test List */
-        .test-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .test-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border-light);
-            transition: var(--transition);
-            cursor: default;
-            background: var(--surface-alt);
-        }
-        .test-item:hover {
-            background: var(--surface-hover);
-            border-color: var(--border);
-            transform: translateX(4px);
-        }
-        .test-item-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .test-status-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            flex-shrink: 0;
-        }
-        .test-status-icon.pass {
-            background: var(--green-light);
-            color: var(--green);
-        }
-        .test-status-icon.fail {
-            background: var(--red-light);
-            color: var(--red);
-        }
-        .test-status-icon.running {
-            background: var(--accent-light);
-            color: var(--accent);
-            animation: stepPulse 1.5s infinite;
-        }
-        .test-status-icon.pending {
-            background: var(--border-light);
-            color: var(--text-muted);
-        }
-        .test-name {
-            font-weight: 500;
-            font-size: 0.88rem;
-        }
-        .test-duration {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Log Terminal */
-        .log-terminal {
-            background: #18151e;
-            color: #f3efff;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            min-height: 140px;
-            max-height: 300px;
-            overflow-y: auto;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-        .log-terminal .log-line {
-            opacity: 0;
-            animation: logAppear 0.15s ease forwards;
-        }
-        @keyframes logAppear {
-            from {
-                opacity: 0;
-                transform: translateX(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        .log-terminal .log-success {
-            color: #22c55e;
-        }
-        .log-terminal .log-fail {
-            color: #ef4444;
-        }
-        .log-terminal .log-info {
-            color: #f0a92e;
-        }
-        .log-terminal .log-highlight {
-            color: #7c5cfc;
         }
 
         /* Buttons */
@@ -818,18 +822,28 @@
         .btn-primary {
             background: var(--accent);
             color: white;
-            box-shadow: 0 4px 12px rgba(124, 92, 252, 0.25);
+            box-shadow: 0 4px 12px rgba(225, 112, 85, 0.25);
         }
         .btn-primary:hover {
             background: var(--accent-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(124, 92, 252, 0.4);
+            box-shadow: 0 8px 25px rgba(225, 112, 85, 0.4);
         }
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
             box-shadow: none;
+        }
+        .btn-success {
+            background: var(--green);
+            color: white;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+        }
+        .btn-success:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
         }
         .btn-outline {
             background: var(--surface);
@@ -888,7 +902,7 @@
         }
         @media (max-width: 768px) {
             .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
             }
             .navbar-nav .nav-link span {
                 display: none;
@@ -917,15 +931,15 @@
             <a href="pahal.html" class="nav-link"><i class="fas fa-grid-2 nav-icon"></i><span>Dashboard</span></a>
             <a href="ganga.html" class="nav-link"><i class="fas fa-chart-line nav-icon"></i><span>Analytics</span></a>
             <a href="kaveri.html" class="nav-link"><i class="fas fa-code nav-icon"></i><span>Maps & Code</span></a>
-            <a href="yamuna.html" class="nav-link active"><i class="fas fa-flask nav-icon"></i><span>Testing</span></a>
-            <a href="sangam.html" class="nav-link"><i class="fas fa-rocket nav-icon"></i><span>Deploy</span></a>
+            <a href="yamuna.html" class="nav-link"><i class="fas fa-flask nav-icon"></i><span>Testing</span></a>
+            <a href="sangam.html" class="nav-link active"><i class="fas fa-rocket nav-icon"></i><span>Deploy</span></a>
             <a href="#" class="nav-link"><i class="fas fa-box-archive nav-icon"></i><span>Assets</span></a>
             <a href="chatAgent.html" class="nav-link"><i class="fas fa-message-smile nav-icon"></i><span>AI Agent</span></a>
         </div>
         <div class="navbar-right">
             <div class="workspace-btn" id="workspaceBtn">
                 <span class="workspace-dot"></span>
-                <span id="workspaceName">Project Yamuna</span>
+                <span id="workspaceName">Project Sangam</span>
                 <i class="fas fa-chevron-down" style="font-size:0.6rem;transition:transform 0.3s;"></i>
             </div>
             <div class="user-btn" id="userBtn">
@@ -940,132 +954,111 @@
         <div class="progress-header">
                 <span class="progress-label">
                     <span class="progress-phase-icon"></span>
-                    <span id="globalPhaseLabel">Testing Phase</span>
+                    <span id="globalPhaseLabel">Deployment Phase</span>
                 </span>
-            <span class="progress-value" id="globalProgressPercent">60%</span>
+            <span class="progress-value" id="globalProgressPercent">75%</span>
         </div>
         <div class="progress-bar">
-            <div class="progress-fill" id="globalProgressFill" style="width:60%;"></div>
+            <div class="progress-fill" id="globalProgressFill" style="width:75%;"></div>
         </div>
         <div class="progress-steps">
             <div class="step-indicator"><div class="step-dot completed" id="gstep1"></div><div class="step-label">Upload</div></div>
             <div class="step-indicator"><div class="step-dot completed" id="gstep2"></div><div class="step-label">Maps</div></div>
             <div class="step-indicator"><div class="step-dot completed" id="gstep3"></div><div class="step-label">Code</div></div>
-            <div class="step-indicator"><div class="step-dot active" id="gstep4"></div><div class="step-label active">Test</div></div>
-            <div class="step-indicator"><div class="step-dot" id="gstep5"></div><div class="step-label">Deploy</div></div>
+            <div class="step-indicator"><div class="step-dot completed" id="gstep4"></div><div class="step-label">Test</div></div>
+            <div class="step-indicator"><div class="step-dot active" id="gstep5"></div><div class="step-label active">Deploy</div></div>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
         <div class="page-container">
-            <!-- Stats Row -->
+            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-value" data-count="28">0</div>
-                    <div class="stat-label">Total Tests</div>
+                    <div class="stat-value" data-count="4">0</div>
+                    <div class="stat-label">Pipeline Steps</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value green" id="passCount">0</div>
-                    <div class="stat-label">Passed</div>
+                    <div class="stat-value" data-count="98">0</div>
+                    <div class="stat-label">Deploy Score</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value red" id="failCount">0</div>
-                    <div class="stat-label">Failed</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value amber" id="skipCount">0</div>
-                    <div class="stat-label">Skipped</div>
+                    <div class="stat-value" id="uptimeValue">99.9%</div>
+                    <div class="stat-label">Uptime</div>
                 </div>
             </div>
 
-            <!-- Test Execution Section -->
+            <!-- Deployment Pipeline Section -->
             <div class="section">
                 <div class="section-header">
-                    <div class="section-icon"><i class="fas fa-flask"></i></div>
-                    <h2 class="section-title">Test Execution</h2>
-                    <p class="section-subtitle">Running unit, integration, and E2E test suites</p>
+                    <div class="section-icon"><i class="fas fa-rocket"></i></div>
+                    <h2 class="section-title">Deployment Pipeline</h2>
+                    <p class="section-subtitle">Orchestrating the release of your application</p>
                 </div>
                 <div class="sub-progress-wrap">
                     <div class="progress-bar">
-                        <div class="progress-fill" id="testProgressFill" style="width:0%;"></div>
+                        <div class="progress-fill" id="deployProgressFill" style="width:0%;"></div>
                     </div>
-                    <p class="sub-progress-text" id="testProgressText">0%</p>
+                    <p class="sub-progress-text" id="deployProgressText">0%</p>
                 </div>
                 <div class="card" style="margin-bottom:20px;">
                     <div class="card-header">
-                        <div class="card-title"><i class="fas fa-list-check" style="color:var(--accent);"></i> Test Suites</div>
+                        <div class="card-title"><i class="fas fa-list-check" style="color:var(--accent);"></i> Pipeline Stages</div>
                     </div>
-                    <div class="test-list" id="testList">
-                        <div class="test-item" id="testItem0">
-                            <div class="test-item-info">
-                                <div class="test-status-icon pending"><i class="fas fa-clock"></i></div>
-                                <div>
-                                    <div class="test-name">Unit Tests - Auth Module</div>
-                                    <div class="test-duration">--</div>
-                                </div>
+                    <div class="pipeline" id="pipelineContainer">
+                        <div class="pipeline-step" id="pipeStep1">
+                            <div class="pipeline-step-header">
+                                <i class="fas fa-box"></i> Build Artifacts
+                                <span class="pipeline-step-status pending">Pending</span>
                             </div>
+                            <div class="pipeline-step-detail">Compile and package application bundles</div>
                         </div>
-                        <div class="test-item" id="testItem1">
-                            <div class="test-item-info">
-                                <div class="test-status-icon pending"><i class="fas fa-clock"></i></div>
-                                <div>
-                                    <div class="test-name">Unit Tests - Data Service</div>
-                                    <div class="test-duration">--</div>
-                                </div>
+                        <div class="pipeline-step" id="pipeStep2">
+                            <div class="pipeline-step-header">
+                                <i class="fas fa-cloud-arrow-up"></i> Push to Registry
+                                <span class="pipeline-step-status pending">Pending</span>
                             </div>
+                            <div class="pipeline-step-detail">Upload container images to artifact registry</div>
                         </div>
-                        <div class="test-item" id="testItem2">
-                            <div class="test-item-info">
-                                <div class="test-status-icon pending"><i class="fas fa-clock"></i></div>
-                                <div>
-                                    <div class="test-name">Integration Tests - API Gateway</div>
-                                    <div class="test-duration">--</div>
-                                </div>
+                        <div class="pipeline-step" id="pipeStep3">
+                            <div class="pipeline-step-header">
+                                <i class="fas fa-server"></i> Provision Infrastructure
+                                <span class="pipeline-step-status pending">Pending</span>
                             </div>
+                            <div class="pipeline-step-detail">Configure cloud resources and networking</div>
                         </div>
-                        <div class="test-item" id="testItem3">
-                            <div class="test-item-info">
-                                <div class="test-status-icon pending"><i class="fas fa-clock"></i></div>
-                                <div>
-                                    <div class="test-name">E2E Tests - User Flows</div>
-                                    <div class="test-duration">--</div>
-                                </div>
+                        <div class="pipeline-step" id="pipeStep4">
+                            <div class="pipeline-step-header">
+                                <i class="fas fa-circle-check"></i> Health Check & Finalize
+                                <span class="pipeline-step-status pending">Pending</span>
                             </div>
-                        </div>
-                        <div class="test-item" id="testItem4">
-                            <div class="test-item-info">
-                                <div class="test-status-icon pending"><i class="fas fa-clock"></i></div>
-                                <div>
-                                    <div class="test-name">Performance Tests - Load</div>
-                                    <div class="test-duration">--</div>
-                                </div>
-                            </div>
+                            <div class="pipeline-step-detail">Verify deployment health and update DNS</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Test Log -->
+            <!-- Deployment Log -->
             <div class="section">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title"><i class="fas fa-terminal" style="color:var(--accent);"></i> Test Log</div>
+                        <div class="card-title"><i class="fas fa-terminal" style="color:var(--accent);"></i> Deployment Log</div>
                         <button class="btn btn-sm btn-outline" onclick="clearLogs()"><i class="fas fa-eraser"></i> Clear</button>
                     </div>
                     <div class="log-terminal" id="logTerminal">
-                        <span class="log-line log-info">[INFO] Test environment ready. Awaiting execution...</span>
+                        <span class="log-line log-info">[INFO] Initializing deployment pipeline...</span>
                     </div>
                 </div>
                 <div class="button-row">
-                    <button class="btn btn-outline" onclick="window.location.href='kaveri.html'">
-                        <i class="fas fa-arrow-left"></i> Back to Code
+                    <button class="btn btn-outline" onclick="window.location.href='yamuna.html'">
+                        <i class="fas fa-arrow-left"></i> Back to Testing
                     </button>
-                    <button class="btn btn-primary" id="runTestsBtn">
-                        <i class="fas fa-play"></i> Run All Tests
+                    <button class="btn btn-primary" id="startDeployBtn">
+                        <i class="fas fa-rocket"></i> Start Deployment
                     </button>
-                    <button class="btn btn-primary" id="proceedToDeployBtn" disabled>
-                        <i class="fas fa-rocket"></i> Proceed to Deployment
+                    <button class="btn btn-success" id="finalizeBtn" disabled>
+                        <i class="fas fa-check-circle"></i> Finalize & Complete
                     </button>
                 </div>
             </div>
@@ -1094,7 +1087,7 @@
         cursorDot.style.left = mouseX + 'px';
         cursorDot.style.top = mouseY + 'px'; });
     document.querySelectorAll(
-        'a, button, .btn, .nav-link, .workspace-btn, .user-btn, input, textarea, select, .card, .test-item, .stat-card, .progress-section'
+        'a, button, .btn, .nav-link, .workspace-btn, .user-btn, input, textarea, select, .card, .pipeline-step, .stat-card, .progress-section'
     )
         .forEach(el => { el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
             el.addEventListener('mouseleave', () => cursor.classList.remove('hover')); });
@@ -1143,7 +1136,7 @@
     function drawRipples() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const glow = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 22);
-        glow.addColorStop(0, 'rgba(124, 92, 252, 0.07)');
+        glow.addColorStop(0, 'rgba(225, 112, 85, 0.07)');
         glow.addColorStop(1, 'transparent');
         ctx.beginPath();
         ctx.arc(mouseX, mouseY, 22, 0, Math.PI * 2);
@@ -1152,7 +1145,7 @@
         ripples = ripples.filter(r => { r.radius += r.speed;
             r.opacity -= 0.02; if (r.opacity > 0 && r.radius < r.maxRadius) { ctx.beginPath();
                 ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(124, 92, 252, ${r.opacity})`;
+                ctx.strokeStyle = `rgba(225, 112, 85, ${r.opacity})`;
                 ctx.lineWidth = 1.5;
                 ctx.stroke(); return true; } return false; });
         rippleParticles = rippleParticles.filter(p => { p.x += p.vx;
@@ -1161,7 +1154,7 @@
             p.vx *= 0.96;
             p.vy *= 0.96; if (p.life > 0) { ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(124, 92, 252, ${p.life * 0.6})`;
+                ctx.fillStyle = `rgba(225, 112, 85, ${p.life * 0.6})`;
                 ctx.fill(); return true; } return false; });
         requestAnimationFrame(drawRipples);
     }
@@ -1172,7 +1165,7 @@
     // ============================================
     function createParticles() {
         const container = document.getElementById('particlesBg');
-        const colors = ['#7c5cfc', '#9d7cfc', '#6544e0', '#f0a92e', '#0ea882'];
+        const colors = ['#e17055', '#f08a70', '#c9553b', '#f0a92e', '#7c5cfc'];
         for (let i = 0; i < 20; i++) { const p = document.createElement('div');
             p.className = 'particle';
             p.style.width = (Math.random() * 5 + 2) + 'px';
@@ -1197,7 +1190,7 @@
     // ============================================
     // WORKSPACE SWITCHER
     // ============================================
-    const workspaces = ['Project Yamuna', 'Project Sangam', 'Project Kaveri', 'Project Ganga'];
+    const workspaces = ['Project Sangam', 'Project Kaveri', 'Project Ganga', 'Project Yamuna'];
     let wsIndex = 0;
     document.getElementById('workspaceBtn').addEventListener('click', () => {
         wsIndex = (wsIndex + 1) % workspaces.length;
@@ -1233,7 +1226,7 @@
             const startTime = performance.now();
 
             function update(t) {
-                const p = Math.min((t - startTime) / 1800, 1);
+                const p = Math.min((t - startTime) / 2000, 1);
                 const ease = 1 - Math.pow(1 - p, 3);
                 el.textContent = Math.floor(target * ease);
                 if (p < 1) requestAnimationFrame(update);
@@ -1263,87 +1256,93 @@
     }
 
     // ============================================
-    // TEST EXECUTION SIMULATION
+    // DEPLOYMENT PIPELINE SIMULATION
     // ============================================
-    const testSuites = [
-        { id: 'testItem0', name: 'Unit Tests - Auth Module', pass: true, duration: '1.2s' },
-        { id: 'testItem1', name: 'Unit Tests - Data Service', pass: true, duration: '0.8s' },
-        { id: 'testItem2', name: 'Integration Tests - API Gateway', pass: true, duration: '3.4s' },
-        { id: 'testItem3', name: 'E2E Tests - User Flows', pass: false, duration: '5.1s' },
-        { id: 'testItem4', name: 'Performance Tests - Load', pass: true, duration: '2.7s' },
+    const pipelineSteps = [
+        { id: 'pipeStep1', name: 'Build Artifacts', icon: 'fa-box', log: 'Building application bundles...' },
+        { id: 'pipeStep2', name: 'Push to Registry', icon: 'fa-cloud-arrow-up',
+            log: 'Uploading container images to artifact registry...' },
+        { id: 'pipeStep3', name: 'Provision Infrastructure', icon: 'fa-server',
+            log: 'Configuring cloud resources and networking...' },
+        { id: 'pipeStep4', name: 'Health Check & Finalize', icon: 'fa-circle-check',
+            log: 'Verifying deployment health and updating DNS records...' },
     ];
 
-    async function runTests() {
-        const runBtn = document.getElementById('runTestsBtn');
-        const proceedBtn = document.getElementById('proceedToDeployBtn');
-        const testFill = document.getElementById('testProgressFill');
-        const testText = document.getElementById('testProgressText');
+    async function runDeployment() {
+        const startBtn = document.getElementById('startDeployBtn');
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        const deployFill = document.getElementById('deployProgressFill');
+        const deployText = document.getElementById('deployProgressText');
 
-        runBtn.disabled = true;
-        updateGlobalProgress(62, 'Tests Running', 4);
-        addLog('[INFO] ========== Test Execution Started ==========', 'info');
+        startBtn.disabled = true;
+        updateGlobalProgress(78, 'Deployment In Progress', 5);
+        addLog('[INFO] ========== Deployment Started ==========', 'info');
 
-        let passCount = 0;
-        let failCount = 0;
-        let skipCount = 0;
+        for (let i = 0; i < pipelineSteps.length; i++) {
+            const step = pipelineSteps[i];
+            const stepEl = document.getElementById(step.id);
+            const statusEl = stepEl.querySelector('.pipeline-step-status');
 
-        for (let i = 0; i < testSuites.length; i++) {
-            const suite = testSuites[i];
-            const item = document.getElementById(suite.id);
-            const statusIcon = item.querySelector('.test-status-icon');
-            const durationEl = item.querySelector('.test-duration');
+            // Mark as active
+            stepEl.classList.add('active');
+            statusEl.textContent = 'Running';
+            statusEl.className = 'pipeline-step-status running';
+            addLog(`[EXEC] ${step.log}`, 'info');
 
-            // Mark as running
-            statusIcon.className = 'test-status-icon running';
-            statusIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            durationEl.textContent = 'Running...';
-            addLog(`[TEST] Running: ${suite.name}`, 'info');
+            // Simulate step progress
+            const stepStart = (i / pipelineSteps.length) * 100;
+            const stepEnd = ((i + 1) / pipelineSteps.length) * 100;
+            let stepProgress = stepStart;
 
-            // Simulate test execution time
-            await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 900));
+            await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    stepProgress += Math.random() * 4 + 2;
+                    if (stepProgress >= stepEnd) {
+                        stepProgress = stepEnd;
+                        clearInterval(interval);
+                        deployFill.style.width = stepProgress + '%';
+                        deployText.textContent = Math.floor(stepProgress) + '%';
+                        resolve();
+                    } else {
+                        deployFill.style.width = stepProgress + '%';
+                        deployText.textContent = Math.floor(stepProgress) + '%';
+                    }
+                }, 150);
+            });
 
-            // Set result
-            if (suite.pass) {
-                statusIcon.className = 'test-status-icon pass';
-                statusIcon.innerHTML = '<i class="fas fa-check"></i>';
-                durationEl.textContent = suite.duration;
-                addLog(`[PASS] ${suite.name} (${suite.duration})`, 'success');
-                passCount++;
-            } else {
-                statusIcon.className = 'test-status-icon fail';
-                statusIcon.innerHTML = '<i class="fas fa-times"></i>';
-                durationEl.textContent = suite.duration;
-                addLog(`[FAIL] ${suite.name} (${suite.duration}) - Expected value mismatch`, 'fail');
-                failCount++;
-            }
-
-            // Update sub-progress
-            const progress = ((i + 1) / testSuites.length) * 100;
-            testFill.style.width = progress + '%';
-            testText.textContent = Math.floor(progress) + '%';
+            // Mark as completed
+            stepEl.classList.remove('active');
+            stepEl.classList.add('completed');
+            statusEl.textContent = 'Success';
+            statusEl.className = 'pipeline-step-status success';
+            addLog(`[OK] ${step.name} - Completed successfully`, 'success');
+            updateGlobalProgress(78 + Math.floor((i + 1) * 5), 'Deployment Phase', 5);
         }
 
-        // Update stats
-        document.getElementById('passCount').textContent = passCount;
-        document.getElementById('failCount').textContent = failCount;
-        document.getElementById('skipCount').textContent = skipCount;
-
-        testFill.style.width = '100%';
-        testText.textContent = '100%';
-
-        addLog('[INFO] ========== Test Execution Complete ==========', 'info');
-        addLog(`[RESULT] ${passCount} passed, ${failCount} failed, ${skipCount} skipped`, failCount > 0 ? 'fail' :
-            'success');
-
-        updateGlobalProgress(72, 'Testing Complete', 4);
-        proceedBtn.disabled = false;
-        showToast(`✅ Tests complete: ${passCount} passed, ${failCount} failed`);
+        deployFill.style.width = '100%';
+        deployText.textContent = '100%';
+        addLog('[INFO] ========== All Pipeline Steps Complete ==========', 'info');
+        addLog('[SUCCESS] Deployment ready for finalization!', 'success');
+        updateGlobalProgress(92, 'Deployment Ready', 5);
+        finalizeBtn.disabled = false;
+        showToast('🚀 Deployment pipeline complete!');
     }
 
-    document.getElementById('runTestsBtn').addEventListener('click', runTests);
-    document.getElementById('proceedToDeployBtn').addEventListener('click', () => {
-        window.location.href = 'sangam.html';
-    });
+    function finalizeDeployment() {
+        updateGlobalProgress(100, 'Deployment Complete', 5);
+        addLog('[FINALIZE] Running final health checks...', 'info');
+        addLog('[OK] All health checks passed', 'success');
+        addLog('[FINALIZE] DNS records updated', 'info');
+        addLog('[SUCCESS] ========== Deployment Finalized ==========', 'success');
+        addLog('[INFO] Application is now LIVE at https://app.example.com', 'highlight');
+        document.getElementById('finalizeBtn').disabled = true;
+        document.getElementById('uptimeValue').textContent = '100%';
+        document.getElementById('uptimeValue').style.color = '#22c55e';
+        showToast('🎉 Deployment finalized! Application is live.');
+    }
+
+    document.getElementById('startDeployBtn').addEventListener('click', runDeployment);
+    document.getElementById('finalizeBtn').addEventListener('click', finalizeDeployment);
 
     // ============================================
     // PROGRESS BAR CLICK
@@ -1355,11 +1354,11 @@
     // ============================================
     // INIT
     // ============================================
-    updateGlobalProgress(60, 'Testing Phase', 4);
-    console.log('%c Yamuna %c Test Execution %c Ready ',
-        'background:#7c5cfc;color:white;padding:6px 10px;border-radius:4px 0 0 4px;font-weight:700;',
-        'background:#18151e;color:#f3efff;padding:6px 10px;',
-        'background:#6544e0;color:white;padding:6px 10px;border-radius:0 4px 4px 0;font-weight:600;');
+    updateGlobalProgress(75, 'Deployment Phase', 5);
+    console.log('%c Sangam %c Deployment %c Ready ',
+        'background:#e17055;color:white;padding:6px 10px;border-radius:4px 0 0 4px;font-weight:700;',
+        'background:#1a1512;color:#fef0ed;padding:6px 10px;',
+        'background:#c9553b;color:white;padding:6px 10px;border-radius:0 4px 4px 0;font-weight:600;');
 </script>
 </body>
 </html>

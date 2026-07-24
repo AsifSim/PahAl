@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microservice Generation Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; font-family: 'Inter', sans-serif; background-color: #022c22;
+        }
+
+        #river-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .atmospheric-overlay {
+            position: fixed; inset: 0; pointer-events: none; z-index: 1;
+            background: radial-gradient(circle at center, rgba(2, 44, 34, 0.1) 0%, rgba(2, 44, 34, 0.85) 100%);
+        }
+
+        /* --- Fullscreen Progress Animation --- */
+        #fullscreen-progress {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 0%;
+            background: linear-gradient(to top, rgba(13, 148, 136, 0.4) 0%, rgba(45, 212, 191, 0.1) 100%);
+            backdrop-filter: saturate(150%) brightness(1.2);
+            z-index: 5; pointer-events: none;
+            transition: height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-top: 2px solid rgba(45, 212, 191, 0.8);
+            box-shadow: 0 -10px 40px rgba(45, 212, 191, 0.3);
+        }
+
+        #giant-progress-text {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 25vw; font-weight: 700; font-family: 'Fira Code', monospace;
+            color: rgba(255, 255, 255, 0.03); z-index: 4; pointer-events: none;
+            text-shadow: 0 0 50px rgba(20, 184, 166, 0.1);
+        }
+
+        h1 { font-family: 'Cinzel', serif; }
+        .font-code { font-family: 'Fira Code', monospace; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.8); }
+
+        /* --- Workspace & Glass Panels --- */
+        #workspace-area {
+            position: relative; z-index: 20; display: flex; gap: 1.5rem;
+            padding: 2rem; height: 100vh; width: 100%; opacity: 0;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+            display: flex; flex-direction: column; overflow: hidden;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(45, 212, 191, 0.4);
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Forms & Inputs --- */
+        .glass-input {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem;
+            transition: all 0.3s ease; outline: none;
+        }
+        .glass-input:focus {
+            border-color: #2dd4bf; box-shadow: 0 0 15px rgba(45,212,191,0.3), inset 0 0 10px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.5);
+        }
+        select.glass-input option { background: #022c22; color: #fff; }
+
+        /* --- Editor --- */
+        .panel-textarea {
+            flex-grow: 1; background: transparent; color: #34d399; resize: none; outline: none;
+            padding: 1.5rem; font-size: 0.85rem; line-height: 1.6; position: relative; z-10;
+        }
+
+        .editor-wrapper {
+            position: relative; flex-grow: 1; margin: 1.5rem; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
+            box-shadow: inset 0 5px 20px rgba(0,0,0,0.5); overflow: hidden; display: flex;
+        }
+
+        #editor-glow {
+            position: absolute; inset: 0; pointer-events: none; z-20; opacity: 0;
+        }
+
+        /* --- Dropzone --- */
+        .drop-zone {
+            border: 2px dashed rgba(45, 212, 191, 0.4);
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .drop-zone.active {
+            border-color: rgba(45, 212, 191, 1);
+            background: rgba(45, 212, 191, 0.15);
+            box-shadow: inset 0 0 20px rgba(45, 212, 191, 0.3);
+            transform: scale(1.02);
+        }
+
+        /* --- Animations --- */
+        @keyframes gradient-x { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+        .animate-bg-pan { animation: gradient-x 2.5s linear infinite; }
+        @keyframes shimmer-fast { 100% { transform: translateX(100%); } }
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(45,212,191,0.4); opacity: 0.8; }
+            50% { text-shadow: 0 0 20px rgba(45,212,191,0.9); opacity: 1; }
+        }
+        .text-glow { text-shadow: 0 0 10px rgba(45,212,191,0.8); }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-white">
+
+<canvas id="river-canvas"></canvas>
+<div class="atmospheric-overlay"></div>
+
+<!-- Fullscreen Progress Indicators -->
+<div id="giant-progress-text">0%</div>
+<div id="fullscreen-progress"></div>
+
+<!-- WORKSPACE MASTER-DETAIL SPLIT -->
+<div id="workspace-area">
+
+    <!-- Left Configuration Panel -->
+    <div class="glass-panel w-1/3 max-w-[400px] min-w-[300px] flex flex-col h-full relative z-20">
+        <div class="px-6 py-5 bg-black/40 border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="text-teal-50 text-sm font-bold tracking-widest uppercase">Repository Config</span>
+            </div>
+        </div>
+
+        <div class="p-6 flex flex-col gap-6 flex-grow overflow-y-auto">
+            <div>
+                <label class="block text-xs font-semibold text-teal-200/70 tracking-widest uppercase mb-2">Base Branch</label>
+                <div class="relative">
+                    <select id="base-branch-select" class="glass-input appearance-none cursor-pointer">
+                        <option value="" disabled selected>Loading branches...</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-teal-400">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-teal-200/70 tracking-widest uppercase mb-2">New Branch Name</label>
+                <input type="text" id="new-branch-input" class="glass-input" placeholder="e.g., feature/generate-deam-logic" autocomplete="off">
+            </div>
+
+            <!-- YAML Drag and Drop Area -->
+            <div class="flex flex-col flex-grow min-h-[150px]">
+                <label class="block text-xs font-semibold text-teal-200/70 tracking-widest uppercase mb-2">TBRD Blueprint</label>
+                <div id="yaml-drop-zone" class="drop-zone flex-grow rounded-xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group">
+                    <svg class="w-8 h-8 text-teal-400 mb-3 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span id="drop-text" class="text-xs font-semibold text-teal-100 tracking-wider px-4">
+                        Drop TBRD YAML here<br><span class="opacity-50 text-[10px] font-light mt-1 block">or click to browse local files</span>
+                    </span>
+                    <input type="file" id="yaml-file-input" class="hidden" accept=".yaml, .yml">
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-white/10">
+                <button id="btn-start-generation" class="w-full group relative px-6 py-4 font-bold text-xs tracking-widest uppercase rounded-xl overflow-hidden shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_40px_rgba(45,212,191,0.8)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="absolute inset-0 bg-gradient-to-r from-teal-700 via-teal-300 to-teal-700 bg-[length:200%_100%] animate-bg-pan"></div>
+                    <div class="absolute inset-[2px] bg-[#022c22] rounded-[10px] z-10 group-hover:bg-[#064e3b] transition-colors duration-500"></div>
+                    <span class="relative z-20 flex items-center justify-center gap-2 text-teal-300 group-hover:text-white transition-colors duration-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        Initiate Build Sequence
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Streaming Editor Panel -->
+    <div class="glass-panel flex-1 flex flex-col h-full relative z-20">
+        <div class="px-6 py-4 bg-black/40 border-b border-white/10 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-2.5 w-2.5 relative">
+                        <span id="pulse-dot-bg" class="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-20"></span>
+                        <span id="pulse-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500/50"></span>
+                    </span>
+                    <span id="stream-status" class="text-teal-50 text-sm font-bold tracking-widest uppercase opacity-70">Awaiting Configuration...</span>
+                </div>
+                <span id="progress-text" class="text-xs font-code text-teal-300 tracking-wider">0%</span>
+            </div>
+        </div>
+
+        <!-- Animated Editor Container -->
+        <div class="editor-wrapper">
+            <textarea id="code-editor" class="panel-textarea font-code" readonly spellcheck="false" placeholder="// Java Class Generation Standby..."></textarea>
+            <!-- Heavy Glow Animation Element -->
+            <div id="editor-glow"></div>
+        </div>
+
+        <!-- Compile Button Overlay (Hidden until complete) -->
+        <div id="compile-overlay" class="absolute bottom-10 right-10 opacity-0 pointer-events-none translate-y-4 transition-all duration-500 z-30">
+            <button id="btn-compile" class="group relative px-8 py-4 font-bold text-sm tracking-widest uppercase rounded-full overflow-hidden shadow-[0_0_30px_rgba(45,212,191,0.5)] hover:shadow-[0_0_50px_rgba(45,212,191,1)] transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 z-0"></div>
+                <div class="absolute inset-0 z-10 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
+                <span class="relative z-20 flex items-center gap-3 text-white drop-shadow-md">
+                    Commit & Compile Code
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* =========================================
+       CANVAS FLUID DYNAMICS (Background)
+       ========================================= */
+    const canvas = document.getElementById('river-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, time = 0;
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    const mouse = { x: -1000, y: -1000 };
+    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    const waves = [
+        { amplitude: 40, frequency: 0.002, speed: 0.015, color: 'rgba(6, 78, 59, 0.4)', yOffset: 0.3 },
+        { amplitude: 60, frequency: 0.0015, speed: 0.02, color: 'rgba(15, 118, 110, 0.3)', yOffset: 0.5 },
+        { amplitude: 35, frequency: 0.003, speed: 0.01, color: 'rgba(4, 47, 46, 0.5)', yOffset: 0.7 },
+        { amplitude: 50, frequency: 0.001, speed: 0.025, color: 'rgba(20, 184, 166, 0.15)', yOffset: 0.8 }
+    ];
+    const particles = Array.from({ length: 60 }, () => ({
+        x: Math.random() * width, y: Math.random() * height,
+        size: Math.random() * 2 + 0.5, speedX: Math.random() * 1.5 + 0.5, offset: Math.random() * Math.PI * 2
+    }));
+
+    function drawRiver() {
+        ctx.clearRect(0, 0, width, height);
+        waves.forEach((wave, index) => {
+            ctx.beginPath(); ctx.moveTo(0, height);
+            for (let x = 0; x <= width; x += 20) {
+                let y = height * wave.yOffset + Math.sin(x * wave.frequency + time * wave.speed) * wave.amplitude;
+                let dx = x - mouse.x, dy = y - mouse.y; let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 200) y += (200 - dist) * 0.2 * (index % 2 === 0 ? 1 : -1);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(width, height); ctx.lineTo(0, height); ctx.fillStyle = wave.color; ctx.fill();
+        });
+        ctx.fillStyle = 'rgba(153, 246, 228, 0.6)';
+        particles.forEach(p => {
+            p.x += p.speedX; p.y += Math.sin(p.x * 0.01 + p.offset) * 1.5;
+            let dx = p.x - mouse.x, dy = p.y - mouse.y, dist = Math.sqrt(dx * dx + dy * dy);
+            if(dist < 100) { p.x += dx * 0.02; p.y += dy * 0.02; }
+            if (p.x > width + 10) p.x = -10;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        });
+        time += 1; requestAnimationFrame(drawRiver);
+    }
+    drawRiver();
+
+    /* =========================================
+       PIPELINE, FILE DRAG & DROP, & SSE STREAM
+       ========================================= */
+    const workspaceArea = document.getElementById('workspace-area');
+    const branchSelect = document.getElementById('base-branch-select');
+    const newBranchInput = document.getElementById('new-branch-input');
+    const btnStart = document.getElementById('btn-start-generation');
+    const btnCompile = document.getElementById('btn-compile');
+    const compileOverlay = document.getElementById('compile-overlay');
+
+    const streamStatus = document.getElementById('stream-status');
+    const codeEditor = document.getElementById('code-editor');
+    const pulseDot = document.getElementById('pulse-dot');
+    const pulseDotBg = document.getElementById('pulse-dot-bg');
+
+    // Progress UI
+    const fsProgress = document.getElementById('fullscreen-progress');
+    const giantText = document.getElementById('giant-progress-text');
+    const percentText = document.getElementById('progress-text');
+
+    // Drag and Drop Elements
+    const dropZone = document.getElementById('yaml-drop-zone');
+    const fileInput = document.getElementById('yaml-file-input');
+    const dropText = document.getElementById('drop-text');
+
+    let uploadedYamlPayload = "";
+
+    // 1. Initialize UI & Pre-fetch
+    document.addEventListener("DOMContentLoaded", () => {
+        gsap.to(workspaceArea, { opacity: 1, duration: 1, ease: "power2.out" });
+        fetchRepositoryBranches();
+
+        // Try to pre-fill YAML from localStorage if navigating from previous generator
+        const savedYaml = localStorage.getItem('tbrd_payload');
+        if (savedYaml && savedYaml !== "mock_yaml_data_if_empty") {
+            uploadedYamlPayload = savedYaml;
+            markFileMounted("Payload retrieved from Session");
+        }
+    });
+
+    // --- Drag & Drop Handlers ---
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('active'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('active'), false);
+    });
+
+    dropZone.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    function handleFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadedYamlPayload = e.target.result;
+            markFileMounted(file.name);
+        };
+        reader.readAsText(file);
+    }
+
+    function markFileMounted(name) {
+        dropText.innerHTML = `<span class="text-teal-300 block mb-1">Blueprint Mounted</span><span class="text-white truncate max-w-[200px] block">${name}</span>`;
+        gsap.fromTo(dropZone, {scale: 0.95}, {scale: 1, duration: 0.5, ease: "back.out(2)"});
+    }
+
+    async function fetchRepositoryBranches() {
+        try {
+            const response = await fetch('http://localhost:8080/api/code/branches');
+            const branches = await response.json();
+
+            branchSelect.innerHTML = '<option value="" disabled selected>Select a repository branch</option>';
+            branches.forEach(branch => {
+                const opt = document.createElement('option');
+                opt.value = branch;
+                opt.textContent = branch;
+                branchSelect.appendChild(opt);
+            });
+        } catch (error) {
+            console.warn("Could not fetch actual branches. Using mock data for demo.");
+            branchSelect.innerHTML = `
+                <option value="" disabled selected>Select a repository branch</option>
+                <option value="main">main</option>
+                <option value="develop">develop</option>
+            `;
+        }
+    }
+
+    // 2. Start SSE Streaming
+    btnStart.addEventListener('click', () => {
+        if (!branchSelect.value || !newBranchInput.value.trim()) {
+            alert("Please select a base branch and provide a new branch name.");
+            return;
+        }
+        if (!uploadedYamlPayload) {
+            alert("Please drop your TBRD YAML file into the drop zone.");
+            return;
+        }
+
+        // Lock UI Inputs
+        btnStart.disabled = true;
+        branchSelect.disabled = true;
+        newBranchInput.disabled = true;
+        dropZone.style.pointerEvents = "none";
+
+        // Setup visual processing state
+        streamStatus.innerText = "Synthesizing Methods (AI processing, please wait...)";
+        streamStatus.classList.remove('opacity-70');
+        streamStatus.classList.add('text-glow');
+        streamStatus.style.animation = "pulse-glow 2.5s infinite";
+        pulseDot.classList.replace('bg-teal-500/50', 'bg-teal-400');
+        pulseDotBg.classList.add('animate-ping');
+        codeEditor.value = "// Connection established. Awaiting initial generation packet...\n";
+
+        // Trigger Giant Background UI Progress Element
+        gsap.to(giantText, { opacity: 0.05, duration: 1 });
+
+        initiateJavaStreaming(uploadedYamlPayload);
+    });
+
+    async function initiateJavaStreaming(payload) {
+        try {
+            const response = await fetch('http://localhost:8080/api/stream/generate-java-stream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream'
+                },
+                body: payload
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.body) throw new Error("ReadableStream not supported by browser.");
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            let buffer = "";
+            let currentEvent = null;
+            let currentData = "";
+
+            // --- BULLETPROOF LINE-BY-LINE STATE MACHINE PARSER ---
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                let lines = buffer.split(/\r\n|\n|\r/);
+                buffer = lines.pop(); // Hold incomplete last line in buffer
+
+                for (let line of lines) {
+                    if (line.trim() === "") {
+                        if (currentEvent || currentData) {
+                            processSseEvent(currentEvent || "message", currentData);
+                            currentEvent = null;
+                            currentData = "";
+                        }
+                    } else if (line.startsWith("event:")) {
+                        currentEvent = line.substring(6).trim();
+                    } else if (line.startsWith("data:")) {
+                        currentData += line.substring(5).replace(/^\s/, '') + "\n";
+                    }
+                }
+            }
+
+            // Flush
+            if (currentEvent || currentData) {
+                processSseEvent(currentEvent || "message", currentData);
+            }
+
+        } catch (error) {
+            console.error("Streaming failed:", error);
+            streamStatus.innerText = "Connection Disrupted (Check Console/CORS).";
+            streamStatus.style.animation = "none";
+            streamStatus.classList.replace('text-teal-50', 'text-red-400');
+            pulseDotBg.classList.remove('animate-ping');
+            pulseDot.classList.replace('bg-teal-400', 'bg-red-500');
+
+            codeEditor.value += `\n\n// FATAL ERROR: ${error.message}\n// Ensure @CrossOrigin(origins = "*") is present in JavaStreamingController.`;
+        }
+    }
+
+    function processSseEvent(eventType, rawData) {
+        let cleanData = rawData.replace(/\n$/, '');
+        cleanData = cleanData.replace(/\\n/g, "\n"); // backend un-escape
+
+        if (eventType === "progress") {
+            const percent = parseInt(cleanData, 10) || 0;
+            updateProgress(percent);
+
+        } else if (eventType === "method") {
+            appendMethodWithAnimation(cleanData);
+
+        } else if (eventType === "complete") {
+            codeEditor.value = cleanData;
+            codeEditor.scrollTop = codeEditor.scrollHeight;
+            finalizeStream();
+        }
+    }
+
+    function appendMethodWithAnimation(methodCode) {
+        // Append & Scroll
+        codeEditor.value += methodCode + "\n\n";
+        codeEditor.scrollTop = codeEditor.scrollHeight;
+
+        // Matrix Glow Animation
+        const glowTarget = document.getElementById("editor-glow");
+        gsap.killTweensOf(glowTarget);
+        gsap.set(glowTarget, { opacity: 1, boxShadow: "inset 0 0 100px rgba(45,212,191,0.9)", backgroundColor: "rgba(45,212,191,0.25)" });
+        gsap.to(glowTarget, { opacity: 0, boxShadow: "inset 0 0 0px rgba(45,212,191,0)", backgroundColor: "rgba(0,0,0,0)", duration: 1.5, ease: "power2.out" });
+
+        // Pulse dot
+        gsap.fromTo(pulseDot,
+            { scale: 2, backgroundColor: "#fff" },
+            { scale: 1, backgroundColor: "rgba(45,212,191,0.8)", duration: 0.6 }
+        );
+    }
+
+    function updateProgress(percent) {
+        // Fullscreen dynamic water rise effect
+        fsProgress.style.height = `${percent}%`;
+
+        // Text updates
+        giantText.innerText = `${percent}%`;
+        percentText.innerText = `${percent}%`;
+
+        // Small pop effect on giant text when it ticks
+        gsap.fromTo(giantText, { scale: 1.05 }, { scale: 1, duration: 0.5, ease: "back.out(2)" });
+    }
+
+    function finalizeStream() {
+        updateProgress(100);
+        streamStatus.innerText = "Class Generation Complete. Ready for Commit.";
+        streamStatus.style.animation = "none";
+        streamStatus.classList.remove('text-glow');
+        pulseDotBg.classList.remove('animate-ping');
+        pulseDot.classList.replace('bg-teal-400', 'bg-emerald-400');
+
+        // Reveal Commit overlay
+        compileOverlay.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+        compileOverlay.classList.add('opacity-100', 'translate-y-0');
+    }
+
+    // 3. Final Compile Sequence
+    btnCompile.addEventListener('click', async () => {
+        btnCompile.querySelector('span').innerText = "Executing Compile Pipeline...";
+        btnCompile.classList.add('animate-pulse');
+        btnCompile.disabled = true;
+
+        const requestPayload = {
+            baseBranch: branchSelect.value,
+            newBranchName: newBranchInput.value.trim(),
+            workflowJson: uploadedYamlPayload
+        };
+
+        try {
+            const response = await fetch('http://localhost:8080/api/code/compile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestPayload)
+            });
+
+            if(response.ok) {
+                streamStatus.innerText = "Pipeline Executed Successfully!";
+                streamStatus.classList.replace('text-teal-50', 'text-emerald-300');
+
+                // Final cool fade out of giant text on success
+                gsap.to(giantText, { opacity: 0, scale: 0.8, duration: 1, ease: "power3.in" });
+
+            } else {
+                throw new Error("Compilation Failed");
+            }
+        } catch (error) {
+            console.error("Compilation error:", error);
+            streamStatus.innerText = "Compile Pipeline Errored.";
+            streamStatus.classList.replace('text-teal-50', 'text-red-400');
+        }
+
+        btnCompile.classList.remove('animate-pulse');
+        btnCompile.querySelector('span').innerText = "Pipeline Complete";
+    });
+</script>
+</body>
+</html>

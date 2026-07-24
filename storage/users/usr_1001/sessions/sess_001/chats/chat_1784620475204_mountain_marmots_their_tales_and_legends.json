@@ -1,0 +1,17 @@
+{
+  "chatId" : "chat_1784620475204",
+  "sessionId" : "sess_001",
+  "chatTitle" : "Mountain Marmots Their Tales and Legends",
+  "summary" : "Chat session",
+  "messages" : [ {
+    "sender" : "USER",
+    "thoughtChain" : null,
+    "content" : "Tell me something about himalayan marmut",
+    "timestamp" : [ 2026, 7, 21, 7, 54, 49, 550398144 ]
+  }, {
+    "sender" : "ASSISTANT",
+    "thoughtChain" : "Analyzing query...",
+    "content" : "You are not authorised to know the answer/info on the query you posted.",
+    "timestamp" : [ 2026, 7, 21, 7, 54, 49, 550436221 ]
+  } ]
+}

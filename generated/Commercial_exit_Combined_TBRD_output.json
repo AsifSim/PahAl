@@ -1,0 +1,1426 @@
+{
+  "FSM" : {
+    "model" : "NA",
+    "document_name" : "Commercial_exit_Combined_TBRD",
+    "sections" : [ {
+      "section_title" : "TBRD-01: Business Data Entity (BDE) & Schema (DEAMs)",
+      "raw_content" : [ "TBRD-01: Business Data Entity (BDE) & Schema (DEAMs)", "DEAM Name: cu_esn_bom_option_config", "Database Engine:", "Table/Collection Type", "Primary Key ", "Format Type", "☒ UUID", "☐ Integer / BigInt", "☐ Composite Key ", "Key Generation Algorithm", "☐ Standard Random (Fully Non-Deterministic)", "☐ Sequential/Ordered", "☐ Timestamp-Prefix (Custom) ", "Logic: 10-Digit Unix Timestamp (Seconds since epoch) + Suffix (Random or Entity-specific hash))", "Business Key ", "☒ Composite", "engine_serial_num", "option_assembly_num", "Attribute Specifications and Inline Rules", "Attr1_name: engine_serial_num", "Data Type: string (50) ", " ", "Nullable: No", "Attr2_name: design_config_num ", " ", "Data Type: string (50) ", " ", "Nullable: No", "Attr3_name: shop_order_num ", "Data Type: string (50) ", "Nullable: No", "Attr4_name: option_assembly_num ", "Data Type: string (50) ", " ", "Nullable: Yes", "Attr5_name: qty_per_shop_order_num ", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr6_name: build_upfit_date ", " ", "Data Type: datetime ", "Nullable: Yes", "Attr7_name: cpl_num", " ", "Data Type: string (50)  ", "Nullable: Yes", "Attr8_name: plant_id_code ", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr9_name: upfit_flag ", " ", "Data Type: datetime ", "Nullable: Yes", "Attr10_name: dist_upfit_date ", " ", "Data Type: datetime ", "Nullable: Yes", "Attr11_name: engine_name_desc", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr12_name: build_date", " ", "Data Type: datetime ", "Nullable: Yes", "Attr13_name: build_year", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr14_name: cpl_num", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr15_name: emissions_family_code", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr16_name: emission_year", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr17_name: emission_fr_option", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr18_name: service_engine_model", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr19_name: emission_ap_option", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr20_name: tl_spec_num", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr21_name: tl_spec_desc", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr22_name: created_by", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr23_name: created_date", " ", "Data Type: datetime ", "Nullable: Yes", "Attr24_name: updated_by", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr25_name: updated_date", " ", "Data Type: datetime ", "Nullable: Yes", "Inter-DEAM rule - None", "Intra-DEAM rule - None", "Status Lifecycle ", "Created (101)– Updated (102)", "Transition Applicable/Allowed", "Created – updated (101-102)", "Workflows associated -", "Versioning", "DEAM Name: cu_bom_config_vol", "Database Engine:", "Table/Collection Type", "Primary Key ", "Format Type", "☒ UUID", "☐ Integer / BigInt", "☐ Composite Key ", "Key Generation Algorithm", "☐ Standard Random (Fully Non-Deterministic)", "☐ Sequential/Ordered", "☐ Timestamp-Prefix (Custom) ", "Logic: 10-Digit Unix Timestamp (Seconds since epoch) + Suffix (Random or Entity-specific hash))", "Business Key ", "☒ Composite", "design_config_num", "year", "Attribute Specifications and Inline Rules", "Attr1_name: design_config_num", "Data Type: string (50) ", " ", "Nullable: No", "Attr2_name: year ", " ", "Data Type: string (50) ", " ", "Nullable: No", "Attr3_name: esn_count ", "Data Type: string (50) ", "Nullable: No", "Attr4_name: created_by ", "Data Type: string (50) ", "Nullable: No", "Attr3_name: created_date ", "Data Type: datetime ", "Nullable: No", "Attr3_name: updated_by ", "Data Type: string (50) ", "Nullable: No", "Attr3_name: updated_date ", "Data Type: datetime) ", "Nullable: No", "Inter-DEAM rule - None", "Intra-DEAM rule - None", "Status Lifecycle ", "Created (101)– Updated (102)", "Transition Applicable/Allowed", "Created – updated (101-102)", "Workflows associated -", "Versioning", "DEAM Name: cu_wc_option_child", "Database Engine:", "Table/Collection Type", "Primary Key ", "Format Type", "☒ UUID", "☐ Integer / BigInt", "☐ Composite Key ", "Key Generation Algorithm", "☐ Standard Random (Fully Non-Deterministic)", "☐ Sequential/Ordered", "☐ Timestamp-Prefix (Custom) ", "Logic: 10-Digit Unix Timestamp (Seconds since epoch) + Suffix (Random or Entity-specific hash))", "Business Key ", "☒ Composite", "rev_option_no", "child_part", "Attribute Specifications and Inline Rules", "Attr1_name: level", "Data Type: string (50) ", " ", "Nullable: No", "Attr2_name: option_num ", " ", "Data Type: string (50) ", " ", "Nullable: No", "Attr3_name: rev_option_no ", "Data Type: string (50) ", "Nullable: No", "Attr4_name: parent_part ", "Data Type: string (50) ", " ", "Nullable: Yes", "Attr5_name: parent_part_name ", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr6_name: child_part ", " ", "Data Type: datetime ", "Nullable: Yes", "Attr7_name: child_part_name", " ", "Data Type: string (50)  ", "Nullable: Yes", "Attr8_name: child_quantity ", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr9_name: created_by", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr10_name: created_date", " ", "Data Type: datetime ", "Nullable: Yes", "Attr11_name: updated_by", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr12_name: updated_date", " ", "Data Type: datetime ", "Nullable: Yes", "Inter-DEAM rule - None", "Intra-DEAM rule - None", "Status Lifecycle ", "Created (101)– Updated (102)", "Transition Applicable/Allowed", "Created – updated (101-102)", "Workflows associated -", "Versioning", "DEAM Name: cu_part_segment", "Database Engine:", "Table/Collection Type", "Primary Key ", "Format Type", "☒ UUID", "☐ Integer / BigInt", "☐ Composite Key ", "Key Generation Algorithm", "☐ Standard Random (Fully Non-Deterministic)", "☐ Sequential/Ordered", "☐ Timestamp-Prefix (Custom) ", "Logic: 10-Digit Unix Timestamp (Seconds since epoch) + Suffix (Random or Entity-specific hash))", "Business Key ", "☒ Single – part_number", "Attribute Specifications and Inline Rules", "Attr1_name: part_number", "Data Type: string (50) ", " ", "Nullable: No", "Attr2_name: region ", " ", "Data Type: string (50) ", " ", "Nullable: No", "Attr3_name: short_part_number ", "Data Type: string (50) ", "Nullable: No", "Attr4_name: suggested_cpm_initial_price ", "Data Type: string (50) ", " ", "Nullable: Yes", "Attr5_name: last_year_esn_produced ", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr6_name: latest_configuration ", " ", "Data Type: datetime ", "Nullable: Yes", "Attr7_name: created_by", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr8_name: created_date", " ", "Data Type: datetime ", "Nullable: Yes", "Attr9_name: updated_by", " ", "Data Type: string (50) ", "Nullable: Yes", "Attr10_name: updated_date", " ", "Data Type: datetime ", "Nullable: Yes", "Inter-DEAM rule - None", "Intra-DEAM rule - None", "Status Lifecycle ", "Created (101)– Updated (102)", "Transition Applicable/Allowed", "Created – updated (101-102)", "Workflows associated -", "Versioning" ]
+    }, {
+      "section_title" : "TBRD-04: Inbound / Outbound / Dashboard / Excel Integration",
+      "raw_content" : [ "TBRD-04: Inbound / Outbound / Dashboard / Excel Integration", "1.1 Inbound/Outbound", "1.1.1 Data Source", "☒ Inbound File", "File Name: bom_config_vol_YYYYMMDDHHSS.csv", "SFTP location", "☐ API", "☐ Message Queue", "☐ Excel Upload/UI", "1.1.2 DEAM Create Required?", "☐ Yes (Please fill the DEAM TBRD)", "☐ No", "1.1.3 DEAM Modification/Supplementary DEAM", "1.1.4", "Workflow Name – cu_wf_bom_config_vol", "1.1.5 Source Fields", "design_config_num— varchar(100)", "year— numeric", "esn_count — numeric", "no_of_records — numeric", "1.1.6 Output Field Mapping", "design_config_num← design_config_num", "year ← year", "esn_count ← esn_count", "no_of_records ← no_of_records", "1.1.7 Format", "☒ CSV", "☐ Excel", "☐ PDF", "☐ JSON", "☐ XML", "☐ Other - ________", "1.1.8 Global Record Filtering", "1.1.9 Attribute-Level Filtering", "1.1.10 Source Configuration", "Hostname: data.company.com", "Port: 22", "Username: data_user", "Remote Path: /data/pricing_orders", "Local Destination: /app/data/", "SFTP Enabled: Yes", "1.1.11 Scheduling Details", "Start Time: DAILY_02_00_00", "Poll Time: 3,600,000 milliseconds (1 hour)", "Poll Interval: 10,000 milliseconds (10 seconds)", "1.1.12Target Deam - cu_bom_config_vol", "2.1.1 Data Source", "☒ Inbound File", "File Name: bom_esn_option_YYYYMMDDHHSS.csv", "SFTP location", "☐ API", "☐ Message Queue", "☐ Excel Upload/UI", "2.1.2 DEAM Create Required?", "☐ Yes (Please fill the DEAM TBRD)", "☐ No", "2.1.3DEAM Modification/Supplementary DEAM", "2.1.4", "Workflow Name – cu_wf_bom_option_config", "2.1.5 Source Fields", "design_configuration — varchar (100)", "shop_order_num — numeric", "engine_serial_num— numeric", "option_assembly_num — numeric", "qty_per_shop_order_num— numeric", "build_upfit_date— datetime", "cpl_num— numeric", "plant_id_code— numeric", "upfit_flag— numeric", "dist_upfit_date— datetime", "2.1.6 Output Field Mapping", "design_config_num← design_configuration", "shop_order_num ← shop_order_num", "engine_serial_num ← engine_serial_num", "option_assembly_num ← option_assembly_num", "qty_per_shop_order_num ← qty_per_shop_order_num", "build_upfit_date ← build_upfit_date", "cpl_num ← cpl_num", "plant_id_code ← plant_id_code", "upfit_flag ← upfit_flag", "dist_upfit_date ← dist_upfit_date", "2.1.7 Format", "☒ CSV", "☐ Excel", "☐ PDF", "☐ JSON", "☐ XML", "☐ Other - ________", "2.1.8 Global Record Filtering", "2.1.9 Attribute-Level Filtering", "2.1.10 Source Configuration", "Hostname: data.company.com", "Port: 22", "Username: data_user", "Remote Path: /data/pricing_orders", "Local Destination: /app/data/", "SFTP Enabled: Yes", "2.1.11 Scheduling Details", "Start Time: DAILY_02_00_00", "Poll Time: 3,600,000 milliseconds (1 hour)", "Poll Interval: 10,000 milliseconds (10 seconds)", "2.1.12Target Deam – cu_esn_bom_option_config", "3.1.1 Data Source", "☒ Inbound File", "File Name: bom_esn_config_YYYYMMDDHHSS.csv", "SFTP location", "☐ API", "☐ Message Queue", "☐ Excel Upload/UI", "3.1.2 DEAM Create Required?", "☐ Yes (Please fill the DEAM TBRD)", "☐ No", "3.1.3DEAM Modification/Supplementary DEAM", "3.1.4", "Workflow Name – cu_wf_bom_esn_config", "3.1.5 Source Fields", "engine_serial_num — numeric", "engine_name_desc — varchar (100)", "design_config_num — numeric", "build_date — datetime", "build_year — numeric", "cpl_num — numeric", "emissions_family_code— numeric", "emission_year — numeric", "emission_fr_option— numeric", "service_engine_model — numeric", "emission_ap_option — numeric", "tl_spec_num — numeric", "tl_spec_desc — numeric", "no_of_records — datetime", "3.1.6 Output Field Mapping", "engine_serial_num ← engine_serial_num", "engine_name_desc ← engine_name_desc", "design_config_num ← design_config_num", "build_date ← build_date", "build_year ← build_year", "cpl_num ← cpl_num", "emissions_family_code ← emissions_family_code", "emission_year ← emission_year", "emission_fr_option ← emission_fr_option", "service_engine_model ← service_engine_model", "emission_ap_option ← emission_ap_option", "tl_spec_num ← tl_spec_num", "tl_spec_desc ← tl_spec_desc", "no_of_records ← no_of_records", "3.1.7 Format", "☒ CSV", "☐ Excel", "☐ PDF", "☐ JSON", "☐ XML", "☐ Other - ________", "3.1.8 Global Record Filtering", "3.1.9 Attribute-Level Filtering", "3.1.10 Source Configuration", "Hostname: data.company.com", "Port: 22", "Username: data_user", "Remote Path: /data/pricing_orders", "Local Destination: /app/data/", "SFTP Enabled: Yes", "3.1.11 Scheduling Details", "Start Time: DAILY_02_00_00", "Poll Time: 3,600,000 milliseconds (1 hour)", "Poll Interval: 10,000 milliseconds (10 seconds)", "3.1.12Target Deam – cu_esn_bom_option_config", "4.1.1 Data Source", "☒ Inbound File", "File Name: wc_option_child_YYYYMMDDHHSS.csv", "SFTP location", "☐ API", "☐ Message Queue", "☐ Excel Upload/UI", "4.1.2 DEAM Create Required?", "☐ Yes (Please fill the DEAM TBRD)", "☐ No", "4.1.3DEAM Modification/Supplementary DEAM", "4.1.4", "Workflow Name – cu_wf_wc_option_child", "4.1.5 Source Fields", "Level — numeric", "Option_Number — varchar (100)", "Rev_Option_No — varchar (100)", "Parent_Part — varchar (100)", "Parent_Part_Name — varchar (100)", "Child_Part — numeric", "Child_Part_Name — varchar (100)", "Child_Quantity — numeric", "4.1.6 Output Field Mapping", "level ← Level", "option_num ← Option_Number", "rev_option_no ← Rev_Option_No", "parent_part ← Parent_Part", "parent_part_name ← Parent_Part_Name", "child_part ← Child_Part", "child_part_name ← Child_Part_Name", "child_quantity ← Child_Quantity", "4.1.7 Format", "☒ CSV", "☐ Excel", "☐ PDF", "☐ JSON", "☐ XML", "☐ Other - ________", "4.1.8 Global Record Filtering", "4.1.9 Attribute-Level Filtering", "4.1.10 Source Configuration", "Hostname: data.company.com", "Port: 22", "Username: data_user", "Remote Path: /data/pricing_orders", "Local Destination: /app/data/", "SFTP Enabled: Yes", "4.1.11 Scheduling Details", "Start Time: DAILY_02_00_00", "Poll Time: 3,600,000 milliseconds (1 hour)", "Poll Interval: 10,000 milliseconds (10 seconds)", "4.1.12Target Deam – cu_wc_option_child" ]
+    }, {
+      "section_title" : "TBRD-02: Workflows & Orchestration",
+      "raw_content" : [ "TBRD-02: Workflows & Orchestration", "Workflow Name – cu_wf_bom_config_vol", "Status transition-", "Start status – created (101-102)", "Completion Status – updated (102-103)", "Orchestration", "☒ Inbound Event", "☐ User Action", "☐ Time-Based/Data Trigger", "Service Names in Execution Sequence", "File Name: bom_config_vol_YYYYMMDDHHSS.csv", "Workflow Name – cu_wf_bom_option_config", "Status transition-", "Start status – created (101-102)", "Completion Status – updated (102-103)", "Orchestration", "☒ Inbound Event", "☐ User Action", "☐ Time-Based/Data Trigger", "Service Names in Execution Sequence", "File Name: bom_esn_option_YYYYMMDDHHSS.csv", "Workflow Name – cu_wf_bom_esn_config", "Status transition-", "Start status – created (101-102)", "Completion Status – updated (102-103)", "Orchestration", "☒ Inbound Event", "☐ User Action", "☐ Time-Based/Data Trigger", "Service Names in Execution Sequence", "File Name: bom_esn_config_YYYYMMDDHHSS.csv", "Workflow Name – cu_wf_wc_option_child", "Status transition-", "Start status – created (101-102)", "Completion Status – updated (102-103)", "Orchestration", "☒ Inbound Event", "☐ User Action", "☐ Time-Based/Data Trigger", "Service Names in Execution Sequence", "File Name: wc_option_child_YYYYMMDDHHSS.csv", "Workflow Name – cu_wf_esnconfig_part_update", "Status transition-", "Orchestration", "☐Inbound Event", "☐ User Action", "☐ Time-Based/Data Trigger", "☒ Database", "Service Names in Execution Sequence", "Function name: cu_ms_esnconfig_part_update", "Version: 1.0", "File Name:" ]
+    }, {
+      "section_title" : "TBRD-03: Microservices & Business Rules (API)",
+      "raw_content" : [ "TBRD-03: Microservices & Business Rules (API)", "Service Name – cu_ms_esnconfig_part_update", "Associated Workflow – cu_wf_esnconfig_part_update", "Target DEAM", "Reference DEAMS", "Business Rules", "Eligibility Check ", "For the child_part received in the request data, check if a record is present in the part entity by comparing the short_part_number in part entity with the child_part.", "Validation Rules ", "None", "Computational Rules", "Fetch all the rev_option_no from cu_wc_option_child entity for the child_part in the request data. For all the fetched rev_option_no, fetch all the engine_serial_num and build_date from cu_esn_bom_option_config by mapping rev_option_no with the option_assembly_num in cu_esn_bom_option_config entity.", "Now fetch the maximum build_date from all the fetched engine_serial_num and extract year out of this maximum build_date. For the extracted year, fetch all the design_config_num and esn_count from cu_bom_config_vol entity by mapping with year attribute in cu_bom_config_vol entity.", "From the fetched data, check the maximum esn_count and extract the associated design_config_num. For the short_part_number in the cu_part_segment entity perform update or insert the last_year_esn_produced by mapping with year and latest_configuration by mapping with design_config_num.", "Expected Result/Output Structure", "Operation ", "☒ Update/Insert", "☐ None", "Data", "A", "B", "C", "Standard Response Structure", "{", "“DEAM_NAME”:[", "{", "data : {", " \"COLUMN_NAME1\": \"VALUE1\",", " \"COLUMN_NAME2\": \"VALUE2\",", "},", "“operation” : ”update/insert”", "}", "],", "“DEAM_NAME2”:[", "{", "“data” : {", " \"COLUMN_NAME1\": \"VALUE1\",", " \"COLUMN_NAME2\": \"VALUE2\",", "},", "“operation” : ”update/insert”", "}", "]", "}" ]
+    } ]
+  },
+  "deam_count" : 4,
+  "DEAMs" : [ {
+    "entity" : "cu_esn_bom_option_config",
+    "displayName" : "Cu esn bom option config",
+    "attributesList" : [ {
+      "name" : "engine_serial_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Engine serial num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "design_config_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Design config num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "shop_order_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Shop order num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "option_assembly_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Option assembly num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "qty_per_shop_order_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Qty per shop order num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "build_upfit_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Build upfit date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "cpl_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Cpl num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "plant_id_code",
+      "type" : "string",
+      "scale" : null,
+      "unique" : true,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Plant id code",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "upfit_flag",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Upfit flag",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "dist_upfit_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Dist upfit date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "engine_name_desc",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Engine name desc",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "build_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Build date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "build_year",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Build year",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "cpl_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Cpl num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "emissions_family_code",
+      "type" : "string",
+      "scale" : null,
+      "unique" : true,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Emissions family code",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "emission_year",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Emission year",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "emission_fr_option",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Emission fr option",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "service_engine_model",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Service engine model",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "emission_ap_option",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Emission ap option",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "tl_spec_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Tl spec num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "tl_spec_desc",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Tl spec desc",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    } ],
+    "primaryKeyType" : "string",
+    "primaryKey" : "uuid",
+    "businessRules" : [ ],
+    "childEntities" : [ ],
+    "deamReads" : [ {
+      "filter" : {
+        "join" : { },
+        "limit" : null,
+        "where" : [ {
+          "operator" : "=",
+          "attributeName" : "engine_serial_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "design_config_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "shop_order_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "option_assembly_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "qty_per_shop_order_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "build_upfit_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "cpl_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "plant_id_code",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "upfit_flag",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "dist_upfit_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "engine_name_desc",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "build_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "build_year",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "cpl_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "emissions_family_code",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "emission_year",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "emission_fr_option",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "service_engine_model",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "emission_ap_option",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "tl_spec_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "tl_spec_desc",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "is not",
+          "attributeName" : "uuid",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        } ],
+        "offset" : null,
+        "orderBy" : { },
+        "attributeNames" : [ "*" ]
+      },
+      "filterName" : "dynamic_filter",
+      "filterType" : "dynamic"
+    } ]
+  }, {
+    "entity" : "cu_bom_config_vol",
+    "displayName" : "Cu bom config vol",
+    "attributesList" : [ {
+      "name" : "design_config_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Design config num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "year",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Year",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "esn_count",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Esn count",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_date",
+      "type" : "datetime",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_date",
+      "type" : "datetime",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    } ],
+    "primaryKeyType" : "string",
+    "primaryKey" : "uuid",
+    "businessRules" : [ ],
+    "childEntities" : [ ],
+    "deamReads" : [ {
+      "filter" : {
+        "join" : { },
+        "limit" : null,
+        "where" : [ {
+          "operator" : "=",
+          "attributeName" : "design_config_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "year",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "esn_count",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "is not",
+          "attributeName" : "uuid",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        } ],
+        "offset" : null,
+        "orderBy" : { },
+        "attributeNames" : [ "*" ]
+      },
+      "filterName" : "dynamic_filter",
+      "filterType" : "dynamic"
+    } ]
+  }, {
+    "entity" : "cu_wc_option_child",
+    "displayName" : "Cu wc option child",
+    "attributesList" : [ {
+      "name" : "level",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Level",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "option_num",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Option num",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "rev_option_no",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Rev option no",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "parent_part",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Parent part",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "parent_part_name",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Parent part name",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "child_part",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Child part",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "child_part_name",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Child part name",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "child_quantity",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Child quantity",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    } ],
+    "primaryKeyType" : "string",
+    "primaryKey" : "uuid",
+    "businessRules" : [ ],
+    "childEntities" : [ ],
+    "deamReads" : [ {
+      "filter" : {
+        "join" : { },
+        "limit" : null,
+        "where" : [ {
+          "operator" : "=",
+          "attributeName" : "level",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "option_num",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "rev_option_no",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "parent_part",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "parent_part_name",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "child_part",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "child_part_name",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "child_quantity",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "is not",
+          "attributeName" : "uuid",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        } ],
+        "offset" : null,
+        "orderBy" : { },
+        "attributeNames" : [ "*" ]
+      },
+      "filterName" : "dynamic_filter",
+      "filterType" : "dynamic"
+    } ]
+  }, {
+    "entity" : "cu_part_segment",
+    "displayName" : "Cu part segment",
+    "attributesList" : [ {
+      "name" : "part_number",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Part number",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "region",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Region",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "short_part_number",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Short part number",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "suggested_cpm_initial_price",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Suggested cpm initial price",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "last_year_esn_produced",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Last year esn produced",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "latest_configuration",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Latest configuration",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "created_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Created date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_by",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated by",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "updated_date",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Updated date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    } ],
+    "primaryKeyType" : "string",
+    "primaryKey" : "uuid",
+    "businessRules" : [ ],
+    "childEntities" : [ ],
+    "deamReads" : [ {
+      "filter" : {
+        "join" : { },
+        "limit" : null,
+        "where" : [ {
+          "operator" : "=",
+          "attributeName" : "part_number",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "region",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "short_part_number",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "suggested_cpm_initial_price",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "last_year_esn_produced",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "latest_configuration",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "created_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_by",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "updated_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "is not",
+          "attributeName" : "uuid",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        } ],
+        "offset" : null,
+        "orderBy" : { },
+        "attributeNames" : [ "*" ]
+      },
+      "filterName" : "dynamic_filter",
+      "filterType" : "dynamic"
+    } ]
+  } ],
+  "wfm_count" : 5,
+  "WFMs" : [ {
+    "workflowName" : "cu_wf_bom_config_vol",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "bom_config_vol_YYYYMMDDHHSS" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "operation" : "insert",
+        "businessKey" : [ ]
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "bom_config_vol_YYYYMMDDHHSS.csv",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : "",
+        "sinkPath" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ ]
+    } ]
+  }, {
+    "workflowName" : "cu_wf_bom_option_config",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "bom_esn_option_YYYYMMDDHHSS" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "operation" : "insert",
+        "businessKey" : [ ]
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "bom_esn_option_YYYYMMDDHHSS.csv",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : "",
+        "sinkPath" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ ]
+    } ]
+  }, {
+    "workflowName" : "cu_wf_bom_esn_config",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "bom_esn_config_YYYYMMDDHHSS" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "operation" : "insert",
+        "businessKey" : [ ]
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "bom_esn_config_YYYYMMDDHHSS.csv",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : "",
+        "sinkPath" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ ]
+    } ]
+  }, {
+    "workflowName" : "cu_wf_wc_option_child",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "wc_option_child_YYYYMMDDHHSS" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "operation" : "insert",
+        "businessKey" : [ ]
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "wc_option_child_YYYYMMDDHHSS.csv",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : "",
+        "sinkPath" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ ]
+    } ]
+  }, {
+    "workflowName" : "cu_wf_esnconfig_part_update",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "default" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "operation" : "insert",
+        "businessKey" : [ ]
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : "",
+        "sinkPath" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ {
+        "functionName" : "cu_ms_esnconfig_part_update",
+        "version" : "1.0"
+      } ]
+    } ]
+  } ]
+}

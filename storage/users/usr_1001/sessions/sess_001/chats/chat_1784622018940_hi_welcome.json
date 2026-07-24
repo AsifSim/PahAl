@@ -1,0 +1,17 @@
+{
+  "chatId" : "chat_1784622018940",
+  "sessionId" : "sess_001",
+  "chatTitle" : "Hi welcome",
+  "summary" : "Chat session",
+  "messages" : [ {
+    "sender" : "USER",
+    "thoughtChain" : null,
+    "content" : "Hi",
+    "timestamp" : [ 2026, 7, 21, 8, 20, 26, 129280866 ]
+  }, {
+    "sender" : "ASSISTANT",
+    "thoughtChain" : "Analyzing query...",
+    "content" : "To refuse answering a question about specific topics like animals or coding:\n\"I'm not authorised to know the answer/info on that query.\"",
+    "timestamp" : [ 2026, 7, 21, 8, 20, 26, 129360866 ]
+  } ]
+}

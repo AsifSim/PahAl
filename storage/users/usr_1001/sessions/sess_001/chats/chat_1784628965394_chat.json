@@ -1,0 +1,17 @@
+{
+  "chatId" : "chat_1784628965394",
+  "sessionId" : "sess_001",
+  "chatTitle" : "Query resultinvestigateProduct P200 saveActivity TransitPassReview",
+  "summary" : "Chat session",
+  "messages" : [ {
+    "sender" : "USER",
+    "thoughtChain" : null,
+    "content" : "Query: Investigate product code P-200 and save this activity as \"Transit Pass Review\".",
+    "timestamp" : [ 2026, 7, 21, 10, 18, 28, 776067608 ]
+  }, {
+    "sender" : "ASSISTANT",
+    "thoughtChain" : "Analyzing query intent...",
+    "content" : "I encountered a database connection issue. Please ensure you have the correct user credentials and try again.",
+    "timestamp" : [ 2026, 7, 21, 10, 18, 28, 776130301 ]
+  } ]
+}
