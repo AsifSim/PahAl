@@ -1,161 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ganga • TBRD Document Builder</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- SheetJS for Excel Parsing -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root{--bg:#f8f9fb;--surface:#fff;--surface-alt:#fafbfd;--surface-hover:#f0f2f8;--text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;--border:#e2e8f0;--border-light:#f1f5f9;--accent:#6366f1;--accent-dark:#4f46e5;--accent-light:#eef2ff;--green:#22c55e;--green-light:#dcfce7;--green-dark:#16a34a;--red:#ef4444;--red-light:#fef2f2;--purple:#7c5cfc;--purple-light:#f3efff;--amber:#f0a92e;--radius-sm:8px;--radius:12px;--radius-lg:16px;--shadow-xs:0 1px 2px rgba(0,0,0,0.03);--shadow:0 4px 6px rgba(0,0,0,0.03);--shadow-md:0 10px 20px rgba(0,0,0,0.05);--transition:0.25s cubic-bezier(0.4,0,0.2,1);--transition-bounce:0.4s cubic-bezier(0.34,1.56,0.64,1)}
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
-        .app{display:flex;flex-direction:column;height:100vh}
-        .navbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-light);flex-shrink:0;z-index:100}
-        .navbar-brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text)}
-        .navbar-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#818cf8);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.9rem}
-        .navbar-name{font-weight:700;font-size:1.1rem}
-        .navbar-nav{display:flex;align-items:center;gap:2px;flex:1;justify-content:center}
-        .nav-link{padding:6px 14px;border-radius:var(--radius-sm);font-weight:500;font-size:.82rem;color:var(--text-secondary);text-decoration:none;transition:var(--transition);display:flex;align-items:center;gap:6px}
-        .nav-link:hover{background:var(--surface-hover);color:var(--text)}
-        .nav-link.active{background:var(--accent);color:#fff}
-        .navbar-right{display:flex;align-items:center;gap:8px}
-        .user-btn{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;background:var(--surface-hover);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:.8rem}
-        .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#818cf8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:.7rem}
+        :root {
+            --bg: #f8f9fb;
+            --surface: #fff;
+            --surface-alt: #fafbfd;
+            --surface-hover: #f0f2f8;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --accent: #6366f1;
+            --accent-dark: #4f46e5;
+            --accent-light: #eef2ff;
+            --green: #22c55e;
+            --green-light: #dcfce7;
+            --green-dark: #16a34a;
+            --red: #ef4444;
+            --red-light: #fef2f2;
+            --purple: #7c5cfc;
+            --purple-light: #f3efff;
+            --amber: #f0a92e;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.05);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); height: 100vh; overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        .app { display: flex; flex-direction: column; height: 100vh; }
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+            height: 56px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light); flex-shrink: 0; z-index: 100;
+        }
+        .navbar-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); }
+        .navbar-logo {
+            width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #818cf8);
+            border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 900; font-size: .9rem;
+        }
+        .navbar-name { font-weight: 700; font-size: 1.1rem; }
+        .navbar-nav { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; }
+        .nav-link {
+            padding: 6px 14px; border-radius: var(--radius-sm); font-weight: 500; font-size: .82rem;
+            color: var(--text-secondary); text-decoration: none; transition: var(--transition);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .nav-link:hover { background: var(--surface-hover); color: var(--text); }
+        .nav-link.active { background: var(--accent); color: #fff; }
+        .navbar-right { display: flex; align-items: center; gap: 8px; }
+        .user-btn {
+            display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px;
+            background: var(--surface-hover); border: 1px solid var(--border); border-radius: 20px;
+            cursor: pointer; font-size: .8rem;
+        }
+        .user-avatar {
+            width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #818cf8);
+            display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: .7rem;
+        }
 
-        .main-content{flex:1;display:flex;overflow:hidden;position:relative}
+        .main-content { flex: 1; display: flex; overflow: hidden; position: relative; }
         .main-content.maximized .left-panel { display: none !important; }
         .main-content.maximized .resize-handle { display: none !important; }
-
         .main-content.left-maximized .right-panel { display: none !important; }
         .main-content.left-maximized .resize-handle { display: none !important; }
         .main-content.left-maximized .left-panel { flex: 1 !important; max-width: none !important; width: 100% !important; }
 
-        .left-panel{width:450px;min-width:350px;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
-        .panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;position: relative;}
-        .panel-tab{flex:1;padding:12px;text-align:center;font-weight:600;font-size:.82rem;cursor:pointer;transition:var(--transition);border-bottom:2px solid transparent;color:var(--text-muted)}
-        .panel-tab:hover{color:var(--text);background:var(--surface-hover)}
-        .panel-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--accent-light)}
-        .panel-content{flex:1;overflow-y:auto;padding:16px;background:var(--bg);}
+        .left-panel {
+            width: 450px; min-width: 350px; background: var(--surface); display: flex;
+            flex-direction: column; overflow: hidden;
+        }
+        .panel-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; position: relative; }
+        .panel-tab {
+            flex: 1; padding: 12px; text-align: center; font-weight: 600; font-size: .82rem;
+            cursor: pointer; transition: var(--transition); border-bottom: 2px solid transparent; color: var(--text-muted);
+        }
+        .panel-tab:hover { color: var(--text); background: var(--surface-hover); }
+        .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-light); }
+        .panel-content { flex: 1; overflow-y: auto; padding: 16px; background: var(--bg); }
 
-        .resize-handle{width:6px;background:var(--border);cursor:col-resize;flex-shrink:0;transition:background 0.2s;position:relative;z-index:10}
-        .resize-handle:hover,.resize-handle.active{background:var(--accent)}
-        .resize-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:30px;background:var(--text-muted);border-radius:1px;opacity:0.5}
+        .resize-handle {
+            width: 6px; background: var(--border); cursor: col-resize; flex-shrink: 0;
+            transition: background 0.2s; position: relative; z-index: 10;
+        }
+        .resize-handle:hover, .resize-handle.active { background: var(--accent); }
+        .resize-handle::after {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 2px; height: 30px; background: var(--text-muted); border-radius: 1px; opacity: 0.5;
+        }
 
-        .right-panel{flex:1;display:flex;flex-direction:column;background:var(--surface-alt);min-width:300px}
-        .right-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-        .right-title{font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px}
-        .right-content{flex:1;overflow-y:auto;padding:20px}
-        .doc-preview{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text-secondary);background:var(--surface);padding:20px;border-radius:var(--radius-lg);border:1px solid var(--border);white-space:pre-wrap;line-height:1.6;min-height:100%}
-        .doc-preview .section-title{color:var(--accent);font-weight:700;font-size:.9rem;margin-top:16px}
-        .doc-preview .deam-block{margin:8px 0;padding:8px 12px;background:var(--accent-light);border-radius:var(--radius-sm);border-left:3px solid var(--accent)}
-        .doc-preview .wfm-block{margin:8px 0;padding:8px 12px;background:var(--purple-light);border-radius:var(--radius-sm);border-left:3px solid var(--purple)}
+        .right-panel { flex: 1; display: flex; flex-direction: column; background: var(--surface-alt); min-width: 300px; }
+        .right-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex;
+            align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .right-title { font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+        .right-content { flex: 1; overflow-y: auto; padding: 20px; }
+        .doc-preview {
+            font-family: 'JetBrains Mono', monospace; font-size: .8rem; color: var(--text-secondary);
+            background: var(--surface); padding: 20px; border-radius: var(--radius-lg);
+            border: 1px solid var(--border); white-space: pre-wrap; line-height: 1.6; min-height: 100%;
+        }
+        .doc-preview .section-title { color: var(--accent); font-weight: 700; font-size: .9rem; margin-top: 16px; }
+        .doc-preview .deam-block {
+            margin: 8px 0; padding: 8px 12px; background: var(--accent-light);
+            border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+        }
+        .doc-preview .wfm-block {
+            margin: 8px 0; padding: 8px 12px; background: var(--purple-light);
+            border-radius: var(--radius-sm); border-left: 3px solid var(--purple);
+        }
 
-        .search-box{display:flex;gap:8px;margin-bottom:12px}
-        .search-input{flex:1;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;transition:var(--transition)}
-        .search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
+        .search-box { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .search-input {
+            flex: 1; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+            font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; transition: var(--transition); min-width: 100px;
+        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
 
-        .btn{padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:.82rem;cursor:pointer;transition:var(--transition-bounce);border:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-        .btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(99,102,241,0.25)}
-        .btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px);box-shadow:0 8px 25px rgba(99,102,241,0.4)}
-        .btn-outline{background:var(--surface);border:1px solid var(--border);color:var(--text)}
-        .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-        .btn-sm{padding:5px 10px;font-size:.75rem}
-        .btn-success{background:var(--green);color:#fff; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);}
-        .btn-success:hover{background:#16a34a; transform:translateY(-2px); box-shadow: 0 6px 15px rgba(34, 197, 94, 0.4);}
-        .btn-danger{background:var(--red);color:#fff}
-        .btn-danger:hover{background:#dc2626}
-        .btn-amber{background:var(--amber);color:#fff}
+        .btn {
+            padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; font-size: .82rem;
+            cursor: pointer; transition: var(--transition-bounce); border: none;
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
+        .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4); }
+        .btn-outline { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-sm { padding: 5px 10px; font-size: .75rem; }
+        .btn-success { background: var(--green); color: #fff; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .btn-success:hover { background: #16a34a; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(34, 197, 94, 0.4); }
+        .btn-danger { background: var(--red); color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-amber { background: var(--amber); color: #fff; }
+        .btn-upload { background: #8b5cf6; color: #fff; border: 1px solid #8b5cf6; }
+        .btn-upload:hover { background: #7c3aed; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+        .btn-upload i { margin-right: 4px; }
+        .btn-add-tbrd { background: #059669; color: #fff; }
+        .btn-add-tbrd:hover { background: #047857; transform: translateY(-1px); }
 
-        .entity-list{display:flex;flex-direction:column;gap:4px}
-        .entity-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface-alt);border-radius:var(--radius-sm);border:1px solid var(--border-light);cursor:pointer;transition:var(--transition)}
-        .entity-item:hover{background:var(--surface-hover);border-color:var(--accent);transform:translateX(2px)}
-        .entity-item.selected{background:var(--accent-light);border-color:var(--accent);border-width:2px}
-        .entity-name{font-weight:600;font-size:.85rem}
-        .entity-source{font-size:.65rem;color:var(--text-muted);margin-top:2px}
-        .entity-detail-inline{margin-top:8px;margin-bottom:8px;padding:12px;background:var(--accent-light);border-radius:var(--radius-sm);border:2px solid var(--accent);display:none}
-        .entity-detail-inline.show{display:block;animation:slideDown 0.3s ease}
-        @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        .entity-list { display: flex; flex-direction: column; gap: 4px; }
+        .entity-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+            background: var(--surface-alt); border-radius: var(--radius-sm); border: 1px solid var(--border-light);
+            cursor: pointer; transition: var(--transition);
+        }
+        .entity-item:hover { background: var(--surface-hover); border-color: var(--accent); transform: translateX(2px); }
+        .entity-item.selected { background: var(--accent-light); border-color: var(--accent); border-width: 2px; }
+        .entity-name { font-weight: 600; font-size: .85rem; }
+        .entity-source { font-size: .65rem; color: var(--text-muted); margin-top: 2px; }
+        .entity-detail-inline {
+            margin-top: 8px; margin-bottom: 8px; padding: 12px; background: var(--accent-light);
+            border-radius: var(--radius-sm); border: 2px solid var(--accent); display: none;
+        }
+        .entity-detail-inline.show { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
-        .loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
+        .loading-spinner {
+            display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border);
+            border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .column-list{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto;margin-top:8px}
-        .column-item{display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface);border-radius:4px;border:1px solid var(--border-light);font-size:.78rem}
-        .column-name{flex:1;font-weight:500}
-        .column-type{font-size:.65rem;color:var(--text-muted);background:var(--surface-alt);padding:1px 6px;border-radius:8px}
-        .pk-badge{font-size:.6rem;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:6px;font-weight:600}
+        .column-list { display: flex; flex-direction: column; gap: 3px; max-height: 200px; overflow-y: auto; margin-top: 8px; }
+        .column-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: var(--surface); border-radius: 4px; border: 1px solid var(--border-light); font-size: .78rem; }
+        .column-name { flex: 1; font-weight: 500; }
+        .column-type { font-size: .65rem; color: var(--text-muted); background: var(--surface-alt); padding: 1px 6px; border-radius: 8px; }
+        .pk-badge { font-size: .6rem; background: #fef3c7; color: #92400e; padding: 1px 5px; border-radius: 6px; font-weight: 600; }
 
-        .form-group{margin-bottom:12px}
-        .form-label{display:block;font-weight:600;font-size:.78rem;color:var(--text-secondary);margin-bottom:4px}
-        .form-input{width:100%;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;transition:var(--transition)}
-        .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
-        .form-select{width:100%;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;background:#fff}
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-weight: 600; font-size: .78rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .form-input {
+            width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+            font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; transition: var(--transition);
+        }
+        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        .form-select {
+            width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+            font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; background: #fff;
+        }
 
-        .modal-overlay{position:fixed;inset:0;background:rgba(15, 23, 42, 0.6);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-        .modal-overlay.show{display:flex;animation:fadeIn .2s ease}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        .modal{background:var(--surface);border-radius:var(--radius-xl);padding:24px;width:90%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(0,0,0,0.25);animation:slideUp .3s ease}
-        @keyframes slideUp{from{transform:translateY(30px) scale(0.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-shrink:0;}
-        .modal-title{font-weight:700;font-size:1.1rem}
-        .modal-close{width:30px;height:30px;border-radius:50%;border:none;background:var(--surface-hover);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
-        .modal-close:hover{background:var(--red-light);color:var(--red)}
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.show { display: flex; animation: fadeIn .2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal {
+            background: var(--surface); border-radius: var(--radius-lg); padding: 24px; width: 90%;
+            max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25); animation: slideUp .3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(30px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; }
+        .modal-title { font-weight: 700; font-size: 1.1rem; }
+        .modal-close {
+            width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--surface-hover); cursor: pointer;
+            font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .modal-close:hover { background: var(--red-light); color: var(--red); }
 
-        /* Subworkflow specific styles */
-        .sw-block { margin-bottom: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow:hidden; box-shadow: var(--shadow-xs); transition: all 0.3s ease; }
-        .sw-summary { padding: 14px 16px; background: var(--surface-alt); font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); user-select: none; }
+        .sw-block { margin-bottom: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-xs); transition: all 0.3s ease; }
+        .sw-summary {
+            padding: 14px 16px; background: var(--surface-alt); font-weight: 700; cursor: pointer; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); user-select: none;
+        }
         .sw-summary:hover { background: var(--surface-hover); }
-        .sw-summary::-webkit-details-marker { display:none; }
+        .sw-summary::-webkit-details-marker { display: none; }
         .sw-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .sw-icon { margin-right: 8px; font-size: 1.1em; }
         .sw-main { border-left: 4px solid var(--accent); }
         .sw-ref { border-left: 4px solid var(--amber); }
 
-        /* NEW MAPPING MODAL STYLES */
         .linker-wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; }
         .linker-toolbar { display: flex; gap: 16px; margin-bottom: 12px; flex-shrink: 0; }
         .linker-container { display: flex; flex: 1; min-height: 0; position: relative; }
-
-        /* Draggable Items */
-        .source-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: grab; font-size: 0.82rem; transition: all 0.2s; box-shadow: var(--shadow-xs); }
-        .source-item:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.1); }
+        .source-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 10px 12px;
+            background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            cursor: grab; font-size: 0.82rem; transition: all 0.2s; box-shadow: var(--shadow-xs);
+        }
+        .source-item:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); }
         .source-item:active { cursor: grabbing; }
         .source-item.dragging { opacity: 0.5; border: 2px dashed var(--accent); background: var(--accent-light); }
         .source-item.mapped { opacity: 0.4; cursor: not-allowed; background: var(--surface-alt); pointer-events: none; }
         .source-item .drag-handle { color: var(--text-muted); margin-right: 8px; cursor: grab; }
-
-        /* Droppable Target Items */
-        .target-item { display: flex; flex-direction: column; padding: 10px 12px; background: #fff; border: 1px dashed var(--border-muted); border-radius: var(--radius-sm); font-size: 0.82rem; transition: all 0.2s; border: 1px solid var(--border); }
+        .target-item { display: flex; flex-direction: column; padding: 10px 12px; background: #fff; border-radius: var(--radius-sm); font-size: 0.82rem; transition: all 0.2s; border: 1px solid var(--border); }
         .target-item.drag-over { background: var(--green-light); border: 2px dashed var(--green); }
         .target-item.has-mapping { border: 1px solid var(--green-light); background: #f0fdf4; }
         .target-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .target-name { font-weight: 600; color: var(--text); }
         .target-type { font-size: 0.65rem; color: var(--text-muted); background: var(--surface-hover); padding: 2px 6px; border-radius: 4px; }
         .drop-zone { min-height: 36px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border); border-radius: 6px; background: var(--surface-alt); color: var(--text-muted); font-size: 0.75rem; transition: 0.2s; }
-        .mapped-pill { display: flex; align-items: center; justify-content: space-between; background: var(--green); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; animation: fadeIn 0.3s ease; box-shadow: 0 2px 6px rgba(34,197,94,0.2); }
-        .mapped-pill .remove-map { cursor: pointer; opacity: 0.7; padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
-        .mapped-pill .remove-map:hover { opacity: 1; background: rgba(255,255,255,0.2); }
-        .type-badge { font-size: 0.65rem; color: var(--text-muted); background: var(--surface-alt); padding: 2px 6px; border-radius: 4px; }
-
-        /* Floating Boxes for Canvas */
-        .floating-box {
-            position: absolute;
-            background: var(--surface);
-            border: 1px solid #cbd5e1;
-            border-radius: var(--radius-sm);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            min-width: 250px;
-            max-width: 600px;
-            min-height: 200px;
-            z-index: 10;
+        .mapped-pill {
+            display: flex; align-items: center; justify-content: space-between; background: var(--green); color: #fff;
+            padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; animation: fadeIn 0.3s ease; box-shadow: 0 2px 6px rgba(34, 197, 94, 0.2);
         }
-
-        /* Custom 8-Way Resizers */
+        .mapped-pill .remove-map { cursor: pointer; opacity: 0.7; padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
+        .mapped-pill .remove-map:hover { opacity: 1; background: rgba(255, 255, 255, 0.2); }
+        .type-badge { font-size: 0.65rem; color: var(--text-muted); background: var(--surface-alt); padding: 2px 6px; border-radius: 4px; }
+        .floating-box { position: absolute; background: var(--surface); border: 1px solid #cbd5e1; border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; min-width: 250px; max-width: 600px; min-height: 200px; z-index: 10; }
         .resizer { position: absolute; }
         .resizer.n { top: -4px; left: 0; width: 100%; height: 8px; cursor: n-resize; z-index: 20; }
         .resizer.s { bottom: -4px; left: 0; width: 100%; height: 8px; cursor: s-resize; z-index: 20; }
@@ -165,60 +262,44 @@
         .resizer.nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nw-resize; z-index: 21; }
         .resizer.se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: se-resize; z-index: 21; }
         .resizer.sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: sw-resize; z-index: 21; }
-
         .floating-box-header {
-            padding: 10px 12px;
-            background: var(--surface-alt);
-            border-bottom: 1px solid var(--border);
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: var(--accent);
-            cursor: move;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            padding: 10px 12px; background: var(--surface-alt); border-bottom: 1px solid var(--border); font-weight: 700;
+            font-size: 0.8rem; color: var(--accent); cursor: move; user-select: none; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .floating-box-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: #fff;
-        }
-
-        /* Dashboard mapping list */
+        .floating-box-content { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #fff; }
         .mapping-list { margin-top: 8px; }
         .dashboard-map-item { display: flex; flex-direction: column; gap: 4px; padding: 8px 12px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 0.8rem; }
         .dashboard-map-item .arrow-icon { color: var(--text-muted); font-size: 0.7rem; }
-
         .file-preview-table { width: 100%; border-collapse: collapse; font-size: .7rem; }
         .file-preview-table th { background: var(--accent-light); padding: 6px 8px; text-align: left; font-weight: 600; border: 1px solid var(--border); position: sticky; top: 0; }
         .file-preview-table td { padding: 4px 8px; border: 1px solid var(--border-light); }
         .file-preview-table tr:nth-child(even) { background: var(--surface-alt); }
-
-        .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1d28;color:#fff;padding:10px 20px;border-radius:24px;font-size:.8rem;font-weight:500;z-index:10000;opacity:0;pointer-events:none;transition:opacity .3s,transform .4s cubic-bezier(.34,1.56,.64,1)}
-        .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
-
-        ::-webkit-scrollbar{width:6px; height:6px;}
-        ::-webkit-scrollbar-track{background:transparent}
-        ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-        ::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
-
-        .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
-        .empty-state i{font-size:3rem;margin-bottom:12px;display:block;opacity:.5}
-
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1d28; color: #fff; padding: 10px 20px; border-radius: 24px; font-size: .8rem; font-weight: 500; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity .3s, transform .4s cubic-bezier(.34, 1.56, .64, 1); }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+        .toast-success { background: var(--green-dark); }
+        .toast-error { background: var(--red); }
+        .toast-info { background: var(--accent); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; opacity: .5; }
+        .upload-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .upload-row .btn { flex: 1; justify-content: center; min-width: 140px; }
+        .file-input-hidden { display: none; }
+        .deam-detail-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .deam-detail-actions .btn { flex: 1; justify-content: center; min-width: 100px; }
     </style>
 </head>
 <body>
 <div class="app">
+    <!-- NAVBAR -->
     <nav class="navbar">
-        <a href="pahal.html" class="navbar-brand"><div class="navbar-logo">P</div><span class="navbar-name">PahAl</span></a>
+        <a href="pahal.html" class="navbar-brand">
+            <div class="navbar-logo">P</div>
+            <span class="navbar-name">PahAl</span>
+        </a>
         <div class="navbar-nav">
             <a href="pahal.html" class="nav-link"><i class="fas fa-grid-2"></i><span>Dashboard</span></a>
             <a href="ganga.html" class="nav-link active"><i class="fas fa-pen-to-square"></i><span>TBRD Builder</span></a>
@@ -227,32 +308,48 @@
             <a href="sangam.html" class="nav-link"><i class="fas fa-rocket"></i><span>Deploy</span></a>
             <a href="chatAgent.html" class="nav-link"><i class="fas fa-message-smile"></i><span>AI Agent</span></a>
         </div>
-        <div class="navbar-right"><div class="user-btn"><div class="user-avatar">AK</div><span style="font-size:.8rem;">Arjun Kumar</span></div></div>
+        <div class="navbar-right">
+            <div class="user-btn">
+                <div class="user-avatar">AK</div>
+                <span style="font-size:.8rem;">Arjun Kumar</span>
+            </div>
+        </div>
     </nav>
 
+    <!-- MAIN CONTENT -->
     <div class="main-content" id="mainContent">
+        <!-- LEFT PANEL -->
         <div class="left-panel" id="leftPanel">
             <div class="panel-tabs">
                 <div class="panel-tab" data-tab="deam"><i class="fas fa-database"></i> DEAM Builder</div>
                 <div class="panel-tab active" data-tab="wfm"><i class="fas fa-diagram-project"></i> TTM & WFM Builder</div>
-                <div style="position: absolute; right: 8px; top: 8px; display: flex; align-items: center;">
-                    <button class="btn btn-outline btn-sm" style="padding: 4px 8px; border-color: transparent;" onclick="toggleLeftMaximize()" title="Maximize Builder">
+                <div style="position:absolute; right:8px; top:8px; display:flex; align-items:center;">
+                    <button class="btn btn-outline btn-sm" style="padding:4px 8px; border-color:transparent;" onclick="toggleLeftMaximize()" title="Maximize Builder">
                         <i class="fas fa-expand" id="leftMaximizeIcon"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- DEAM Panel -->
+            <!-- ========== DEAM PANEL ========== -->
             <div class="panel-content" id="deamContent" style="display:none;">
+                <div class="upload-row">
+                    <button class="btn btn-upload btn-sm" onclick="document.getElementById('deamFileInput').click()">
+                        <i class="fas fa-upload"></i> You already have the DEAM or create script
+                    </button>
+                    <input type="file" id="deamFileInput" class="file-input-hidden" accept=".json,.sql,.txt" onchange="handleDeamFileUpload(event)" />
+                </div>
+
                 <div class="search-box">
-                    <input type="text" class="search-input" id="entitySearch" placeholder="Search database tables...">
+                    <input type="text" class="search-input" id="entitySearch" placeholder="Search database tables..." />
                     <button class="btn btn-outline btn-sm" id="searchEntitiesBtn"><i class="fas fa-search"></i></button>
                     <button class="btn btn-primary btn-sm" id="fetchDbBtn"><i class="fas fa-database"></i> Fetch DB</button>
                     <button class="btn btn-amber btn-sm" id="addEntityBtn"><i class="fas fa-plus"></i> New</button>
                 </div>
+
                 <div class="entity-list" id="entityList">
-                    <div class="empty-state"><i class="fas fa-database"></i><p>Click "Fetch DB" to load tables or create new entities.</p></div>
+                    <div class="empty-state"><i class="fas fa-database"></i><p>Click "Fetch DB" to load tables, upload a DEAM JSON, or create new entities.</p></div>
                 </div>
+
                 <div class="entity-detail-inline" id="entityDetailInline">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                         <strong id="selectedEntityName" style="font-size:.9rem;"></strong>
@@ -261,11 +358,26 @@
                         </div>
                     </div>
                     <div class="column-list" id="columnList"></div>
+                    <div class="deam-detail-actions">
+                        <button class="btn btn-add-tbrd btn-sm" onclick="addSelectedEntityToTbrd()">
+                            <i class="fas fa-file-import"></i> Add to TBRD
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="copyEntityToClipboard()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- WFM & TTM Panel (Subworkflows) -->
+            <!-- ========== WFM PANEL ========== -->
             <div class="panel-content" id="wfmContent">
+                <div class="upload-row">
+                    <button class="btn btn-upload btn-sm" onclick="document.getElementById('wfmFileInput').click()">
+                        <i class="fas fa-upload"></i> You already have the WFM
+                    </button>
+                    <input type="file" id="wfmFileInput" class="file-input-hidden" accept=".json" onchange="handleWfmFileUpload(event)" />
+                </div>
+
                 <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary);">Workflow Pipeline</span>
                     <button class="btn btn-outline btn-sm" onclick="addReferenceSubWorkflow()"><i class="fas fa-plus"></i> Add Reference Subworkflow</button>
@@ -275,15 +387,16 @@
                     <!-- Rendered by JS -->
                 </div>
 
-                <button class="btn btn-success" style="margin-top:20px; width:100%; justify-content:center; padding: 12px; font-size:0.9rem;" onclick="generateDocument()">
+                <button class="btn btn-success" style="margin-top:20px; width:100%; justify-content:center; padding:12px; font-size:0.9rem;" onclick="generateDocument()">
                     <i class="fas fa-check-circle"></i> Generate Comprehensive TBRD Document
                 </button>
             </div>
         </div>
 
+        <!-- RESIZE HANDLE -->
         <div class="resize-handle" id="resizeHandle"></div>
 
-        <!-- Right Panel (Document) -->
+        <!-- RIGHT PANEL -->
         <div class="right-panel" id="rightPanel">
             <div class="right-header">
                 <div class="right-title"><i class="fas fa-file-lines" style="color:var(--accent);"></i> Generated TBRD Document</div>
@@ -298,53 +411,53 @@
     </div>
 </div>
 
-<!-- Entities Modal -->
+<!-- ENTITY MODAL (New Entity) -->
 <div class="modal-overlay" id="entityModal">
     <div class="modal">
-        <div class="modal-header"><span class="modal-title"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> New Entity</span><button class="modal-close" onclick="closeModal('entityModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-header">
+            <span class="modal-title"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> New Entity</span>
+            <button class="modal-close" onclick="closeModal('entityModal')"><i class="fas fa-times"></i></button>
+        </div>
         <div style="overflow-y:auto; flex:1;">
-            <div class="form-group"><label class="form-label">Entity Name</label><input type="text" class="form-input" id="newEntityName" placeholder="e.g., cu_customer_master"></div>
-            <div class="form-group"><label class="form-label">Display Name</label><input type="text" class="form-input" id="newEntityDisplayName" placeholder="Customer Master"></div>
+            <div class="form-group"><label class="form-label">Entity Name</label><input type="text" class="form-input" id="newEntityName" placeholder="e.g., cu_customer_master" /></div>
+            <div class="form-group"><label class="form-label">Display Name</label><input type="text" class="form-input" id="newEntityDisplayName" placeholder="Customer Master" /></div>
             <div class="form-group"><label class="form-label">Attributes</label></div>
             <div id="newAttributesList"></div>
             <button class="btn btn-outline btn-sm" onclick="addAttributeRow()" style="margin-bottom:12px;"><i class="fas fa-plus"></i> Add Attribute</button>
-            <div class="form-group"><label class="form-label">Business Keys (comma separated)</label><input type="text" class="form-input" id="newEntityBusinessKeys" placeholder="customer_id, email"></div>
+            <div class="form-group"><label class="form-label">Business Keys (comma separated)</label><input type="text" class="form-input" id="newEntityBusinessKeys" placeholder="customer_id, email" /></div>
         </div>
         <button class="btn btn-primary" style="width:100%; flex-shrink:0; margin-top:16px;" onclick="saveNewEntity()"><i class="fas fa-save"></i> Save Entity</button>
     </div>
 </div>
 
-<!-- Interactive Mapping Modal -->
+<!-- MAPPING MODAL -->
 <div class="modal-overlay" id="mappingModal">
-    <div class="modal" style="max-width: 98vw; width: 98vw; height: 95vh; padding:16px;">
+    <div class="modal" style="max-width:98vw; width:98vw; height:95vh; padding:16px;">
         <div class="modal-header" style="margin-bottom:8px;">
             <span class="modal-title"><i class="fas fa-project-diagram" style="color:var(--accent);"></i> Interactive Column Mapping (<span id="mapperSwName" style="font-weight:400;"></span>)</span>
             <button class="modal-close" onclick="closeModal('mappingModal')"><i class="fas fa-times"></i></button>
         </div>
-
         <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:12px; flex-shrink:0;"><i class="fas fa-info-circle"></i> Drag columns from the uploaded source files and drop them onto the target entity attributes to establish a mapping. For multi-column operations (like CONCATENATE, SUM), add them in the arguments field. Resize from any edge/corner and move boxes on the canvas as needed.</p>
 
         <div class="linker-wrapper">
             <div class="linker-toolbar">
-                <div style="flex:1; position: relative; max-width: 400px;">
+                <div style="flex:1; position:relative; max-width:400px;">
                     <i class="fas fa-search" style="position:absolute; left:12px; top:10px; color:var(--text-muted); font-size:0.8rem;"></i>
-                    <input type="text" class="form-input" style="padding-left:32px;" placeholder="Filter Source Columns..." oninput="filterCanvasSources(this.value)">
+                    <input type="text" class="form-input" style="padding-left:32px;" placeholder="Filter Source Columns..." oninput="filterCanvasSources(this.value)" />
                 </div>
-                <div style="flex:1; position: relative; max-width: 400px;">
+                <div style="flex:1; position:relative; max-width:400px;">
                     <i class="fas fa-search" style="position:absolute; left:12px; top:10px; color:var(--text-muted); font-size:0.8rem;"></i>
-                    <input type="text" class="form-input" style="padding-left:32px;" placeholder="Filter Target Attributes..." oninput="filterCanvasTarget(this.value)">
+                    <input type="text" class="form-input" style="padding-left:32px;" placeholder="Filter Target Attributes..." oninput="filterCanvasTarget(this.value)" />
                 </div>
             </div>
-
             <div class="linker-container">
-                <div id="mappingCanvas" style="flex: 1; position: relative; background: #f8fafc; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
-                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--text-muted); pointer-events:none; font-size:2rem; opacity:0.2; font-weight:800; letter-spacing:2px;">MAPPING CANVAS</div>
-                    <!-- Populated dynamically -->
+                <div id="mappingCanvas" style="flex:1; position:relative; background:#f8fafc; background-image:radial-gradient(#cbd5e1 1px, transparent 1px); background-size:20px 20px; border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden;">
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--text-muted); pointer-events:none; font-size:2rem; opacity:0.2; font-weight:800; letter-spacing:2px;">MAPPING CANVAS</div>
                 </div>
             </div>
         </div>
 
-        <button class="btn btn-primary" style="width:100%; flex-shrink:0; margin-top:16px; justify-content:center; padding: 12px;" onclick="closeModal('mappingModal')">
+        <button class="btn btn-primary" style="width:100%; flex-shrink:0; margin-top:16px; justify-content:center; padding:12px;" onclick="closeModal('mappingModal')">
             <i class="fas fa-check"></i> Save & Close Mapper
         </button>
     </div>
@@ -353,59 +466,64 @@
 <div class="toast" id="toast"></div>
 
 <script>
+    // ============================================================
+    // CONFIG & STATE
+    // ============================================================
     const API_BASE_URL = 'http://localhost:8080/api';
 
-    // Global Datasets
     let allDbTables = [];
     let entities = [];
     let selectedEntityIndex = -1;
     let documentContent = '';
-
-    // SubWorkflow State Management
-    function createEmptySubWorkflow(isMain = false) {
-        return {
-            id: 'sw_' + Date.now() + Math.random().toString(36).substr(2, 5),
-            isMain: isMain,
-            name: isMain ? 'Main Workflow' : 'Ref Workflow',
-            targetEntities: [],
-            secondaryDeams: '',
-            files: [], // { fileName, columns, data }
-            sourceType: '',
-            sourceConfig: {},
-            sinkType: '',
-            sinkConfig: {},
-            orchestration: 'Inbound Event - (File arrival, API Call, message queue)',
-            services: [],
-            scheduler: { startTime: '', pollTime: '', pollInterval: '', crud: '' },
-            mappings: [] // { fileColId, fileName, fileCol, targetEntity, entityAttr, transforms: [{operation, attributes}] }
-        };
-    }
-
     let subWorkflows = [];
 
-    // UI State for Mapper
+    // Mapper state
     let currentMapperSwId = null;
-    let boxPositions = {}; // { left, top, zIndex, width, height }
+    let boxPositions = {};
     let floatZ = 10;
     let activeFloat = null;
     let floatStartX = 0, floatStartY = 0, floatInitLeft = 0, floatInitTop = 0;
     let activeResizer = null;
 
-    // ============================================
-    // UTILS & MAXIMIZE
-    // ============================================
+    // ============================================================
+    // UTILITY FUNCTIONS
+    // ============================================================
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast';
+        if (type) t.classList.add('toast-' + type);
+        t.classList.add('show');
+        clearTimeout(t._timeout);
+        t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('show');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+        updateDocument();
+        renderSubWorkflows();
+    }
+    document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', (e) => {
+        if (e.target === m && m.id !== 'mappingModal') closeModal(m.id);
+    }));
+
     function toggleMaximize() {
         const mainContent = document.getElementById('mainContent');
         const icon = document.getElementById('maximizeIcon');
         const text = document.getElementById('maximizeText');
         mainContent.classList.remove('left-maximized');
         document.getElementById('leftMaximizeIcon').className = 'fas fa-expand';
-
         mainContent.classList.toggle('maximized');
         if (mainContent.classList.contains('maximized')) {
-            icon.className = 'fas fa-compress'; text.textContent = 'Minimize';
+            icon.className = 'fas fa-compress';
+            text.textContent = 'Minimize';
         } else {
-            icon.className = 'fas fa-expand'; text.textContent = 'Maximize';
+            icon.className = 'fas fa-expand';
+            text.textContent = 'Maximize';
         }
     }
 
@@ -415,7 +533,6 @@
         mainContent.classList.remove('maximized');
         document.getElementById('maximizeIcon').className = 'fas fa-expand';
         document.getElementById('maximizeText').textContent = 'Maximize';
-
         mainContent.classList.toggle('left-maximized');
         if (mainContent.classList.contains('left-maximized')) {
             icon.className = 'fas fa-compress';
@@ -427,9 +544,27 @@
     const resizeHandle = document.getElementById('resizeHandle');
     const leftPanel = document.getElementById('leftPanel');
     let isResizing = false, startX, startWidth;
-    resizeHandle.addEventListener('mousedown', (e) => { isResizing=true; startX=e.clientX; startWidth=leftPanel.offsetWidth; resizeHandle.classList.add('active'); document.body.style.cursor='col-resize'; document.body.style.userSelect='none'; });
-    document.addEventListener('mousemove', (e) => { if(!isResizing)return; const w=Math.max(300,Math.min(1000,startWidth+(e.clientX-startX))); leftPanel.style.width=w+'px'; });
-    document.addEventListener('mouseup', () => { if(isResizing){isResizing=false;resizeHandle.classList.remove('active');document.body.style.cursor='';document.body.style.userSelect='';} });
+    resizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = leftPanel.offsetWidth;
+        resizeHandle.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const w = Math.max(300, Math.min(1000, startWidth + (e.clientX - startX)));
+        leftPanel.style.width = w + 'px';
+    });
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            resizeHandle.classList.remove('active');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    });
 
     document.querySelectorAll('.panel-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -442,14 +577,250 @@
         });
     });
 
-    function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._timeout); t._timeout = setTimeout(() => t.classList.remove('show'), 2500); }
-    function openModal(id) { document.getElementById(id).classList.add('show'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); updateDocument(); renderSubWorkflows(); }
-    document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', (e) => { if (e.target === m && m.id !== 'mappingModal') closeModal(m.id); }));
+    // ============================================================
+    // DEAM UPLOAD — JSON or SQL CREATE TABLE
+    // ============================================================
+    function handleDeamFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const content = e.target.result;
+                const trimmed = content.trim();
+                if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                    const data = JSON.parse(content);
+                    if (Array.isArray(data)) {
+                        data.forEach(item => importDeamEntity(item));
+                    } else {
+                        importDeamEntity(data);
+                    }
+                    showToast('✅ DEAM JSON imported successfully', 'success');
+                } else {
+                    const entitiesFromSql = parseCreateTableSql(content);
+                    if (entitiesFromSql.length === 0) {
+                        showToast('⚠️ Could not parse SQL. Please provide a valid CREATE TABLE statement.', 'error');
+                        return;
+                    }
+                    entitiesFromSql.forEach(ent => {
+                        if (!entities.find(e => e.name === ent.name)) {
+                            entities.push(ent);
+                        }
+                    });
+                    showToast(`✅ Imported ${entitiesFromSql.length} table(s) from SQL`, 'success');
+                }
+                renderEntityList(allDbTables);
+                renderSubWorkflows();
+                updateDocument();
+            } catch (err) {
+                showToast('⚠️ Failed to parse file: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
 
-    // ============================================
+    function importDeamEntity(data) {
+        const name = data.entity || data.name;
+        if (!name) { showToast('⚠️ DEAM entity missing "entity" or "name" field', 'error'); return; }
+        if (entities.find(e => e.name === name)) { showToast(`⚠️ Entity "${name}" already exists, skipping`, 'info'); return; }
+
+        const displayName = data.displayName || name;
+        const attrList = data.attributesList || data.attributes || [];
+        const attributes = attrList.map(a => ({
+            name: a.name || a.attributeName,
+            type: a.type || a.dataType || 'string',
+            nullable: a.nullable !== undefined ? a.nullable : (a.mandatory === true ? false : true),
+            isPrimaryKey: a.businessKey === true || a.primaryKey === true || a.isPrimaryKey === true
+        }));
+
+        if (!attributes.some(a => a.isPrimaryKey) && data.primaryKey) {
+            const pkAttr = attributes.find(a => a.name === data.primaryKey);
+            if (pkAttr) pkAttr.isPrimaryKey = true;
+        }
+        let businessKeys = attrList.filter(a => a.businessKey === true).map(a => a.name);
+        if (businessKeys.length === 0 && data.businessKeys) businessKeys = data.businessKeys;
+        if (businessKeys.length === 0 && data.primaryKey) businessKeys = [data.primaryKey];
+
+        entities.push({
+            name, displayName, attributes,
+            businessKeys: Array.isArray(businessKeys) ? businessKeys : [businessKeys],
+            source: 'uploaded_deam'
+        });
+        showToast(`✅ DEAM "${displayName}" imported`, 'success');
+    }
+
+    function parseCreateTableSql(sql) {
+        const results = [];
+        const createRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:[\w.]+\.)?(\w+)\s*\(([^;]+)\)/gi;
+        let match;
+        while ((match = createRegex.exec(sql)) !== null) {
+            const tableName = match[1];
+            const columnsBlock = match[2];
+            const lines = columnsBlock.split(',').map(s => s.trim());
+            const attrs = [];
+            let businessKeys = [];
+            for (let line of lines) {
+                const upper = line.toUpperCase();
+                if (upper.startsWith('PRIMARY KEY') || upper.startsWith('FOREIGN KEY') || upper.startsWith('CONSTRAINT') || upper.startsWith('UNIQUE') || upper.includes('CHECK')) {
+                    const pkMatch = line.match(/PRIMARY\s+KEY\s*\(([^)]+)\)/i);
+                    if (pkMatch) {
+                        const cols = pkMatch[1].split(',').map(c => c.trim().replace(/["`]/g, ''));
+                        businessKeys = cols;
+                    }
+                    continue;
+                }
+                const parts = line.split(/\s+/);
+                if (parts.length < 2) continue;
+                const colName = parts[0].replace(/["`]/g, '');
+                let dataType = parts[1];
+                const typeClean = dataType.replace(/\([^)]*\)/, '').toLowerCase();
+                let type = 'string';
+                if (typeClean.includes('int') || typeClean.includes('serial') || typeClean.includes('number')) type = 'integer';
+                else if (typeClean.includes('decimal') || typeClean.includes('numeric') || typeClean.includes('float') || typeClean.includes('double') || typeClean.includes('money')) type = 'decimal';
+                else if (typeClean.includes('date') || typeClean.includes('time')) type = 'datetime';
+                else if (typeClean.includes('bool')) type = 'boolean';
+                else if (typeClean.includes('text') || typeClean.includes('char')) type = 'string';
+
+                const nullable = !line.toUpperCase().includes('NOT NULL');
+                const isPk = line.toUpperCase().includes('PRIMARY KEY');
+                attrs.push({ name: colName, type, nullable, isPrimaryKey: isPk });
+            }
+            if (businessKeys.length === 0) businessKeys = attrs.filter(a => a.isPrimaryKey).map(a => a.name);
+            if (businessKeys.length === 0 && attrs.length > 0) businessKeys = [attrs[0].name];
+
+            results.push({
+                name: tableName,
+                displayName: tableName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                attributes: attrs,
+                businessKeys,
+                source: 'sql_import'
+            });
+        }
+        return results;
+    }
+
+    // ============================================================
+    // WFM UPLOAD — JSON workflow
+    // ============================================================
+    function handleWfmFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                importWfmWorkflow(data);
+                showToast('✅ WFM JSON imported successfully', 'success');
+                renderSubWorkflows();
+                updateDocument();
+            } catch (err) {
+                showToast('⚠️ Failed to parse WFM JSON: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    function importWfmWorkflow(data) {
+        const workflowName = data.workflowName || 'imported_workflow';
+        const executions = data.subWorkflowExecution || [];
+        if (executions.length === 0) {
+            showToast('⚠️ No subWorkflowExecution found in WFM JSON', 'error');
+            return;
+        }
+
+        let mainSw = subWorkflows.find(s => s.isMain === true);
+        if (!mainSw) {
+            mainSw = createEmptySubWorkflow(true);
+            mainSw.name = workflowName;
+            subWorkflows.unshift(mainSw);
+        } else {
+            mainSw.name = workflowName;
+        }
+
+        subWorkflows = subWorkflows.filter(s => s.isMain === true);
+
+        executions.forEach((exec, idx) => {
+            const sw = createEmptySubWorkflow(idx === 0 ? true : false);
+            sw.name = exec.workflowName || (idx === 0 ? workflowName : `ref_${idx}`);
+            sw.targetEntities = exec.entityName ? [exec.entityName] : [];
+            sw.secondaryDeams = exec.referenceEntity ? exec.referenceEntity.join(', ') : '';
+            sw.sourceType = exec.sourceType || '';
+            sw.sinkType = exec.sinkType || '';
+            sw.sourceConfig = exec.SourceConfig || {};
+            sw.sinkConfig = exec.sinkConfig || {};
+            sw.orchestration = exec.orchestration || 'Inbound Event - (File arrival, API Call, message queue)';
+            sw.services = (exec.serviceName || []).map(s => ({ name: s.functionName || s.name || '', version: s.version || '1.0' }));
+            sw.scheduler = {
+                startTime: exec.start_time || '', pollTime: exec.poll_time || '', pollInterval: exec.poll_interval || '',
+                crud: exec.crud && exec.crud.operation ? exec.crud.operation : '', timePicker: '', dayPicker: '', cron: ''
+            };
+            sw.fileName = exec.fileName || '';
+
+            if (exec.ttm) {
+                Object.keys(exec.ttm).forEach(ruleKey => {
+                    const rule = exec.ttm[ruleKey];
+                    // Pulling DEAM Lookup
+                    if (rule.deamLookup) {
+                        let attrList = rule.deamLookup.attributeList || [];
+                        if (typeof attrList === 'string') {
+                            try { attrList = JSON.parse(attrList); } catch(e) { attrList = []; }
+                        }
+                        sw.deamLookup = {
+                            entityName: rule.deamLookup.entityName || '',
+                            attributeList: Array.isArray(attrList) ? attrList : [],
+                            operation: rule.deamLookup.operation || 'ACCEPT'
+                        }
+                    }
+
+                    const sourceMeta = rule.sourceMetadata || [];
+                    const targetMeta = rule.targetMetadata || [];
+
+                    targetMeta.forEach(tm => {
+                        const mapTo = tm.mapTo || [];
+                        const attrs = tm.attributes || [];
+                        if (mapTo.length > 0 && attrs.length > 0) {
+                            const targetEntity = sw.targetEntities[0] || 'unknown';
+                            mapTo.forEach(targetAttr => {
+                                attrs.forEach(sourceAttr => {
+                                    sw.mappings.push({
+                                        fileColId: `${sw.fileName || 'file'}::${sourceAttr}`,
+                                        fileName: sw.fileName || 'file',
+                                        fileCol: sourceAttr,
+                                        targetEntity: targetEntity,
+                                        entityAttr: targetAttr,
+                                        transforms: (tm.transformations && tm.transformations.operations) ?
+                                            tm.transformations.operations.map(op => ({
+                                                operation: op.operation || 'UPPERCASE',
+                                                attributes: op.attributes ? op.attributes.join(', ') : ''
+                                            })) : []
+                                    });
+                                });
+                            });
+                        }
+                    });
+                });
+            }
+
+            if (idx === 0) {
+                const mainIdx = subWorkflows.findIndex(s => s.isMain === true);
+                if (mainIdx >= 0) subWorkflows[mainIdx] = sw;
+                else subWorkflows.unshift(sw);
+            } else {
+                subWorkflows.push(sw);
+            }
+        });
+
+        if (!subWorkflows.some(s => s.isMain)) {
+            subWorkflows.unshift(createEmptySubWorkflow(true));
+        }
+        showToast(`✅ Imported ${executions.length} workflow(s)`, 'success');
+    }
+
+    // ============================================================
     // DEAM BUILDER LOGIC
-    // ============================================
+    // ============================================================
     async function fetchDatabaseTables(search = '') {
         const container = document.getElementById('entityList');
         container.innerHTML = '<div class="empty-state"><div class="loading-spinner"></div><p>Fetching tables from database...</p></div>';
@@ -461,7 +832,8 @@
                 allDbTables = data.tables.map(t => ({
                     name: t.name, displayName: t.displayName,
                     attributes: t.columns.map(c => ({ name: c.name, type: c.type, nullable: c.nullable, isPrimaryKey: c.isPrimaryKey })),
-                    businessKeys: t.businessKeys || t.primaryKeys || [], source: 'database'
+                    businessKeys: t.businessKeys || t.primaryKeys || [],
+                    source: 'database'
                 }));
                 renderEntityList(allDbTables);
             } else { throw new Error(data.message || 'No tables'); }
@@ -471,10 +843,27 @@
     }
 
     function loadDemoData() {
-        allDbTables = [
-            { name: 'customer_master', displayName: 'Customer Master', attributes: [{name:'customer_id',type:'int4(10)',nullable:false,isPrimaryKey:true},{name:'customer_name',type:'string(100)',nullable:false},{name:'email',type:'string(100)',nullable:true},{name:'phone',type:'string(20)',nullable:true},{name:'created_date',type:'datetime',nullable:false}], businessKeys: ['customer_id'], source: 'database' },
-            { name: 'order_header', displayName: 'Order Header', attributes: [{name:'order_id',type:'serial(10)',nullable:false,isPrimaryKey:true},{name:'customer_id',type:'int4(10)',nullable:false},{name:'order_date',type:'datetime',nullable:false},{name:'total_amount',type:'decimal(12,2)',nullable:false},{name:'status',type:'string(30)',nullable:false}], businessKeys: ['order_id'], source: 'database' }
-        ];
+        allDbTables = [{
+            name: 'customer_master', displayName: 'Customer Master',
+            attributes: [
+                { name: 'customer_id', type: 'int4(10)', nullable: false, isPrimaryKey: true },
+                { name: 'customer_name', type: 'string(100)', nullable: false },
+                { name: 'email', type: 'string(100)', nullable: true },
+                { name: 'phone', type: 'string(20)', nullable: true },
+                { name: 'created_date', type: 'datetime', nullable: false }
+            ],
+            businessKeys: ['customer_id'], source: 'database'
+        }, {
+            name: 'order_header', displayName: 'Order Header',
+            attributes: [
+                { name: 'order_id', type: 'serial(10)', nullable: false, isPrimaryKey: true },
+                { name: 'customer_id', type: 'int4(10)', nullable: false },
+                { name: 'order_date', type: 'datetime', nullable: false },
+                { name: 'total_amount', type: 'decimal(12,2)', nullable: false },
+                { name: 'status', type: 'string(30)', nullable: false }
+            ],
+            businessKeys: ['order_id'], source: 'database'
+        }];
         renderEntityList(allDbTables);
     }
 
@@ -486,14 +875,17 @@
 
         const fullList = [...entities, ...list.filter(l => !entities.find(e => e.name === l.name))];
 
-        if (!fullList || fullList.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>No entities found</p></div>'; return; }
+        if (!fullList || fullList.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>No entities found</p></div>';
+            return;
+        }
         window._filteredEntities = fullList;
 
         container.innerHTML = fullList.map((e, i) => `
-        <div class="entity-item ${selectedEntityIndex===i?'selected':''}" onclick="selectEntity(${i})">
-            <div><div class="entity-name">${e.displayName}</div><div style="font-size:.7rem;color:var(--text-muted);">${e.name} • ${e.attributes.length} attrs • [${e.source || 'custom'}]</div></div>
-            <i class="fas fa-chevron-right" style="color:var(--text-muted);font-size:.7rem;"></i>
-        </div>`).join('');
+            <div class="entity-item ${selectedEntityIndex===i?'selected':''}" onclick="selectEntity(${i})">
+                <div><div class="entity-name">${e.displayName}</div><div style="font-size:.7rem;color:var(--text-muted);">${e.name} • ${e.attributes.length} attrs • [${e.source || 'custom'}]</div></div>
+                <i class="fas fa-chevron-right" style="color:var(--text-muted);font-size:.7rem;"></i>
+            </div>`).join('');
     }
 
     function selectEntity(index) {
@@ -506,59 +898,109 @@
 
         detail.classList.add('show');
         document.getElementById('selectedEntityName').textContent = entity.displayName + ' (' + entity.name + ')';
-        document.getElementById('columnList').innerHTML = entity.attributes.map(a => `<div class="column-item"><span class="column-name">${a.name}</span>${a.isPrimaryKey ? '<span class="pk-badge">PK</span>' : ''}<span class="column-type">${a.type}</span></div>`).join('');
+        document.getElementById('columnList').innerHTML = entity.attributes.map(a =>
+            `<div class="column-item"><span class="column-name">${a.name}</span>${a.isPrimaryKey ? '<span class="pk-badge">PK</span>' : ''}<span class="column-type">${a.type}</span></div>`
+        ).join('');
     }
 
-    function removeSelectedEntity() { document.getElementById('entityDetailInline').classList.remove('show'); selectedEntityIndex = -1; renderEntityList(window._filteredEntities || allDbTables); }
+    function removeSelectedEntity() {
+        document.getElementById('entityDetailInline').classList.remove('show');
+        selectedEntityIndex = -1;
+        renderEntityList(window._filteredEntities || allDbTables);
+    }
 
     function addAttributeRow() {
-        const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
-        row.innerHTML = `<input type="text" class="form-input" placeholder="Attr name" data-attr="name" style="flex:2;"><select class="form-select" data-attr="type" style="flex:1;"><option value="string(50)">string(50)</option><option value="integer">integer</option><option value="decimal">decimal</option></select><select class="form-select" data-attr="nullable" style="flex:1;"><option value="Yes">Nullable</option><option value="No">Required</option></select><button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+        row.innerHTML = `<input type="text" class="form-input" placeholder="Attr name" data-attr="name" style="flex:2;"><select class="form-select" data-attr="type" style="flex:1;">
+            <option value="string">string</option><option value="integer">integer</option><option value="decimal">decimal</option><option value="numeric">numeric</option>
+            <option value="datetime">datetime</option><option value="boolean">boolean</option><option value="array">array</option><option value="jsonb">jsonb</option>
+            <option value="long">decimal</option><option value="attribute">attribute</option><option value="object">object</option>
+            </select><select class="form-select" data-attr="nullable" style="flex:1;"><option value="Yes">Nullable</option><option value="No">Required</option></select><button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
         document.getElementById('newAttributesList').appendChild(row);
     }
 
     function saveNewEntity() {
         const name = document.getElementById('newEntityName').value.trim();
-        if (!name) return showToast('Enter entity name');
+        if (!name) return showToast('Enter entity name', 'error');
         const attributes = [];
-        document.querySelectorAll('#newAttributesList > div').forEach(row => { const n = row.querySelector('[data-attr="name"]'); if (n && n.value.trim()) attributes.push({ name: n.value.trim(), type: row.querySelector('[data-attr="type"]').value, nullable: row.querySelector('[data-attr="nullable"]').value === 'Yes', isPrimaryKey: false }); });
-
-        entities.push({ name, displayName: document.getElementById('newEntityDisplayName').value.trim() || name, attributes, businessKeys: document.getElementById('newEntityBusinessKeys').value.split(',').map(k => k.trim()).filter(k => k), source: 'custom_builder' });
+        document.querySelectorAll('#newAttributesList > div').forEach(row => {
+            const n = row.querySelector('[data-attr="name"]');
+            if (n && n.value.trim()) attributes.push({
+                name: n.value.trim(), type: row.querySelector('[data-attr="type"]').value,
+                nullable: row.querySelector('[data-attr="nullable"]').value === 'Yes', isPrimaryKey: false
+            });
+        });
+        entities.push({
+            name, displayName: document.getElementById('newEntityDisplayName').value.trim() || name,
+            attributes, businessKeys: document.getElementById('newEntityBusinessKeys').value.split(',').map(k => k.trim()).filter(k => k), source: 'custom_builder'
+        });
         closeModal('entityModal');
+        document.getElementById('newEntityName').value = '';
+        document.getElementById('newEntityDisplayName').value = '';
+        document.getElementById('newEntityBusinessKeys').value = '';
+        document.getElementById('newAttributesList').innerHTML = '';
         renderEntityList(allDbTables);
         renderSubWorkflows();
-        showToast('✅ Entity created');
+        updateDocument();
+        showToast('✅ Entity created', 'success');
     }
 
-    // ============================================
-    // SUBWORKFLOWS UI GENERATION & STATE
-    // ============================================
+    function addSelectedEntityToTbrd() {
+        if (selectedEntityIndex < 0) { showToast('Please select an entity first', 'info'); return; }
+        const entity = window._filteredEntities[selectedEntityIndex];
+        if (!entity) return;
+        if (!entities.find(e => e.name === entity.name)) {
+            entities.push(entity);
+            showToast(`✅ Added "${entity.displayName}" to TBRD`, 'success');
+        } else {
+            showToast(`ℹ️ "${entity.displayName}" is already in the TBRD`, 'info');
+        }
+        updateDocument();
+    }
+
+    function copyEntityToClipboard() {
+        if (selectedEntityIndex < 0) { showToast('Please select an entity first', 'info'); return; }
+        const entity = window._filteredEntities[selectedEntityIndex];
+        if (!entity) return;
+        const text = JSON.stringify(entity, null, 2);
+        navigator.clipboard.writeText(text).then(() => showToast('📋 Entity JSON copied!', 'success')).catch(() => showToast('Could not copy', 'error'));
+    }
+
+    // ============================================================
+    // SUBWORKFLOW LOGIC
+    // ============================================================
+    function createEmptySubWorkflow(isMain = false) {
+        return {
+            id: 'sw_' + Date.now() + Math.random().toString(36).substr(2, 5),
+            isMain: isMain, name: isMain ? 'Main Workflow' : 'Ref Workflow',
+            targetEntities: [], secondaryDeams: '', files: [], sourceType: '', sourceConfig: { sftpEnabled: 'true' }, sinkType: '', sinkConfig: {},
+            orchestration: 'Inbound Event - (File arrival, API Call, message queue)', services: [],
+            scheduler: { startTime: '', pollTime: '', pollInterval: '', crud: '', timePicker: '', dayPicker: '', cron: '' },
+            deamLookup: { entityName: '', attributeList: [], operation: 'ACCEPT' },
+            mappings: [], fileName: ''
+        };
+    }
 
     function addReferenceSubWorkflow() {
         subWorkflows.push(createEmptySubWorkflow(false));
-        renderSubWorkflows();
-        updateDocument();
+        renderSubWorkflows(); updateDocument();
     }
-
     function removeSubWorkflow(id) {
         subWorkflows = subWorkflows.filter(sw => sw.id !== id);
-        renderSubWorkflows();
-        updateDocument();
+        renderSubWorkflows(); updateDocument();
     }
-
     function updateSwState(id, key, val) {
         const sw = subWorkflows.find(s => s.id === id);
-        if(sw) { sw[key] = val; updateDocument(); }
+        if (sw) { sw[key] = val; updateDocument(); }
     }
-
     function updateSwNestedState(id, parent, key, val) {
         const sw = subWorkflows.find(s => s.id === id);
-        if(sw && sw[parent]) { sw[parent][key] = val; updateDocument(); }
+        if (sw && sw[parent]) { sw[parent][key] = val; updateDocument(); }
     }
-
     function updateSwTargets(id, selectEl) {
         const sw = subWorkflows.find(s => s.id === id);
-        if(sw) {
+        if (sw) {
             sw.targetEntities = Array.from(selectEl.selectedOptions).map(o => o.value);
             updateDocument();
         }
@@ -568,26 +1010,49 @@
         const all = [...entities, ...allDbTables.filter(t => !entities.find(e => e.name === t.name))];
         const unique = []; const seen = new Set();
         all.forEach(e => { if (!seen.has(e.name)) { seen.add(e.name); unique.push(e); } });
-
         return unique.map(e => `<option value="${e.name}" ${selectedArr.includes(e.name)?'selected':''}>${e.displayName} (${e.name})</option>`).join('');
     }
 
     function renderSourceConfigHTML(sw) {
         const val = sw.sourceType;
         let html = '';
-        if(val === 'SFTP_SOURCE') {
-            html = `<input type="text" class="form-input" placeholder="SFTP Host" value="${sw.sourceConfig.host||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'host', this.value)">
+        if (val === 'SFTP_SOURCE') {
+            const isSftpEnabled = sw.sourceConfig.sftpEnabled !== 'false';
+            html = `
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <label class="form-label" style="margin:0;">SFTP Enabled?</label>
+                    <select class="form-select" style="width:100px;" onchange="updateSwNestedState('${sw.id}', 'sourceConfig', 'sftpEnabled', this.value); changeSwSourceType('${sw.id}', 'SFTP_SOURCE');">
+                        <option value="true" ${isSftpEnabled?'selected':''}>True</option>
+                        <option value="false" ${!isSftpEnabled?'selected':''}>False</option>
+                    </select>
+                </div>
+            `;
+            if (isSftpEnabled) {
+                html += `
+                    <input type="text" class="form-input" placeholder="SFTP Host" value="${sw.sourceConfig.host||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'host', this.value)">
                     <input type="text" class="form-input" placeholder="Port" value="${sw.sourceConfig.port||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'port', this.value)">
-                    <input type="text" class="form-input" placeholder="Username" value="${sw.sourceConfig.username||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'username', this.value)">`;
-        } else if(val === 'DB_SOURCE') {
-            html = `<input type="text" class="form-input" placeholder="Connection String" value="${sw.sourceConfig.conn||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'conn', this.value)">
-                    <input type="text" class="form-input" placeholder="Query" value="${sw.sourceConfig.query||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'query', this.value)">`;
-        } else if(val === 'API_SOURCE') {
-            html = `<input type="text" class="form-input" placeholder="API Endpoint" value="${sw.sourceConfig.endpoint||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'endpoint', this.value)">
-                    <input type="text" class="form-input" placeholder="Method (GET/POST)" value="${sw.sourceConfig.method||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'method', this.value)">`;
-        } else if(val === 'KAFKA_SOURCE') {
-            html = `<input type="text" class="form-input" placeholder="Broker URLs" value="${sw.sourceConfig.brokers||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'brokers', this.value)">
-                    <input type="text" class="form-input" placeholder="Topic" value="${sw.sourceConfig.topic||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'topic', this.value)">`;
+                    <input type="text" class="form-input" placeholder="Username" value="${sw.sourceConfig.username||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'username', this.value)">
+                    <input type="text" class="form-input" placeholder="Remote Path" value="${sw.sourceConfig.sftpRemotePath||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'sftpRemotePath', this.value)">
+                `;
+            } else {
+                html += `<input type="text" class="form-input" placeholder="Local Source Directory" value="${sw.sourceConfig.localSourceDirectory||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'localSourceDirectory', this.value)">`;
+            }
+        } else if (val === 'DB_SOURCE') {
+            html = `
+                <input type="text" class="form-input" placeholder="Entity Name (e.g. customer_header)" value="${sw.sourceConfig.entityName||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'entityName', this.value)">
+                <input type="text" class="form-input" placeholder="Filter Name (e.g. customerheaderRead)" value="${sw.sourceConfig.filterName||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'filterName', this.value)">
+                <textarea class="form-input" placeholder='Parameters (JSON) e.g. {"customer_id": "QSK60 RAIL"}' oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'parameters', this.value)">${sw.sourceConfig.parameters||''}</textarea>
+            `;
+        } else if (val === 'API_SOURCE') {
+            html = `
+                <input type="text" class="form-input" placeholder="API Endpoint" value="${sw.sourceConfig.endpoint||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'endpoint', this.value)">
+                <input type="text" class="form-input" placeholder="Method (GET/POST)" value="${sw.sourceConfig.method||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'method', this.value)">
+            `;
+        } else if (val === 'KAFKA_SOURCE') {
+            html = `
+                <input type="text" class="form-input" placeholder="Broker URLs" value="${sw.sourceConfig.serverAddress||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'serverAddress', this.value)">
+                <input type="text" class="form-input" placeholder="Topic" value="${sw.sourceConfig.topic||''}" oninput="updateSwNestedState('${sw.id}', 'sourceConfig', 'topic', this.value)">
+            `;
         }
         return html;
     }
@@ -595,13 +1060,13 @@
     function renderSinkConfigHTML(sw) {
         const val = sw.sinkType;
         let html = '';
-        if(val === 'GRPC_SINK' || val === 'API_SINK') {
-            html = `<input type="text" class="form-input" placeholder="Target Endpoint" value="${sw.sinkConfig.endpoint||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'endpoint', this.value)">`;
-        } else if(val === 'CSV_SINK') {
-            html = `<input type="text" class="form-input" placeholder="Output File Path" value="${sw.sinkConfig.path||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'path', this.value)">`;
-        } else if(val === 'KAFKA_SINK') {
-            html = `<input type="text" class="form-input" placeholder="Broker URLs" value="${sw.sinkConfig.brokers||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'brokers', this.value)">
-                    <input type="text" class="form-input" placeholder="Topic" value="${sw.sinkConfig.topic||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'topic', this.value)">`;
+        if (val === 'GRPC_SINK' || val === 'API_SINK') { html = `<input type="text" class="form-input" placeholder="Target Endpoint" value="${sw.sinkConfig.api_url||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'api_url', this.value)">`; }
+        else if (val === 'CSV_SINK') { html = `<input type="text" class="form-input" placeholder="Output File Path" value="${sw.sinkConfig.sinkPath||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'sinkPath', this.value)">`; }
+        else if (val === 'KAFKA_SINK') {
+            html = `
+                <input type="text" class="form-input" placeholder="Broker URLs" value="${sw.sinkConfig.serverAddress||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'serverAddress', this.value)">
+                <input type="text" class="form-input" placeholder="Topic" value="${sw.sinkConfig.topicName||''}" oninput="updateSwNestedState('${sw.id}', 'sinkConfig', 'topicName', this.value)">
+            `;
         }
         return html;
     }
@@ -626,71 +1091,50 @@
 
     function addSwService(id) {
         const sw = subWorkflows.find(s => s.id === id);
-        sw.services.push({name: '', version: '1.0'});
-        renderSwServices(sw);
-        updateDocument();
+        sw.services.push({ name: '', version: '1.0' });
+        renderSwServices(sw); updateDocument();
     }
-
     function removeSwService(id, idx) {
         const sw = subWorkflows.find(s => s.id === id);
         sw.services.splice(idx, 1);
-        renderSwServices(sw);
-        updateDocument();
+        renderSwServices(sw); updateDocument();
     }
-
     function updateSwService(id, idx, key, val) {
         const sw = subWorkflows.find(s => s.id === id);
-        sw.services[idx][key] = val;
-        updateDocument();
+        sw.services[idx][key] = val; updateDocument();
     }
-
     function renderSwServices(sw) {
         const container = document.getElementById(`svcList_${sw.id}`);
-        if(!container) return;
+        if (!container) return;
         container.innerHTML = sw.services.map((sf, i) => `
             <div style="display:flex; gap:8px;">
                 <input type="text" class="form-input" placeholder="Function Name" value="${sf.name}" oninput="updateSwService('${sw.id}', ${i}, 'name', this.value)" style="flex:2;">
-                <select class="form-select" onchange="updateSwService('${sw.id}', ${i}, 'version', this.value)" style="flex:1;">
-                    <option value="1.0" ${sf.version==='1.0'?'selected':''}>v1.0</option>
-                    <option value="1.1" ${sf.version==='1.1'?'selected':''}>v1.1</option>
-                    <option value="1.5" ${sf.version==='1.5'?'selected':''}>v1.5</option>
-                    <option value="2.0" ${sf.version==='2.0'?'selected':''}>v2.0</option>
-                    <option value="3.0" ${sf.version==='3.0'?'selected':''}>v3.0</option>
-                </select>
+                <input type="text" class="form-input" placeholder="Version (e.g., 1.0)" value="${sf.version}" oninput="updateSwService('${sw.id}', ${i}, 'version', this.value)" style="flex:1;">
                 <button class="btn btn-danger btn-sm" onclick="removeSwService('${sw.id}', ${i})"><i class="fas fa-times"></i></button>
             </div>
         `).join('');
     }
 
-    function triggerFileUpload(id) {
-        document.getElementById(`fileInput_${id}`).click();
-    }
-
+    function triggerFileUpload(id) { document.getElementById(`fileInput_${id}`).click(); }
     function handleFileUpload(e, id) {
         const sw = subWorkflows.find(s => s.id === id);
-        if(!sw) return;
+        if (!sw) return;
         if (e.target.files.length > 0) {
             Array.from(e.target.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     try {
                         const data = new Uint8Array(ev.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1, defval: ""});
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: "" });
                         if (json.length > 0) {
                             const headers = json[0];
                             const cols = headers.map((h, i) => ({ name: h || `Column_${i+1}`, type: 'varchar(255)' }));
-
-                            if(cols.length < 20) {
-                                for(let i=1; i<=30; i++) cols.push({name: `extra_col_${i}`, type: 'integer'});
-                            }
-
                             sw.files.push({ fileName: file.name, columns: cols, data: json.slice(1, 6) });
-                            showToast(`📊 Loaded ${file.name}`);
-                            renderSubWorkflows();
-                            updateDocument();
+                            showToast(`📊 Loaded ${file.name} - showing 5 rows limit`, 'success');
+                            renderSubWorkflows(); updateDocument();
                         }
-                    } catch(err) { showToast(`⚠️ Could not parse file securely: ${file.name}`); }
+                    } catch (err) { showToast(`⚠️ Could not parse file: ${file.name}`, 'error'); }
                 };
                 reader.readAsArrayBuffer(file);
             });
@@ -698,7 +1142,7 @@
     }
 
     function getSwDashboardMappingsHtml(sw) {
-        if(sw.mappings.length === 0) return '<div style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">No columns mapped yet. Open interactive mapper.</div>';
+        if (sw.mappings.length === 0) return '<div style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">No columns mapped yet. Open interactive mapper.</div>';
         return sw.mappings.map(m => {
             const trList = m.transforms.length > 0 ? m.transforms.map(t => t.operation + (t.attributes ? `(${t.attributes})` : '')).join(' ➔ ') : 'None';
             return `
@@ -713,6 +1157,32 @@
         }).join('');
     }
 
+    // DEAM Lookup Interactive Map functionality
+    function addDeamLookupMapping(swId) {
+        const src = document.getElementById(`lookupSrc_${swId}`).value;
+        const tgt = document.getElementById(`lookupTgt_${swId}`).value;
+        if (!src || !tgt) {
+            showToast('Please select both Source Column and Target Attribute', 'error'); return;
+        }
+        const sw = subWorkflows.find(s => s.id === swId);
+        if (!Array.isArray(sw.deamLookup.attributeList)) sw.deamLookup.attributeList = [];
+        if (sw.deamLookup.attributeList.find(a => a.sourceAttribute === src && a.targetAttribute === tgt)) {
+            showToast('Mapping already exists', 'info'); return;
+        }
+        sw.deamLookup.attributeList.push({ sourceAttribute: src, targetAttribute: tgt });
+        renderSubWorkflows();
+        updateDocument();
+    }
+
+    function removeDeamLookupMapping(swId, idx) {
+        const sw = subWorkflows.find(s => s.id === swId);
+        if (Array.isArray(sw.deamLookup.attributeList)) {
+            sw.deamLookup.attributeList.splice(idx, 1);
+            renderSubWorkflows();
+            updateDocument();
+        }
+    }
+
     function renderSubWorkflows() {
         const container = document.getElementById('subWorkflowsContainer');
         container.innerHTML = subWorkflows.map((sw, index) => {
@@ -720,9 +1190,8 @@
             const title = isMain ? '👑 Main Subworkflow' : `🔗 Reference Subworkflow ${index}`;
             const cls = isMain ? 'sw-main' : 'sw-ref';
 
-            // Generate File Preview HTML
             let filePreviewHtml = '';
-            if(sw.files.length > 0) {
+            if (sw.files.length > 0) {
                 filePreviewHtml = sw.files.map(f => `
                 <div style="flex:1; min-width:300px; border:1px solid var(--border); border-radius:var(--radius-sm); display:flex; flex-direction:column; overflow:hidden;">
                     <div style="background:var(--surface-hover); padding:8px; font-weight:600; font-size:.7rem; color:var(--accent); border-bottom:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><i class="fas fa-file-csv"></i> ${f.fileName}</div>
@@ -732,6 +1201,35 @@
                         </tbody></table>
                     </div>
                 </div>`).join('');
+            }
+
+            // Prep DEAM Lookup Interactive Fields
+            let deamEntityOptions = `<option value="">Select Entity for Lookup...</option>` + getEntitiesOptionsHTML(sw.deamLookup?.entityName ? [sw.deamLookup.entityName] : []);
+
+            let sourceColOptions = `<option value="">Select Source Column...</option>`;
+            sw.files.forEach(f => {
+                f.columns.forEach(c => { sourceColOptions += `<option value="${c.name}">${f.fileName} : ${c.name}</option>`; });
+            });
+
+            let targetAttrOptions = `<option value="">Select Target Attribute...</option>`;
+            if (sw.deamLookup?.entityName) {
+                const allEnts = [...entities, ...allDbTables];
+                const targetEnt = allEnts.find(e => e.name === sw.deamLookup.entityName);
+                if (targetEnt) {
+                    targetEnt.attributes.forEach(a => { targetAttrOptions += `<option value="${a.name}">${a.name} (${a.type})</option>`; });
+                }
+            }
+
+            let lookupMappingsHtml = '';
+            if (Array.isArray(sw.deamLookup?.attributeList) && sw.deamLookup.attributeList.length > 0) {
+                lookupMappingsHtml = sw.deamLookup.attributeList.map((attr, idx) => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--surface-alt); border:1px solid var(--border); padding:6px 12px; border-radius:var(--radius-sm); margin-bottom:4px; font-size:0.8rem;">
+                        <div><span style="color:var(--text-secondary);">Source:</span> <strong>${attr.sourceAttribute}</strong> <i class="fas fa-arrow-right" style="margin:0 8px; color:var(--text-muted);"></i> <span style="color:var(--text-secondary);">Target:</span> <strong>${attr.targetAttribute}</strong></div>
+                        <button class="btn btn-sm btn-danger" onclick="removeDeamLookupMapping('${sw.id}', ${idx})" style="padding:2px 6px;"><i class="fas fa-times"></i></button>
+                    </div>
+                `).join('');
+            } else {
+                lookupMappingsHtml = `<div style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">No mapping added yet.</div>`;
             }
 
             return `
@@ -804,40 +1302,64 @@
                     </div>
 
                     <details style="margin-bottom: 12px; background: #fff; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);">
-                        <summary style="font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text);"><i class="fas fa-sliders-h" style="margin-right:6px; color:var(--accent);"></i>Advanced TTM & WFM Config (Samay, CRUD, Kafka)</summary>
+                        <summary style="font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text);"><i class="fas fa-sliders-h" style="margin-right:6px; color:var(--accent);"></i>Advanced TTM & WFM Config (Samay, CRUD, Lookups)</summary>
                         <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+
+                            <!-- SCHEDULER START -->
                             <div>
                                 <label class="form-label">Samay Scheduler: Start Time</label>
-                                <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'scheduler', 'startTime', this.value)">
+                                <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'scheduler', 'startTime', this.value); renderSubWorkflows();">
                                     <option value="" ${sw.scheduler.startTime===''?'selected':''}>Not Scheduled</option>
-                                    <option value="DAILY" ${sw.scheduler.startTime==='DAILY'?'selected':''}>Daily</option>
+                                    <option value="MINUTELY" ${sw.scheduler.startTime==='MINUTELY'?'selected':''}>Minutely</option>
                                     <option value="HOURLY" ${sw.scheduler.startTime==='HOURLY'?'selected':''}>Hourly</option>
-                                    <option value="WEEKLY" ${sw.scheduler.startTime==='WEEKLY'?'selected':''}>Weekly</option>
+                                    <option value="DAILY" ${sw.scheduler.startTime==='DAILY'?'selected':''}>Daily</option>
+                                    <option value="MONTHLY" ${sw.scheduler.startTime==='MONTHLY'?'selected':''}>Monthly</option>
+                                    <option value="YEARLY" ${sw.scheduler.startTime==='YEARLY'?'selected':''}>Yearly</option>
                                 </select>
                             </div>
-                            <div style="display:flex;gap:8px;">
+
+                            ${['DAILY', 'MONTHLY', 'YEARLY'].includes(sw.scheduler.startTime) ? `
+                            <div style="display:flex;gap:8px; margin-top:4px;">
+                                <div style="flex:1">
+                                    <label class="form-label">Time Picker</label>
+                                    <input type="time" class="form-input" value="${sw.scheduler.timePicker||''}" oninput="updateSwNestedState('${sw.id}', 'scheduler', 'timePicker', this.value)">
+                                </div>
+                                <div style="flex:1">
+                                    <label class="form-label">Day/Date Picker</label>
+                                    <input type="date" class="form-input" value="${sw.scheduler.dayPicker||''}" oninput="updateSwNestedState('${sw.id}', 'scheduler', 'dayPicker', this.value)">
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <div style="margin-top:4px;">
+                                <label class="form-label">Spring Boot Cron Expression (Optional Override)</label>
+                                <input type="text" class="form-input" placeholder="e.g. 0 0 12 * * ?" value="${sw.scheduler.cron||''}" oninput="updateSwNestedState('${sw.id}', 'scheduler', 'cron', this.value)">
+                            </div>
+
+                            <div style="display:flex;gap:8px; margin-top:4px;">
                                 <div style="flex:1">
                                     <label class="form-label">Poll Time</label>
-                                    <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'scheduler', 'pollTime', this.value)">
-                                        <option value="" ${sw.scheduler.pollTime===''?'selected':''}>Select Poll Time...</option>
-                                        <option value="1000" ${sw.scheduler.pollTime==='1000'?'selected':''}>1000 ms (1s)</option>
-                                        <option value="10000" ${sw.scheduler.pollTime==='10000'?'selected':''}>10000 ms (10s)</option>
-                                        <option value="60000" ${sw.scheduler.pollTime==='60000'?'selected':''}>60000 ms (1m)</option>
-                                        <option value="3600000" ${sw.scheduler.pollTime==='3600000'?'selected':''}>3600000 ms (1h)</option>
-                                    </select>
+                                    <input type="text" list="pollTimeOptions_${sw.id}" class="form-input" placeholder="e.g. 60000" value="${sw.scheduler.pollTime||''}" oninput="updateSwNestedState('${sw.id}', 'scheduler', 'pollTime', this.value)">
+                                    <datalist id="pollTimeOptions_${sw.id}">
+                                        <option value="1000">1000 ms (1s)</option>
+                                        <option value="10000">10000 ms (10s)</option>
+                                        <option value="60000">60000 ms (1m)</option>
+                                        <option value="3600000">3600000 ms (1h)</option>
+                                    </datalist>
                                 </div>
                                 <div style="flex:1">
                                     <label class="form-label">Poll Interval</label>
-                                    <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'scheduler', 'pollInterval', this.value)">
-                                        <option value="" ${sw.scheduler.pollInterval===''?'selected':''}>Select Interval...</option>
-                                        <option value="1000" ${sw.scheduler.pollInterval==='1000'?'selected':''}>1000 ms (1s)</option>
-                                        <option value="10000" ${sw.scheduler.pollInterval==='10000'?'selected':''}>10000 ms (10s)</option>
-                                        <option value="60000" ${sw.scheduler.pollInterval==='60000'?'selected':''}>60000 ms (1m)</option>
-                                        <option value="3600000" ${sw.scheduler.pollInterval==='3600000'?'selected':''}>3600000 ms (1h)</option>
-                                    </select>
+                                    <input type="text" list="pollIntOptions_${sw.id}" class="form-input" placeholder="e.g. 10000" value="${sw.scheduler.pollInterval||''}" oninput="updateSwNestedState('${sw.id}', 'scheduler', 'pollInterval', this.value)">
+                                    <datalist id="pollIntOptions_${sw.id}">
+                                        <option value="1000">1000 ms (1s)</option>
+                                        <option value="10000">10000 ms (10s)</option>
+                                        <option value="60000">60000 ms (1m)</option>
+                                        <option value="3600000">3600000 ms (1h)</option>
+                                    </datalist>
                                 </div>
                             </div>
-                            <div>
+
+                            <div style="margin-top:4px;">
                                 <label class="form-label">CRUD Operation Logic</label>
                                 <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'scheduler', 'crud', this.value)">
                                     <option value="" ${sw.scheduler.crud===''?'selected':''}>None (Fallback to Service Endpoints)</option>
@@ -846,6 +1368,41 @@
                                     <option value="upsert" ${sw.scheduler.crud==='upsert'?'selected':''}>Upsert</option>
                                 </select>
                             </div>
+
+                            <!-- DEAM LOOKUP VALIDATION -->
+                            <div style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
+                                <div style="font-size:0.8rem; font-weight:600; color:var(--text); margin-bottom:8px;"><i class="fas fa-search-plus" style="color:var(--accent);"></i> DEAM Lookup Validation (deamLookup)</div>
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+
+                                    <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'deamLookup', 'entityName', this.value); renderSubWorkflows();">
+                                        ${deamEntityOptions}
+                                    </select>
+
+                                    <select class="form-select" onchange="updateSwNestedState('${sw.id}', 'deamLookup', 'operation', this.value)">
+                                        <option value="ACCEPT" ${sw.deamLookup?.operation==='ACCEPT'?'selected':''}>ACCEPT (Keep row if match found)</option>
+                                        <option value="REJECT" ${sw.deamLookup?.operation==='REJECT'?'selected':''}>REJECT (Blacklist behavior)</option>
+                                    </select>
+
+                                    <!-- INTERACTIVE INLINE MAPPER -->
+                                    <div style="background:var(--surface); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm);">
+                                        <div style="font-weight:600; font-size:0.75rem; margin-bottom:8px; color:var(--text-secondary);">INTERACTIVE ATTRIBUTE MAPPING</div>
+                                        <div style="display:flex; gap:8px; margin-bottom:8px;">
+                                            <select class="form-select" id="lookupSrc_${sw.id}" style="flex:1;">
+                                                ${sourceColOptions}
+                                            </select>
+                                            <select class="form-select" id="lookupTgt_${sw.id}" style="flex:1;">
+                                                ${targetAttrOptions}
+                                            </select>
+                                            <button class="btn btn-primary btn-sm" onclick="addDeamLookupMapping('${sw.id}')"><i class="fas fa-plus"></i> Map</button>
+                                        </div>
+                                        <div>
+                                            ${lookupMappingsHtml}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
                         </div>
                     </details>
 
@@ -861,164 +1418,93 @@
             `;
         }).join('');
 
-        // Re-render services for all SWs after massive DOM update
         subWorkflows.forEach(sw => renderSwServices(sw));
     }
 
-
-    // ============================================
-    // INTERACTIVE CANVAS MULTI-FILE MAPPING
-    // ============================================
-
+    // ============================================================
+    // INTERACTIVE MAPPER
+    // ============================================================
     function openMapper(swId) {
-        currentMapperSwId = swId;
-        boxPositions = {};
+        currentMapperSwId = swId; boxPositions = {};
         const sw = subWorkflows.find(s => s.id === swId);
         document.getElementById('mapperSwName').textContent = sw.name || (sw.isMain ? 'Main Workflow' : 'Reference Workflow');
-        openModal('mappingModal');
-        renderMappingInterface();
+        openModal('mappingModal'); renderMappingInterface();
     }
 
     function bringToFront(el) {
-        floatZ++;
-        el.style.zIndex = floatZ;
+        floatZ++; el.style.zIndex = floatZ;
         const boxId = el.dataset.boxId;
-        if(boxId) {
-            if(!boxPositions[boxId]) boxPositions[boxId] = {};
-            boxPositions[boxId].zIndex = floatZ;
-        }
+        if (boxId) { if (!boxPositions[boxId]) boxPositions[boxId] = {}; boxPositions[boxId].zIndex = floatZ; }
     }
 
-    // 8-Way Custom Resize Logic
     function initResize(e) {
-        if(!e.target.classList.contains('resizer')) return;
-        e.preventDefault();
-        const el = e.target.parentElement;
-        bringToFront(el);
+        if (!e.target.classList.contains('resizer')) return;
+        e.preventDefault(); const el = e.target.parentElement; bringToFront(el);
         activeResizer = {
-            el: el,
-            dir: e.target.className.split(' ')[1],
-            startX: e.clientX,
-            startY: e.clientY,
-            startW: el.offsetWidth,
-            startH: el.offsetHeight,
-            startL: el.offsetLeft,
-            startT: el.offsetTop
+            el: el, dir: e.target.className.split(' ')[1],
+            startX: e.clientX, startY: e.clientY, startW: el.offsetWidth, startH: el.offsetHeight, startL: el.offsetLeft, startT: el.offsetTop
         };
-        document.addEventListener('mousemove', doResize);
-        document.addEventListener('mouseup', stopResize);
+        document.addEventListener('mousemove', doResize); document.addEventListener('mouseup', stopResize);
     }
-
     function doResize(e) {
-        if(!activeResizer) return;
+        if (!activeResizer) return;
         const { el, dir, startX, startY, startW, startH, startL, startT } = activeResizer;
-        let dx = e.clientX - startX;
-        let dy = e.clientY - startY;
-
-        if(dir.includes('e')) el.style.width = Math.max(250, startW + dx) + 'px';
-        if(dir.includes('w')) {
-            let newW = Math.max(250, startW - dx);
-            if(newW > 250) { el.style.width = newW + 'px'; el.style.left = startL + dx + 'px'; }
-        }
-        if(dir.includes('s')) el.style.height = Math.max(200, startH + dy) + 'px';
-        if(dir.includes('n')) {
-            let newH = Math.max(200, startH - dy);
-            if(newH > 200) { el.style.height = newH + 'px'; el.style.top = startT + dy + 'px'; }
-        }
+        let dx = e.clientX - startX; let dy = e.clientY - startY;
+        if (dir.includes('e')) el.style.width = Math.max(250, startW + dx) + 'px';
+        if (dir.includes('w')) { let newW = Math.max(250, startW - dx); if (newW > 250) { el.style.width = newW + 'px'; el.style.left = startL + dx + 'px'; } }
+        if (dir.includes('s')) el.style.height = Math.max(200, startH + dy) + 'px';
+        if (dir.includes('n')) { let newH = Math.max(200, startH - dy); if (newH > 200) { el.style.height = newH + 'px'; el.style.top = startT + dy + 'px'; } }
     }
-
     function stopResize() {
-        if(activeResizer) {
+        if (activeResizer) {
             const boxId = activeResizer.el.dataset.boxId;
-            if(boxId && boxPositions[boxId]) {
-                boxPositions[boxId].width = activeResizer.el.style.width;
-                boxPositions[boxId].height = activeResizer.el.style.height;
-                boxPositions[boxId].left = parseInt(activeResizer.el.style.left);
-                boxPositions[boxId].top = parseInt(activeResizer.el.style.top);
+            if (boxId && boxPositions[boxId]) {
+                boxPositions[boxId].width = activeResizer.el.style.width; boxPositions[boxId].height = activeResizer.el.style.height;
+                boxPositions[boxId].left = parseInt(activeResizer.el.style.left); boxPositions[boxId].top = parseInt(activeResizer.el.style.top);
             }
         }
-        activeResizer = null;
-        document.removeEventListener('mousemove', doResize);
-        document.removeEventListener('mouseup', stopResize);
+        activeResizer = null; document.removeEventListener('mousemove', doResize); document.removeEventListener('mouseup', stopResize);
     }
 
-    // Drag float logic
     function startDragFloating(e, el) {
         if (e.target.closest('.source-item') || e.target.closest('.target-item') || e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'select' || e.target.tagName.toLowerCase() === 'button') return;
-        e.preventDefault();
-        activeFloat = el;
-        bringToFront(el);
-        floatStartX = e.clientX;
-        floatStartY = e.clientY;
-        floatInitLeft = parseInt(el.style.left || 0, 10);
-        floatInitTop = parseInt(el.style.top || 0, 10);
-
-        document.addEventListener('mousemove', dragFloating);
-        document.addEventListener('mouseup', stopDragFloating);
+        e.preventDefault(); activeFloat = el; bringToFront(el);
+        floatStartX = e.clientX; floatStartY = e.clientY; floatInitLeft = parseInt(el.style.left || 0, 10); floatInitTop = parseInt(el.style.top || 0, 10);
+        document.addEventListener('mousemove', dragFloating); document.addEventListener('mouseup', stopDragFloating);
     }
-
     function dragFloating(e) {
         if (!activeFloat) return;
-        const canvas = document.getElementById('mappingCanvas');
-        const rect = canvas.getBoundingClientRect();
-
-        let newLeft = floatInitLeft + (e.clientX - floatStartX);
-        let newTop = floatInitTop + (e.clientY - floatStartY);
-
-        newLeft = Math.max(0, Math.min(newLeft, rect.width - 100));
-        newTop = Math.max(0, Math.min(newTop, rect.height - 40));
-
-        activeFloat.style.left = newLeft + 'px';
-        activeFloat.style.top = newTop + 'px';
-
+        const canvas = document.getElementById('mappingCanvas'); const rect = canvas.getBoundingClientRect();
+        let newLeft = floatInitLeft + (e.clientX - floatStartX); let newTop = floatInitTop + (e.clientY - floatStartY);
+        newLeft = Math.max(0, Math.min(newLeft, rect.width - 100)); newTop = Math.max(0, Math.min(newTop, rect.height - 40));
+        activeFloat.style.left = newLeft + 'px'; activeFloat.style.top = newTop + 'px';
         const boxId = activeFloat.dataset.boxId;
-        if(boxId) {
-            if(!boxPositions[boxId]) boxPositions[boxId] = {};
-            boxPositions[boxId].left = newLeft;
-            boxPositions[boxId].top = newTop;
-        }
+        if (boxId) { if (!boxPositions[boxId]) boxPositions[boxId] = {}; boxPositions[boxId].left = newLeft; boxPositions[boxId].top = newTop; }
     }
-
-    function stopDragFloating() {
-        activeFloat = null;
-        document.removeEventListener('mousemove', dragFloating);
-        document.removeEventListener('mouseup', stopDragFloating);
-    }
+    function stopDragFloating() { activeFloat = null; document.removeEventListener('mousemove', dragFloating); document.removeEventListener('mouseup', stopDragFloating); }
 
     function getResizersHtml() {
-        return `
-            <div class="resizer n" onmousedown="initResize(event)"></div>
-            <div class="resizer s" onmousedown="initResize(event)"></div>
-            <div class="resizer e" onmousedown="initResize(event)"></div>
-            <div class="resizer w" onmousedown="initResize(event)"></div>
-            <div class="resizer ne" onmousedown="initResize(event)"></div>
-            <div class="resizer nw" onmousedown="initResize(event)"></div>
-            <div class="resizer se" onmousedown="initResize(event)"></div>
-            <div class="resizer sw" onmousedown="initResize(event)"></div>
-        `;
+        return `<div class="resizer n" onmousedown="initResize(event)"></div><div class="resizer s" onmousedown="initResize(event)"></div>
+                <div class="resizer e" onmousedown="initResize(event)"></div><div class="resizer w" onmousedown="initResize(event)"></div>
+                <div class="resizer ne" onmousedown="initResize(event)"></div><div class="resizer nw" onmousedown="initResize(event)"></div>
+                <div class="resizer se" onmousedown="initResize(event)"></div><div class="resizer sw" onmousedown="initResize(event)"></div>`;
     }
 
     function renderMappingInterface() {
-        if(!currentMapperSwId) return;
+        if (!currentMapperSwId) return;
         const sw = subWorkflows.find(s => s.id === currentMapperSwId);
         const allEnts = [...entities, ...allDbTables];
         const canvas = document.getElementById('mappingCanvas');
 
         let canvasHtml = `<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--text-muted); pointer-events:none; font-size:2rem; opacity:0.2; font-weight:800; letter-spacing:2px;">MAPPING CANVAS</div>`;
-
         if (sw.files.length === 0 && sw.targetEntities.length === 0) {
             canvas.innerHTML = canvasHtml + '<div style="position:absolute; top:60%; left:50%; transform:translateX(-50%); color:var(--text-muted);">No files uploaded or entities selected in this subworkflow</div>';
             return;
         }
-
-        // Render Source Files Boxes
         canvasHtml += sw.files.map((fileObj, i) => {
             const boxId = `source_${fileObj.fileName}`;
-            if (!boxPositions[boxId]) {
-                boxPositions[boxId] = { left: 20 + (i * 30), top: 20 + (i * 30), zIndex: 10 + i, width: '250px', height: '350px' };
-            }
+            if (!boxPositions[boxId]) { boxPositions[boxId] = { left: 20 + (i * 30), top: 20 + (i * 30), zIndex: 10 + i, width: '250px', height: '350px' }; }
             const pos = boxPositions[boxId];
-
             let boxHtml = `
             <div class="floating-box source-box" id="${boxId}" data-box-id="${boxId}" style="left: ${pos.left}px; top: ${pos.top}px; z-index: ${pos.zIndex}; width: ${pos.width||'250px'}; height: ${pos.height||'350px'};" onmousedown="bringToFront(this)">
                 ${getResizersHtml()}
@@ -1026,32 +1512,22 @@
                     <i class="fas fa-file-alt" style="color:#eab308;"></i> <span title="${fileObj.fileName}">${fileObj.fileName}</span>
                 </div>
                 <div class="floating-box-content">`;
-
             boxHtml += fileObj.columns.map(c => {
-                const uniqueId = `${fileObj.fileName}::${c.name}`;
-                const isMapped = sw.mappings.some(m => m.fileColId === uniqueId);
+                const uniqueId = `${fileObj.fileName}::${c.name}`; const isMapped = sw.mappings.some(m => m.fileColId === uniqueId);
                 return `
                 <div class="source-item ${isMapped ? 'mapped' : ''}" draggable="${!isMapped}" data-id="${uniqueId}" data-name="${c.name}" data-file="${fileObj.fileName}" ondragstart="dragStart(event)">
                     <div><i class="fas fa-grip-vertical drag-handle"></i> <span class="name-text">${c.name}</span></div>
                     <span class="type-badge">${c.type}</span>
                 </div>`;
             }).join('');
-
-            boxHtml += `</div></div>`;
-            return boxHtml;
+            boxHtml += `</div></div>`; return boxHtml;
         }).join('');
 
-        // Render Target Entity Boxes
         sw.targetEntities.forEach((targetName, i) => {
-            const entity = allEnts.find(e => e.name === targetName);
-            if(!entity) return;
-
+            const entity = allEnts.find(e => e.name === targetName); if (!entity) return;
             const boxId = `target_${targetName}`;
-            if (!boxPositions[boxId]) {
-                boxPositions[boxId] = { left: 450 + (i * 40), top: 20 + (i * 40), zIndex: 50 + i, width: '420px', height: '400px' };
-            }
+            if (!boxPositions[boxId]) { boxPositions[boxId] = { left: 450 + (i * 40), top: 20 + (i * 40), zIndex: 50 + i, width: '420px', height: '400px' }; }
             const pos = boxPositions[boxId];
-
             let boxHtml = `
             <div class="floating-box target-box" id="${boxId}" data-box-id="${boxId}" style="left: ${pos.left}px; top: ${pos.top}px; z-index: ${pos.zIndex}; width: ${pos.width||'420px'}; height: ${pos.height||'400px'}; border-color:#fca5a5;" onmousedown="bringToFront(this)">
                 ${getResizersHtml()}
@@ -1059,14 +1535,12 @@
                     <i class="fas fa-bullseye"></i> TARGET: ${entity.displayName}
                 </div>
                 <div class="floating-box-content">`;
-
             boxHtml += entity.attributes.map(a => {
                 const map = sw.mappings.find(m => m.entityAttr === a.name && m.targetEntity === targetName);
                 return `
                 <div class="target-item ${map ? 'has-mapping' : ''}" data-attr="${a.name}" data-entity="${targetName}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropMap(event)">
                     <div class="target-header">
-                        <div class="target-name name-text">${a.name}</div>
-                        <div class="target-type">${a.type}</div>
+                        <div class="target-name name-text">${a.name}</div><div class="target-type">${a.type}</div>
                     </div>
                     ${map ? `
                         <div class="mapped-pill" style="flex-direction:column; align-items:stretch; gap:4px; background:var(--surface-alt); color:var(--text); border:1px solid var(--border);">
@@ -1074,24 +1548,17 @@
                                 <span style="font-size:0.75rem; color:var(--accent); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><i class="fas fa-file-alt" style="margin-right:4px;"></i> ${map.fileName} : ${map.fileCol}</span>
                                 <span class="remove-map" onclick="removeMapping('${targetName}', '${a.name}')" style="color:var(--red);"><i class="fas fa-times"></i></span>
                             </div>
-
                             <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
                                 ${map.transforms.map((tr, idx) => `
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <span style="font-size:0.65rem; color:var(--text-muted); font-weight:600; white-space:nowrap;"><i class="fas fa-random"></i> Stp ${idx+1}</span>
                                         <select class="form-select" style="padding:2px 4px; font-size:0.7rem; height:auto; flex:1;" onchange="updateTransformOp('${targetName}', '${a.name}', ${idx}, this.value)">
-                                            <option value="CONCATENATE" ${tr.operation==='CONCATENATE'?'selected':''}>CONCATENATE</option>
-                                            <option value="UPPERCASE" ${tr.operation==='UPPERCASE'?'selected':''}>UPPERCASE</option>
-                                            <option value="SUBSTRING" ${tr.operation==='SUBSTRING'?'selected':''}>SUBSTRING</option>
-                                            <option value="VALIDATE_RANGE" ${tr.operation==='VALIDATE_RANGE'?'selected':''}>VALIDATE_RANGE</option>
-                                            <option value="CONVERT_TO_JSON" ${tr.operation==='CONVERT_TO_JSON'?'selected':''}>CONVERT_TO_JSON</option>
-                                            <option value="SUM" ${tr.operation==='SUM'?'selected':''}>SUM</option>
-                                            <option value="DIFFERENCE" ${tr.operation==='DIFFERENCE'?'selected':''}>DIFFERENCE</option>
-                                            <option value="MULTIPLY" ${tr.operation==='MULTIPLY'?'selected':''}>MULTIPLY</option>
-                                            <option value="AUTO_GENERATE" ${tr.operation==='AUTO_GENERATE'?'selected':''}>AUTO_GENERATE</option>
-                                            <option value="TRIM" ${tr.operation==='TRIM'?'selected':''}>TRIM</option>
-                                            <option value="REGEX_REMOVE" ${tr.operation==='REGEX_REMOVE'?'selected':''}>REGEX_REMOVE</option>
-                                            <option value="TO_ARRAY" ${tr.operation==='TO_ARRAY'?'selected':''}>TO_ARRAY</option>
+                                            <option value="CONCATENATE" ${tr.operation==='CONCATENATE'?'selected':''}>CONCATENATE</option><option value="UPPERCASE" ${tr.operation==='UPPERCASE'?'selected':''}>UPPERCASE</option>
+                                            <option value="SUBSTRING" ${tr.operation==='SUBSTRING'?'selected':''}>SUBSTRING</option><option value="VALIDATE_RANGE" ${tr.operation==='VALIDATE_RANGE'?'selected':''}>VALIDATE_RANGE</option>
+                                            <option value="CONVERT_TO_JSON" ${tr.operation==='CONVERT_TO_JSON'?'selected':''}>CONVERT_TO_JSON</option><option value="SUM" ${tr.operation==='SUM'?'selected':''}>SUM</option>
+                                            <option value="DIFFERENCE" ${tr.operation==='DIFFERENCE'?'selected':''}>DIFFERENCE</option><option value="MULTIPLY" ${tr.operation==='MULTIPLY'?'selected':''}>MULTIPLY</option>
+                                            <option value="AUTO_GENERATE" ${tr.operation==='AUTO_GENERATE'?'selected':''}>AUTO_GENERATE</option><option value="TRIM" ${tr.operation==='TRIM'?'selected':''}>TRIM</option>
+                                            <option value="REGEX_REMOVE" ${tr.operation==='REGEX_REMOVE'?'selected':''}>REGEX_REMOVE</option><option value="TO_ARRAY" ${tr.operation==='TO_ARRAY'?'selected':''}>TO_ARRAY</option>
                                         </select>
                                         <input type="text" class="form-input" style="padding:2px 4px; font-size:0.7rem; height:auto; flex:1;" placeholder="Args (col2, val...)" value="${tr.attributes || ''}" oninput="updateTransformAttr('${targetName}', '${a.name}', ${idx}, this.value)">
                                         <i class="fas fa-times" style="color:var(--red); cursor:pointer; font-size:0.7rem;" onclick="removeTransformStep('${targetName}', '${a.name}', ${idx})"></i>
@@ -1100,161 +1567,87 @@
                                 <button class="btn btn-outline btn-sm" style="padding:2px 6px; font-size:0.65rem; align-self:flex-start;" onclick="addTransformStep('${targetName}', '${a.name}')">+ Add Step</button>
                             </div>
                         </div>
-                    ` : `
-                        <div class="drop-zone">Drop Source Column Here</div>
-                    `}
+                    ` : `<div class="drop-zone">Drop Source Column Here</div>`}
                 </div>`;
             }).join('');
-
-            boxHtml += `</div></div>`;
-            canvasHtml += boxHtml;
+            boxHtml += `</div></div>`; canvasHtml += boxHtml;
         });
-
         canvas.innerHTML = canvasHtml;
     }
 
     function addTransformStep(targetEntity, entityAttr) {
         const sw = subWorkflows.find(s => s.id === currentMapperSwId);
         const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
-        if(map) {
-            map.transforms.push({ operation: 'UPPERCASE', attributes: '' });
-            renderMappingInterface();
-            updateDocument();
-        }
+        if (map) { map.transforms.push({ operation: 'UPPERCASE', attributes: '' }); renderMappingInterface(); updateDocument(); }
     }
-
     function updateTransformOp(targetEntity, entityAttr, stepIndex, val) {
-        const sw = subWorkflows.find(s => s.id === currentMapperSwId);
-        const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
-        if(map && map.transforms[stepIndex]) {
-            map.transforms[stepIndex].operation = val;
-            updateDocument();
-        }
+        const sw = subWorkflows.find(s => s.id === currentMapperSwId); const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
+        if (map && map.transforms[stepIndex]) { map.transforms[stepIndex].operation = val; updateDocument(); }
     }
-
     function updateTransformAttr(targetEntity, entityAttr, stepIndex, val) {
-        const sw = subWorkflows.find(s => s.id === currentMapperSwId);
-        const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
-        if(map && map.transforms[stepIndex]) {
-            map.transforms[stepIndex].attributes = val;
-            updateDocument();
-        }
+        const sw = subWorkflows.find(s => s.id === currentMapperSwId); const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
+        if (map && map.transforms[stepIndex]) { map.transforms[stepIndex].attributes = val; updateDocument(); }
     }
-
     function removeTransformStep(targetEntity, entityAttr, stepIndex) {
-        const sw = subWorkflows.find(s => s.id === currentMapperSwId);
-        const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
-        if(map && map.transforms[stepIndex]) {
-            map.transforms.splice(stepIndex, 1);
-            renderMappingInterface();
-            updateDocument();
-        }
+        const sw = subWorkflows.find(s => s.id === currentMapperSwId); const map = sw.mappings.find(m => m.entityAttr === entityAttr && m.targetEntity === targetEntity);
+        if (map && map.transforms[stepIndex]) { map.transforms.splice(stepIndex, 1); renderMappingInterface(); updateDocument(); }
     }
 
     function dragStart(e) {
-        if(e.target.classList.contains('mapped')) { e.preventDefault(); return; }
+        if (e.target.classList.contains('mapped')) { e.preventDefault(); return; }
         e.dataTransfer.setData('text/plain', e.target.dataset.id);
-        e.target.classList.add('dragging');
-        setTimeout(() => e.target.classList.remove('dragging'), 100);
+        e.target.classList.add('dragging'); setTimeout(() => e.target.classList.remove('dragging'), 100);
     }
-
     function dragOver(e) {
-        e.preventDefault();
-        const target = e.target.closest('.target-item');
-        if (target && !target.classList.contains('has-mapping')) {
-            target.classList.add('drag-over');
-        }
+        e.preventDefault(); const target = e.target.closest('.target-item');
+        if (target && !target.classList.contains('has-mapping')) { target.classList.add('drag-over'); }
     }
-
-    function dragLeave(e) {
-        const target = e.target.closest('.target-item');
-        if (target) target.classList.remove('drag-over');
-    }
-
+    function dragLeave(e) { const target = e.target.closest('.target-item'); if (target) target.classList.remove('drag-over'); }
     function dropMap(e) {
-        e.preventDefault();
-        const target = e.target.closest('.target-item');
-        if (!target) return;
+        e.preventDefault(); const target = e.target.closest('.target-item'); if (!target) return;
         target.classList.remove('drag-over');
-
-        if (target.classList.contains('has-mapping')) {
-            showToast("Attribute already mapped! Remove it first.");
-            return;
-        }
-
-        const sourceId = e.dataTransfer.getData('text/plain');
-        const targetAttrName = target.dataset.attr;
-        const targetEntity = target.dataset.entity;
-
+        if (target.classList.contains('has-mapping')) { showToast("Attribute already mapped! Remove it first.", 'info'); return; }
+        const sourceId = e.dataTransfer.getData('text/plain'); const targetAttrName = target.dataset.attr; const targetEntity = target.dataset.entity;
         if (sourceId && targetAttrName && targetEntity) {
-            const sw = subWorkflows.find(s => s.id === currentMapperSwId);
-            const [fileName, colName] = sourceId.split('::');
+            const sw = subWorkflows.find(s => s.id === currentMapperSwId); const [fileName, colName] = sourceId.split('::');
             sw.mappings.push({ fileColId: sourceId, fileName: fileName, fileCol: colName, targetEntity: targetEntity, entityAttr: targetAttrName, transforms: [] });
-            renderMappingInterface();
-            updateDocument();
+            renderMappingInterface(); updateDocument(); showToast(`✅ Mapped ${colName} → ${targetEntity}.${targetAttrName}`, 'success');
         }
     }
-
     function removeMapping(targetEntity, entityAttr) {
         const sw = subWorkflows.find(s => s.id === currentMapperSwId);
         sw.mappings = sw.mappings.filter(m => !(m.entityAttr === entityAttr && m.targetEntity === targetEntity));
-        renderMappingInterface();
-        updateDocument();
+        renderMappingInterface(); updateDocument();
     }
-
     function filterCanvasSources(query) {
-        query = query.toLowerCase();
-        const canvas = document.getElementById('mappingCanvas');
-        if(!canvas) return;
+        query = query.toLowerCase(); const canvas = document.getElementById('mappingCanvas'); if (!canvas) return;
         const sourceBoxes = canvas.querySelectorAll('.source-box');
         sourceBoxes.forEach(box => {
             let hasMatch = false;
             box.querySelectorAll('.source-item').forEach(item => {
-                const textElement = item.querySelector('.name-text');
-                const text = textElement ? textElement.textContent.toLowerCase() : item.textContent.toLowerCase();
-                if (text.includes(query)) {
-                    item.style.display = 'flex';
-                    hasMatch = true;
-                } else {
-                    item.style.display = 'none';
-                }
+                const textElement = item.querySelector('.name-text'); const text = textElement ? textElement.textContent.toLowerCase() : item.textContent.toLowerCase();
+                if (text.includes(query)) { item.style.display = 'flex'; hasMatch = true; } else { item.style.display = 'none'; }
             });
             box.style.display = (hasMatch || query === '') ? 'flex' : 'none';
         });
     }
-
     function filterCanvasTarget(query) {
-        query = query.toLowerCase();
-        const canvas = document.getElementById('mappingCanvas');
-        if(!canvas) return;
+        query = query.toLowerCase(); const canvas = document.getElementById('mappingCanvas'); if (!canvas) return;
         const targetBoxes = canvas.querySelectorAll('.target-box');
         targetBoxes.forEach(box => {
             let hasMatch = false;
             box.querySelectorAll('.target-item').forEach(item => {
-                const textElement = item.querySelector('.name-text');
-                const text = textElement ? textElement.textContent.toLowerCase() : item.textContent.toLowerCase();
-                if (text.includes(query)) {
-                    item.style.display = 'flex';
-                    hasMatch = true;
-                } else {
-                    item.style.display = 'none';
-                }
+                const textElement = item.querySelector('.name-text'); const text = textElement ? textElement.textContent.toLowerCase() : item.textContent.toLowerCase();
+                if (text.includes(query)) { item.style.display = 'flex'; hasMatch = true; } else { item.style.display = 'none'; }
             });
             box.style.display = (hasMatch || query === '') ? 'flex' : 'none';
         });
     }
 
-    // ============================================
+    // ============================================================
     // DOCUMENT GENERATION
-    // ============================================
-    function addEntityToDocument() {
-        if (selectedEntityIndex < 0) return;
-        const entity = window._filteredEntities[selectedEntityIndex];
-        if (!entities.find(e => e.name === entity.name)) entities.push(entity);
-        updateDocument(); showToast('📄 Entity added to document');
-    }
-
-    function generateDocument() { updateDocument(); showToast('✅ Comprehensive TBRD Generated'); }
+    // ============================================================
+    function generateDocument() { updateDocument(); showToast('✅ Comprehensive TBRD Generated', 'success'); }
 
     function updateDocument() {
         let doc = 'TBRD-01: Business Data Entity (BDE) & Schema (DEAMs)\n\n';
@@ -1271,58 +1664,60 @@
             const servicesText = sw.services.filter(s => s.name.trim()).map(s => `${s.name} (v${s.version})`).join(', ') || 'None';
             const stName = sw.isMain ? "Main" : "Reference";
 
-            doc += `\n=========================================\n`;
-            doc += `[ ${stName.toUpperCase()} SUBWORKFLOW: ${wfmName} ]\n`;
-            doc += `=========================================\n`;
-
+            doc += `\n=========================================\n[ ${stName.toUpperCase()} SUBWORKFLOW: ${wfmName} ]\n=========================================\n`;
             doc += '\nTBRD-02: Workflows & Orchestration\n\n';
             doc += `1.1 Workflow Name - ${wfmName}\n`;
-
-            if(sw.isMain) {
+            if (sw.isMain) {
                 const refEntsText = subWorkflows.filter(s => !s.isMain).map(s => s.name || 'Ref Workflow').join(', ') || 'None';
-                doc += `1.2 Target DEAMs - ${targetEntities}\n`;
-                doc += `1.3 CTM / Secondary DEAMs\n    ${sw.secondaryDeams || 'None'}\n`;
-                doc += `1.4 Orchestration (Workflow Trigger)\n    ☒ ${sw.orchestration}\n`;
-                doc += `1.5 Service Names & Versions in Execution Sequence\n    ${servicesText}\n`;
-                doc += `1.6 Files: ${fileNames}\n`;
-                doc += `1.7 Reference Entities (Sequential Subworkflows After Main):\n    ${refEntsText}\n\n`;
+                doc += `1.2 Target DEAMs - ${targetEntities}\n1.3 CTM / Secondary DEAMs\n    ${sw.secondaryDeams || 'None'}\n1.4 Orchestration (Workflow Trigger)\n    ☒ ${sw.orchestration}\n1.5 Service Names & Versions in Execution Sequence\n    ${servicesText}\n1.6 Files: ${fileNames}\n1.7 Reference Entities (Sequential Subworkflows After Main):\n    ${refEntsText}\n\n`;
             } else {
-                doc += `1.2 Target DEAMs - ${targetEntities}\n`;
-                doc += `1.3 CTM / Secondary DEAMs\n    ${sw.secondaryDeams || 'None'}\n`;
-                doc += `1.4 Orchestration (Workflow Trigger)\n    ☒ ${sw.orchestration}\n`;
-                doc += `1.5 Service Names & Versions in Execution Sequence\n    ${servicesText}\n`;
-                doc += `1.6 Files: ${fileNames}\n\n`;
+                doc += `1.2 Target DEAMs - ${targetEntities}\n1.3 CTM / Secondary DEAMs\n    ${sw.secondaryDeams || 'None'}\n1.4 Orchestration (Workflow Trigger)\n    ☒ ${sw.orchestration}\n1.5 Service Names & Versions in Execution Sequence\n    ${servicesText}\n1.6 Files: ${fileNames}\n\n`;
             }
-
             doc += 'TBRD-04: Inbound / Outbound Integration & TTM\n\n';
-            doc += `Workflow Name – ${wfmName}\n`;
-            doc += `Files: ${fileNames}\n\n`;
-
+            doc += `Workflow Name – ${wfmName}\nFiles: ${fileNames}\n\n`;
             doc += `Source Type: ${sw.sourceType || 'None'}\n`;
-            if (sw.sourceType) {
-                for (const [key, value] of Object.entries(sw.sourceConfig)) {
-                    if(value) doc += `    ${key}: ${value}\n`;
-                }
+            if (sw.sourceType === 'SFTP_SOURCE') {
+                const sftpE = sw.sourceConfig.sftpEnabled !== 'false';
+                doc += `    SFTP Enabled: ${sftpE}\n`;
+                if (sftpE) { doc += `    Host: ${sw.sourceConfig.host || ''}\n    Port: ${sw.sourceConfig.port || ''}\n    Username: ${sw.sourceConfig.username || ''}\n    Remote Path: ${sw.sourceConfig.sftpRemotePath || ''}\n`; } else { doc += `    Local Source Directory: ${sw.sourceConfig.localSourceDirectory || ''}\n`; }
+            } else if (sw.sourceType === 'DB_SOURCE') {
+                doc += `    Entity Name: ${sw.sourceConfig.entityName || ''}\n    Filter Name: ${sw.sourceConfig.filterName || ''}\n    Parameters: ${sw.sourceConfig.parameters || ''}\n`;
+            } else if (sw.sourceType) {
+                for (const [key, value] of Object.entries(sw.sourceConfig)) { if (value) doc += `    ${key}: ${value}\n`; }
             }
-
             doc += `\nSink Type: ${sw.sinkType || 'None'}\n`;
             if (sw.sinkType) {
-                for (const [key, value] of Object.entries(sw.sinkConfig)) {
-                    if(value) doc += `    ${key}: ${value}\n`;
+                for (const [key, value] of Object.entries(sw.sinkConfig)) { if (value) doc += `    ${key}: ${value}\n`; }
+            }
+            doc += `\nSamay Scheduler:\n    Start Time: ${sw.scheduler.startTime || 'Not Scheduled'}\n`;
+            if (['DAILY', 'MONTHLY', 'YEARLY'].includes(sw.scheduler.startTime)) {
+                if (sw.scheduler.timePicker) doc += `    Time: ${sw.scheduler.timePicker}\n`;
+                if (sw.scheduler.dayPicker) doc += `    Day/Date: ${sw.scheduler.dayPicker}\n`;
+            }
+            if (sw.scheduler.cron) doc += `    Cron Expression: ${sw.scheduler.cron}\n`;
+            doc += `    Poll Window: ${sw.scheduler.pollTime || 'Not Set'}\n    Poll Interval: ${sw.scheduler.pollInterval || 'Not Set'}\n`;
+            if (sw.scheduler.crud) { doc += `CRUD Operation Override: ${sw.scheduler.crud.toUpperCase()}\n`; }
+
+            // DEAM Lookup to Document Output
+            if (sw.deamLookup && sw.deamLookup.entityName) {
+                doc += `\nDEAM Lookup Validation:\n`;
+                doc += `    Entity Name: ${sw.deamLookup.entityName}\n`;
+                doc += `    Operation: ${sw.deamLookup.operation}\n`;
+                if (Array.isArray(sw.deamLookup.attributeList) && sw.deamLookup.attributeList.length > 0) {
+                    doc += `    Attribute Mapping:\n`;
+                    sw.deamLookup.attributeList.forEach(m => {
+                        doc += `        ${m.sourceAttribute} -> ${m.targetAttribute}\n`;
+                    });
+                } else {
+                    doc += `    Attribute Mapping: None\n`;
                 }
             }
 
-            doc += `\nSamay Scheduler:\n    Start Time: ${sw.scheduler.startTime || 'Not Scheduled'}\n    Poll Window: ${sw.scheduler.pollTime || 'Not Set'}\n    Poll Interval: ${sw.scheduler.pollInterval || 'Not Set'}\n`;
-
-            if (sw.scheduler.crud) {
-                doc += `CRUD Operation Override: ${sw.scheduler.crud.toUpperCase()}\n`;
-            }
-
-            if(sw.mappings.length > 0) {
+            if (sw.mappings.length > 0) {
                 doc += `\nMapped Output Fields (TTM):\n`;
                 sw.mappings.forEach(m => {
                     let mapLine = `[${m.fileName}] ${m.fileCol}  →  [${m.targetEntity}] ${m.entityAttr}`;
-                    if(m.transforms.length > 0) {
+                    if (m.transforms.length > 0) {
                         const trList = m.transforms.map((t, tidx) => `${tidx+1}. ${t.operation}` + (t.attributes ? `(Args: ${t.attributes})` : '')).join(', ');
                         mapLine += `\n      Transforms Sequence: ${trList}`;
                     }
@@ -1332,16 +1727,21 @@
         });
 
         documentContent = doc;
-        document.getElementById('docPreview').innerHTML = doc.replace(/TBRD-\d+:[^\n]+/g,'<span class="section-title">$&</span>')
-            .replace(/DEAM Name:[^\n]+/g,'<span class="deam-block">$&</span>')
-            .replace(/\[ (MAIN|REFERENCE) SUBWORKFLOW: [^\]]+ \]/g,'<span class="wfm-block" style="display:block; text-align:center; font-weight:800; color:var(--purple-dark);">$&</span>')
-            .replace(/Workflow Name[^\n]+/g,'<span class="wfm-block">$&</span>');
+        document.getElementById('docPreview').innerHTML = doc.replace(/TBRD-\d+:[^\n]+/g, '<span class="section-title">$&</span>')
+            .replace(/DEAM Name:[^\n]+/g, '<span class="deam-block">$&</span>')
+            .replace(/\[ (MAIN|REFERENCE) SUBWORKFLOW: [^\]]+ \]/g, '<span class="wfm-block" style="display:block; text-align:center; font-weight:800; color:var(--purple-dark);">$&</span>')
+            .replace(/Workflow Name[^\n]+/g, '<span class="wfm-block">$&</span>');
     }
 
-    function copyDocument() { navigator.clipboard.writeText(documentContent).then(() => showToast('📋 Copied!')); }
-    function downloadDocument() { const b = new Blob([documentContent],{type:'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='TBRD_Document.txt';a.click();URL.revokeObjectURL(u);showToast('💾 Downloaded!'); }
+    function copyDocument() { navigator.clipboard.writeText(documentContent).then(() => showToast('📋 Copied!', 'success')); }
+    function downloadDocument() {
+        const b = new Blob([documentContent], { type: 'text/plain' }), u = URL.createObjectURL(b), a = document.createElement('a');
+        a.href = u; a.download = 'TBRD_Document.txt'; a.click(); URL.revokeObjectURL(u); showToast('💾 Downloaded!', 'success');
+    }
 
-    // Init
+    // ============================================================
+    // INIT
+    // ============================================================
     window.onload = () => {
         subWorkflows.push(createEmptySubWorkflow(true));
         fetchDatabaseTables();
@@ -1355,7 +1755,8 @@
         if (allDbTables.length > 0) renderEntityList(q ? allDbTables.filter(e => e.name.toLowerCase().includes(q.toLowerCase()) || e.displayName.toLowerCase().includes(q.toLowerCase())) : allDbTables);
         else fetchDatabaseTables(q);
     });
-
+    document.getElementById('addEntityBtn').addEventListener('click', () => { openModal('entityModal'); });
+    document.getElementById('entitySearch').addEventListener('keyup', (e) => { if (e.key === 'Enter') { document.getElementById('searchEntitiesBtn').click(); } });
 </script>
 </body>
 </html>

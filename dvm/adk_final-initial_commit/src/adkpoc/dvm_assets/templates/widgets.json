@@ -1,0 +1,1540 @@
+{
+  "number_stats": {
+    "config": {
+      "widgetId": "auto",
+      "type": "number-stats",
+      "key": "opportunity",
+      "parentKey": "opportunity",
+      "value": "data",
+      "title": "Opportunity ($)",
+      "class": "col-6 col-md-6 col-sm-12 col-lg-6",
+      "bgColor": "rgb(240, 240, 240)",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/api/v1/highway/financial-summary",
+      "prefix": "$",
+      "useFormatStat": true,
+      "useQueryParams": true
+    }
+  },
+
+  "treemap_chart": {
+    "config": {
+      "widgetId": "auto",
+      "type": "treemap-chart",
+      "title": "Opportunity by Segment and Customer",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-6",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/api/v1/highway/grouped-dropdown",
+      "series": "data",
+      "useQueryParams": true,
+      "useCommaStat": true,
+      "triggerFilterEvent": true,
+      "filterKey": ["application_id"],
+      "filterListner": ["auto"],
+      "tooltipLabels": {
+        "parent": "Segment",
+        "child": "Customer Name",
+        "value": "Opportunity $",
+        "sales": "Current Sales $"
+      }
+    }
+  },
+
+  "horizontal-bar-chart": {
+    "config": {
+      "widgetId": "auto",
+      "type": "horizontal-bar-chart",
+      "title": "Sales by Segment",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-6",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/api/v1/highway/sales-summary",
+      "xAxis": "data.value",
+      "yAxis": "data.category",
+      "series": "data.value",
+      "orientation": "right",
+      "barColor": "#D3D3D3",
+      "useQueryParams": true,
+      "useFormatStat": true,
+      "useCommaStat": true,
+      "filterKey": "application_id",
+      "filterListner": ["auto"],
+      "triggerFilterEvent": true,
+      "tooltipLabels": {
+        "category": "Segment",
+        "value": "Sales $"
+      }
+    }
+  },
+
+  "line_chart": {
+    "config": {
+      "widgetId": "widget5",
+      "type": "line-chart",
+      "title": "Revenue Growth",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/line-chart-config.json",
+      "xAxis": "data.category",
+      "yAxis": "value",
+      "series": "data.value",
+      "useQueryParams": false
+    }
+  },
+
+  "bar_chart": {
+    "config": {
+      "widgetId": "widget6",
+      "type": "bar-chart",
+      "title": "Sales Overview",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/bar-chart-config.json",
+      "xAxis": "data.category",
+      "yAxis": "value",
+      "series": "data.value",
+      "useQueryParams": false
+    }
+  },
+
+  "bubble_chart": {
+    "config": {
+      "widgetId": "widget7",
+      "type": "bubble-chart",
+      "title": "GDP Growth",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/bubble-chart-config.json",
+      "xAxis": "",
+      "yAxis": "",
+      "series": "data.points"
+    }
+  },
+
+  "pie_chart": {
+    "config": {
+      "widgetId": "widget8",
+      "type": "pie-chart",
+      "title": "Performance Details",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/pie-chart-config.json",
+      "series": "data"
+    }
+  },
+
+  "stacked_area_chart": {
+    "config": {
+      "widgetId": "widget9",
+      "type": "stacked-area-chart",
+      "title": "Website Traffic Trends",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/stacked-area-chart-config.json",
+      "xAxis": "data.category",
+      "yAxis": "value",
+      "series": "data.series"
+    }
+  },
+
+  "waterfall_chart": {
+    "config": {
+      "widgetId": "widget10",
+      "type": "waterfall-chart",
+      "title": "Quarterly Profit Breakdown",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/waterfall-chart-config.json",
+      "xAxis": "data.category",
+      "series": "data.series"
+    }
+  },
+
+  "quad_bubble_chart": {
+    "config": {
+      "widgetId": "widget11",
+      "type": "quad-bubble-chart",
+      "title": "Quadrant Bubble Chart",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/quad-axis-chart-data/quad-bubble-chart-config.json",
+      "series": "data",
+      "clusterCount": 4,
+      "symbolSize": 15,
+      "xAxis": { "min": -5, "max": 5 },
+      "yAxis": { "min": -5, "max": 5 },
+      "quadrantBackgrounds": [
+        { "xAxis": 0, "yAxis": 0, "x2": 5, "y2": 5, "color": "#B3E5FC" },
+        { "xAxis": -5, "yAxis": 0, "x2": 0, "y2": 5, "color": "#C8E6C9" },
+        { "xAxis": -5, "yAxis": -5, "x2": 0, "y2": 0, "color": "#FFCDD2" },
+        { "xAxis": 0, "yAxis": -5, "x2": 5, "y2": 0, "color": "#FFF9C4" }
+      ]
+    }
+  },
+
+  "stack_bar_chart": {
+    "config": {
+      "widgetId": "widget-generic-stack-bar",
+      "type": "generic-stack-bar-chart",
+      "title": "Generic Stackbar Chart ",
+      "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+      "apiUrl": "assets/charts-config/stack-bar-config.json",
+      "method": "post",
+      "dataKey": "engineModels",
+      "seriesKey": "engineModel",
+      "filterKey": "year",
+      "enableLegendClick": true,
+      "legendKey": "engineModel",
+      "legendListener": [
+        "widget-bar",
+        "widget-donut",
+        "widget-pie",
+        "widget-line",
+        "widget-bubble",
+        "widget-stacked-area",
+        "widget-horizontal-bar",
+        "widget-treemap",
+        "widget-waterfall",
+        "widget-tree-drill-down",
+        "widget-generic-table"
+      ],
+      "enableLabelClick": true,
+      "labelKey": "year",
+      "labelListener": [
+        "widget-bar",
+        "widget-donut",
+        "widget-pie",
+        "widget-line",
+        "widget-bubble",
+        "widget-stacked-area",
+        "widget-horizontal-bar",
+        "widget-treemap",
+        "widget-waterfall",
+        "widget-tree-drill-down",
+        "widget-generic-table"
+      ],
+      "enableColorConsistency": true,
+      "chartConfig": {
+        "tooltip": {
+          "autoCapitalizeKeys": true,
+          "fields": [
+            {
+              "key": "_category",
+              "label": "Quarter"
+            },
+            {
+              "key": "_series",
+              "label": "Engine Model"
+            },
+            {
+              "key": "_value",
+              "label": "Value",
+              "useFormatStat": true
+            }
+          ]
+        },
+        "yAxis": {
+          "useFormatStat": true
+        }
+      },
+      "filterListener": [
+        "widget-bar",
+        "widget-donut",
+        "widget-pie",
+        "widget-stack-bar",
+        "widget-line",
+        "widget-bubble",
+        "widget-stacked-area",
+        "widget-horizontal-bar",
+        "widget-treemap",
+        "widget-waterfall",
+        "widget-tree-drill-down",
+        "widget-generic-table"
+      ],
+      "height": "250px"
+    }
+  }
+
+,
+
+  "table_widget": {
+    "config": {
+      "widgetId": "widgetTable",
+      "type": "table",
+      "title": "cspec-table",
+      "class": "col-12 col-md-5 col-sm-12 col-lg-6",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/off_highway/dashboard/customerSpec",
+      "headerColumns": [
+        { "key": "option_name", "label": "Option Name" },
+        { "key": "current_option_price", "label": "Current Price($)" },
+        { "key": "proposed_option_price", "label": "Proposed Price($)" },
+        { "key": "difference", "label": "Difference ($)" },
+        { "key": "current_markup", "label": "Current Markup" },
+        { "key": "proposed_markup", "label": "Proposed Markup" }
+      ],
+      "isPagination": true
+    }
+  },
+
+  "drill_through_table": {
+    "config": {
+      "widgetId": "widget1-2",
+      "type": "drill-down",
+      "title": "Opprtunity by Segment and Customer",
+      "class": "col-12 col-md-10 col-sm-12 col-lg-6",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/dashboard/impactCustomer",
+      "headers": [
+        { "name": "Customer Name", "expandabile": true, "showTotal": false, "prop": "name", "width": 220 },
+        { "name": "Engine Model", "expandabile": true, "showTotal": true, "prop": "name", "width": 85 }
+      ]
+    }
+  },
+
+  "line_column_chart": {
+    "config": {
+      "widgetId": "widget5",
+      "type": "line-column-chart",
+      "title": "Total opportunity Yearly Sales and Percentage change",
+      "class": "col-12 col-md-8 col-lg-8",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/dashboard/totalOpportunity/cagr",
+      "dataKey": "totalOpportunity",
+      "xAxis": "years",
+      "barSeries": "priceList",
+      "lineSeries": "percentage",
+      "editableLineValues": true,
+      "seriesNames": [
+        "Projected Engine System Sales $",
+        "Opportunity %"
+      ],
+      "yAxisNames": [
+        "Yearly Sales ($)",
+        "Yearly Price Change Percent"
+      ],
+      "useQueryParams": true,
+      "triggerFilterEvent": true
+    }
+  },
+
+  "waterfall_stack_chart": {
+    "config": {
+      "widgetId": "widget2-1",
+      "type": "waterfall-stack",
+      "title": "Proposed ESP",
+      "class": "col-12 col-md-10 col-sm-12 col-lg-12",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/dashboard/totalBreakdown",
+      "categories": [
+        "PID",
+        "ACO",
+        "EBU Disc",
+        "CES DN",
+        "CES Disc",
+        "EBU + CES Imp",
+        "DBU Cost",
+        "DBU Mar",
+        "DBU Imp",
+        "Final Prices"
+      ]
+    }
+  },
+
+  "combined_chart": {
+    "config": {
+      "widgetId": "widget1-1",
+      "type": "combined-chart",
+      "title": "Opprtunity by Segment and Customer",
+      "class": "col-12 col-md-10 col-sm-12 col-lg-6",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/price-performance/data",
+      "xAxisLabel": "HP",
+      "yAxisLabel": "ESP(in Ks)",
+      "chartConfig": [
+        {
+          "type": "line",
+          "linecolor": "#424242",
+          "bgcolor": "rgba(66, 66, 66, 0.1)",
+          "name": "NA Proposed Baseline Curve"
+        },
+        {
+          "type": "line",
+          "linecolor": "#00578A",
+          "bgcolor": "rgba(0, 87, 138, 0.1)",
+          "name": "NA DN Baseline"
+        },
+        {
+          "type": "line",
+          "linecolor": "#DA281C",
+          "bgcolor": "rgba(218, 40, 28, 0.1)",
+          "name": "Special Baseline"
+        },
+        {
+          "type": "line",
+          "linecolor": "#738B1F",
+          "bgcolor": "rgba(115, 139, 31, 0.1)",
+          "name": "Strategic Baseline"
+        },
+        {
+          "type": "scatter",
+          "tooltip": "custom",
+          "bubbleColor": "dropdown_customer_category_filter",
+          "name": "Customer Type",
+          "colors": {
+            "Default": "#424242",
+            "Special": "#00578A",
+            "Large": "#DA281C",
+            "EBU Direct": "#738B1F"
+          }
+        }
+      ],
+      "useQueryParams": true,
+      "filterKey": ["id", "uid_seg_data_link"],
+      "filterListner": ["widget1-2"]
+    }
+  },
+
+  "upload_files": {
+    "config": {
+      "widgetId": "widgetUploadFiles",
+      "type": "upload-file",
+      "class": "col-12 col-md-6 col-lg-12",
+      "title": "Upload Files",
+      "multiple": true,
+      "accept": ".pdf,.docx,.xlsx,.png,.jpg",
+      "renderCondition": {
+        "filter": "action_type",
+        "is": "Upload File"
+      },
+      "dependsOnFilters": ["action_type", "workflowName"],
+      "actions": [
+        {
+          "label": "Cancel",
+          "defaultRequestData": {
+            "uuid": null
+          },
+          "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/api/v1/svm/cancel",
+          "showOn": { "filter": "action_type", "is": "Upload File" },
+          "confirmation": {
+            "title": "Confirm Cancellation",
+            "message": "Are you sure you want to cancel? All unsaved changes will be lost."
+          }
+        },
+        {
+          "label": "Upload",
+          "defaultRequestData": {
+            "uuid": null
+          },
+          "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/api/v1/svm/upload",
+          "showOn": { "filter": "action_type", "is": "Upload File" },
+          "confirmation": {
+            "title": "Confirm Upload",
+            "message": "Are you sure you want to upload these files?"
+          }
+        },
+        {
+          "label": "Submit",
+          "defaultRequestData": {
+            "uuid": null
+          },
+          "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/api/v1/svm/submit",
+          "showOn": { "filter": "action_type", "is": "Upload File" },
+          "confirmation": {
+            "title": "Confirm Submission",
+            "message": "Are you sure you want to submit this data? This action cannot be undone."
+          }
+        }
+      ]
+    }
+  },
+  "horizontal-bar-chart-segment": {
+    "widgetId": "widget-horizontal-bar-chart-segment",
+    "type": "horizontal-bar-chart-segment",
+    "title": "100% Stacked Horizontal Bar Chart",
+    "class": "col-12",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/horizontal-bar-chart-segment-config.json",
+    "method": "post",
+    "filterKey": "category",
+    "chartConfig": {
+      "groupsKey": "groups",
+      "groupLabelKey": "label",
+      "groupValueKey": "filterValue",
+      "childrenKey": "children",
+      "childLabelKey": "label",
+      "childValueKey": "filterValue",
+      "segmentsKey": "segments",
+      "segmentLabelKey": "label",
+      "segmentValueKey": "value",
+      "segmentColorKey": "color",
+      "preferConfiguredSegmentColors": true,
+      "segmentColorsByLabel": {
+        "Cummins": "#c30010",
+        "Non Cummins": "#cbd5e1"
+      },
+      "layout": {
+        "visibleChildCount": 4,
+        "rowGap": "0.85rem",
+        "parentWidth": "21rem",
+        "mobileParentWidth": "19rem",
+        "mobileChildWidth": "13.5rem"
+      },
+      "styles": {
+        "parentCardBackground": "linear-gradient(180deg, rgba(236, 253, 245, 0.98) 0%, rgba(255, 255, 255, 0.94) 100%)",
+        "parentCardBorder": "rgba(15, 118, 110, 0.34)",
+        "parentCardShadow": "0 20px 36px rgba(15, 118, 110, 0.14)"
+      },
+      "defaultSegmentColors": [
+
+      ]
+    },
+    "filterListener": [
+      "widget-bar",
+      "widget-donut",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ],
+    "enableColorConsistency": true,
+    "enableLegendClick": false,
+    "legendKey": "series",
+    "legendListener": [
+      "widget-bar",
+      "widget-donut",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ],
+    "enableLabelClick": true,
+    "labelKey": "category",
+    "labelListener": [
+      "widget-bar",
+      "widget-donut",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ],
+    "isMultiSelect": true
+  },
+  "vertical-filter-box":{
+    "widgetId": 2000,
+    "type": "vertical-filter-box",
+    "title": " Global Accounts",
+    "titleAlignment": "center",
+    "lastItem": "others",
+    "isMultiSelect": true,
+    "class": "col-12 col-lg-2",
+    "height": "615px",
+    "colStyle": "padding: 5px;",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/spriced/platform",
+    "method": "post",
+    "entity": "engine_sales_data_latest",
+    "workflowId": "ABC-123",
+    "functionName": "SalesByGlobalAccountBar",
+    "version": "1.0",
+    "requestData": { "name": "ALL" },
+    "defaultFilter": { "name": "All" },
+    "categoryKey": "global_account",
+    "valueKey": "net_sales",
+    "filterKey": "global_account",
+    "sortKey": "net_sales",
+    "sortOrder": "desc"
+  },
+  "entity-form":  {
+    "widgetId": "widget2",
+    "type": "entity-form",
+    "class": "col-12 col-md-4",
+    "height": "700px",
+    "embedQueryParams": true,
+    "embeddedParams": ["entity"],
+    "excludePayloadParams": ["model"],
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },
+    "sections": [
+      {
+
+        "isExpanded": true,
+        "actions": [
+          { "label": "Reset", "actionId": "reset", "style": "reset-btn" },
+          { "label": "Save", "actionId": "save", "style": "save-btn", "apiUrl": "/api/v1/pvm/{}/update", "method": "Post", "headers": { "Authorization": "Bearer YOUR_DUMMY_TOKEN", "X-Session-ID": "manual-track-001" }, "refreshWidgets": ["widget1"] }
+        ]
+      },
+      {
+        "title": "Related Entities",
+        "isExpanded": true
+      }
+    ],
+    "filterListner": [
+      "widget-entity-table"
+    ]
+  },
+  "entity-table": {
+    "config": {
+
+      "widgetId": "widget-entity-table",
+      "type": "entity-table",
+      "class": "col-12 col-md-8",
+      "height": "700px",
+      "defaultRequestData": {
+        "uuid": null
+      },
+      "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/entity-table.json",
+
+      "headers": {
+        "X-Session-ID": "manual-track-001"
+      },
+      "key": null,
+      "embedQueryParams": true,
+      "embeddedParams": ["entity"],
+      "excludePayloadParams": ["model"],
+      "queryParamsKeys": ["entity"],
+      "useQueryParams": true,
+      "skipDefaultPayload": true,
+      "customPayload": {
+        "filters": [],
+        "sorters": [
+          {"direction": "DESC", "property": "id"}
+        ],
+        "pager": {
+          "pageNumber": 0,
+          "pageSize": 50
+        }
+      },
+      "header": {
+        "dropdowns": [
+          {
+            "label": "Model",
+            "key": "model",
+            "options": {
+              "defaultRequestData": {
+                "uuid": null
+              },
+              "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/mock-data/model-options.json",
+              "method":"GET"
+            },
+            "defaultValue": "NRP"
+          },
+          {
+            "label": "Entity",
+            "key": "entity",
+            "options": {
+              "defaultRequestData": {
+                "uuid": null
+              },
+              "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/mock-data/entity-options.json",
+              "method":"GET"
+            },
+            "defaultValue": "010 - Part",
+            "isQueryParam": true
+          }
+        ],
+        "title": "",
+        "actions": [
+          { "icon": "add", "actionId": "add", "tooltip": "Add New" },
+          { "icon": "filter_list", "actionId": "filter", "tooltip": "Filter" },
+          { "icon": "refresh", "actionId": "refresh", "tooltip": "Refresh Data" }
+        ]
+      },
+
+      "pagination": {
+        "enabled": true,
+        "pageSize": 50
+      }
+
+    }
+  },
+  "donut_chart":  {
+    "widgetId": "widget-donut",
+    "type": "donut-chart",
+    "title": "Sales by Region",
+    "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+    "height": "250px",
+    "colStyle": "padding-left: 5px; padding-right: 5px;",
+    "entity": "desa_sales_omni",
+    "workflowId": "ABC-123",
+    "functionName": "SalesByRegionDonut",
+    "version": "1.0",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "assets/charts-config/donut.json",
+    "categoryKey": "abo_group_name_c",
+    "valueKey": "net_sales",
+    "filterKey": "abo_group_name_c",
+    "filterListner": "widget-waterfall",
+    "defaultFilter": {
+      "name": "All"
+    },
+    "top": 4,
+    "stackOrder": "desc",
+    "chartConfig": {
+      "topNColorsByStackPosition": [
+        "#DA291C",
+        "#000000",
+        "#999999",
+        "#118DFF",
+        "#1AAB40",
+        "#7F0404",
+        "#E0B5B5",
+        "#5C2D91"
+      ],
+      "colorMap": {},
+      "tooltip": {
+        "autoCapitalizeKeys": true,
+        "fields": [
+          { "key": "_name", "label": "Region" },
+          {
+            "key": "_value",
+            "label": "Net Sales",
+            "prefix": "$",
+            "useFormatStat": true
+          },
+          { "key": "_percentage", "label": "Share", "suffix": "%" }
+        ]
+      }
+    },
+    "filterListener": [
+      "widget-bar",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ]
+  },
+  "bar-chart": {
+    "widgetId": "widget-bar",
+    "type": "bar-chart",
+    "title": "Bar Chart ",
+    "class": "col-12 col-md-6 col-sm-12 col-lg-4",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },"apiUrl": "/spriced/platform",
+    "method": "GET",
+    "dataKey": "bar",
+    "categoryKey": "quarter",
+    "valueKey": "value",
+    "filterKey": "value",
+    "listenerFilterKeys": {
+
+      "widget-donut": ["quarter"]
+    },
+    "chartConfig": {
+      "tooltip": {
+        "autoCapitalizeKeys": true,
+        "fields": [
+          {
+            "key": "_category",
+            "label": "Category"
+          },
+          {
+            "key": "_value",
+            "label": "Value",
+            "useFormatStat": true
+          }
+        ]
+      },
+      "yAxis": {
+        "useFormatStat": true
+      },
+      "colorSyncEnabled": true
+    },
+    "xAxis": "quarter",
+    "filterListener": [
+      "widget-donut",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ],
+    "height": "250px",
+    "enableColorConsistency": true,
+    "enableYAxisClick": true,
+    "enableLegendClick": true,
+    "legendListener": [
+      "widget-donut",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ],
+    "enableLabelClick": true,
+    "labelListener": [
+      "widget-donut",
+      "widget-pie",
+      "widget-stack-bar",
+      "widget-line",
+      "widget-bubble",
+      "widget-stacked-area",
+      "widget-horizontal-bar",
+      "widget-treemap",
+      "widget-generic-stack-bar",
+      "widget-waterfall",
+      "widget-tree-drill-down",
+      "widget-generic-table"
+    ],
+    "enableDoubleXAxis": true,
+    "enableXAxis2Click": true,
+    "doublexAxisKey": "Year",
+    "enableDoubleYAxis": true,
+    "enableYAxis2Click": true,
+
+    "isMultiSelect": true
+  },
+  "multi-level-comparison-chart":  {
+    "widgetId": "widget-multi-level-comparison-chart",
+    "type": "multi-level-comparison-chart",
+    "title": "Multi-level comparison chart",
+    "titleAlignment": "center",
+    "class": "col-12",
+    "height": "290px",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },
+    "apiUrl": "/spriced/platform",
+    "method": "GET",
+    "altFunctionLabel": "YoY",
+    "altFunctionToggleLabel": "Agg. Change",
+    "altChangeKey": "yoy_change",
+    "defaultFilter": { "name": "All" },
+    "responsePath": "responseList.0.data.0.bar",
+    "engineKey": "engine_c",
+    "yearKey": "year",
+    "valueKey": "avg_price",
+    "startYearKey": "start_year",
+    "endYearKey": "end_year",
+    "changeKey": "avg_pct",
+    "filterKey": "global_account",
+    "sortKey": "avg_price",
+    "sortOrder": "desc",
+    "filterListener": [
+      "widget-bar", "widget-donut", "widget-pie",
+      "widget-generic-stack-bar", "widget-line", "widget-bubble",
+      "widget-mixed-stackbar-chart", "widget-stacked-horizontal-bar-chart"
+    ],
+    "enableColorConsistency": true,
+    "colorSyncEnabled": true,
+    "enableLegendClick": true,
+    "legendKey": "engine_application_name",
+    "legendListener": [
+      "widget-bar", "widget-donut", "widget-pie",
+      "widget-generic-stack-bar", "widget-line", "widget-bubble",
+      "widget-mixed-stackbar-chart", "widget-stacked-horizontal-bar-chart"
+    ],
+    "enableLabelClick": true,
+    "labelKey": "engine_c",
+    "labelListener": [
+      "widget-bar", "widget-donut", "widget-pie",
+      "widget-generic-stack-bar", "widget-line", "widget-bubble",
+      "widget-mixed-stackbar-chart", "widget-stacked-horizontal-bar-chart"
+    ],
+    "enableDoubleXAxis": true,
+    "enableXAxis2Click": true,
+    "doublexAxisKey": "year",
+    "enableDoubleYAxis": true,
+    "enableYAxis2Click": true,
+    "doubleyAxisKey": "avg_price",
+    "isMultiSelect": true,
+    "chartConfig": {
+      "barColors": [
+        "#008B8B", "#DC143C", "#696969", "#4169E1", "#DAA520",
+        "#CD5C5C", "#9370DB", "#2F4F4F", "#FF8C00", "#8B0000",
+        "#556B2F", "#6495ED", "#B8860B", "#483D8B", "#00CED1"
+      ],
+      "colorMap": {},
+      "colorSyncEnabled": true
+    }
+  },
+  "config-driven-super-table":{
+    "widgetId": "widget-config-driven-super-table",
+    "type": "config-driven-super-table",
+    "title": "Config-Driven Super Table (Dynamic Data Grid)",
+    "class": "col-12",
+    "apiUrl": "assets/charts-config/config-driven-super-table-config.json",
+    "method": "get",
+    "rowsPath": "data",
+    "height": "70vh",
+    "tableHeight": "100vh",
+    "rowHeight": 180,
+    "headerRowHeight": 52,
+    "editable": true,
+    "defaultSort": {
+      "key": "forecast",
+      "direction": "desc"
+    },
+    "drillDown": {
+      "enabled": true,
+      "childKey": "children",
+      "rowIdKey": "id",
+      "toggleColumnKey": "account",
+      "defaultExpandedLevel": 3
+    },
+    "freezePane": {
+      "topRows": 1,
+      "leftColumns": 3,
+      "topRowHeight": 100
+    },
+    "rowEditableKey": "isEditable",
+    "selectionEventName": "superTableSelection",
+    "controls": [
+      {
+        "key": "regionSelector",
+        "label": "Region",
+        "type": "select",
+        "defaultValue": "ALL",
+        "options": [
+          {
+            "label": "All Regions",
+            "value": "ALL"
+          },
+          {
+            "label": "North America",
+            "value": "North America"
+          },
+          {
+            "label": "Europe",
+            "value": "Europe"
+          },
+          {
+            "label": "APAC",
+            "value": "APAC"
+          },
+          {
+            "label": "Latin America",
+            "value": "Latin America"
+          },
+          {
+            "label": "Middle East \u0026 Africa",
+            "value": "Middle East \u0026 Africa"
+          }
+        ],
+        "filterKey": "region",
+        "asQueryParam": false,
+        "optionsApiUrl": "assets/charts-config/super-table-region-options.json",
+        "optionsMethod": "get",
+        "optionsResponsePath": "data",
+        "optionsLabelKey": "label",
+        "optionsValueKey": "value",
+        "reloadOptionsOnFilterChange": false
+      },
+      {
+        "key": "statusSelector",
+        "label": "Status",
+        "type": "select",
+        "defaultValue": "ALL",
+        "options": [
+          {
+            "label": "All Statuses",
+            "value": "ALL"
+          },
+          {
+            "label": "Draft",
+            "value": "Draft"
+          },
+          {
+            "label": "Review",
+            "value": "Review"
+          },
+          {
+            "label": "Approved",
+            "value": "Approved"
+          },
+          {
+            "label": "Blocked",
+            "value": "Blocked"
+          }
+        ],
+        "filterKey": "status",
+        "asQueryParam": false,
+        "optionsApiUrl": "assets/charts-config/super-table-status-options.json",
+        "optionsMethod": "get",
+        "optionsResponsePath": "data",
+        "optionsLabelKey": "label",
+        "optionsValueKey": "value",
+        "reloadOptionsOnFilterChange": false
+      },
+      {
+        "key": "refresh",
+        "label": "Refresh",
+        "type": "button",
+        "eventName": "superTableRefresh"
+      }
+    ],
+    "tableActions": [
+      {
+        "label": "Export",
+        "value": "export",
+        "eventName": "superTableAction",
+        "apiUrl": "assets/charts-config/super-table-action-export.json",
+        "method": "get",
+        "responsePath": "data",
+        "requestParams": {
+          "action": "$action.value",
+          "region": "$controls.regionSelector",
+          "status": "$controls.statusSelector"
+        }
+      },
+      {
+        "label": "Save",
+        "value": "save",
+        "eventName": "superTableAction",
+        "apiUrl": "assets/charts-config/super-table-action-save.json",
+        "method": "get",
+        "responsePath": "data",
+        "requestParams": {
+          "action": "$action.value",
+          "region": "$controls.regionSelector",
+          "status": "$controls.statusSelector"
+        }
+      }
+    ],
+    "columns": [
+      {
+        "key": "__serial",
+        "label": "Serial N",
+        "type": "serial",
+        "width": 92,
+        "sticky": "left",
+        "selectionKey": "_selected",
+        "cascadeSelection": true
+      },
+      {
+        "key": "accountImage",
+        "label": "Logo",
+        "width": 140,
+        "type": "image",
+        "editable": false,
+        "sortable": false,
+        "sticky": "left"
+      },
+      {
+        "key": "account",
+        "label": "Account",
+        "width": 260,
+        "sticky": "left",
+        "drillDownToggle": true,
+        "editable": false,
+        "sortable": true,
+        "tooltip": {
+          "path": "details.summary"
+        },
+        "popup": {
+          "type": "table",
+          "title": "Recent Changes",
+          "sourcePath": "details.recentChanges"
+        }
+      },
+      {
+        "key": "region",
+        "label": "Region",
+        "width": 180,
+        "sticky": "left",
+        "editable": false,
+        "sortable": true
+      },
+      {
+        "key": "segment",
+        "label": "Segment",
+        "width": 170,
+        "sticky": "left",
+        "editable": false,
+        "sortable": true
+      },
+      {
+        "key": "owner",
+        "label": "Owner",
+        "width": 170,
+        "type": "text",
+        "sortable": true
+      },
+      {
+        "key": "status",
+        "label": "Status",
+        "width": 140,
+        "type": "select",
+        "sortable": true,
+        "options": [
+          "Draft",
+          "Review",
+          "Approved",
+          "Blocked"
+        ]
+      },
+      {
+        "key": "priority",
+        "label": "Priority",
+        "width": 130,
+        "type": "select",
+        "sortable": true,
+        "options": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ]
+      },
+      {
+        "key": "forecast",
+        "label": "Forecast",
+        "width": 150,
+        "type": "number",
+        "align": "right",
+        "inputType": "number",
+        "sortable": true,
+        "popup": {
+          "type": "chart",
+          "title": "Forecast Trend",
+          "sourcePath": "trendChart"
+        }
+      },
+      {
+        "key": "winRate",
+        "label": "Win %",
+        "width": 110,
+        "type": "number",
+        "align": "right",
+        "inputType": "number",
+        "sortable": true
+      },
+      {
+        "key": "q1Revenue",
+        "label": "Q1",
+        "width": 120,
+        "type": "number",
+        "align": "right",
+        "sortable": true,
+        "editable": false
+      },
+      {
+        "key": "q2Revenue",
+        "label": "Q2",
+        "width": 120,
+        "type": "number",
+        "align": "right",
+        "sortable": true,
+        "editable": false
+      },
+      {
+        "key": "q3Revenue",
+        "label": "Q3",
+        "width": 120,
+        "type": "number",
+        "align": "right",
+        "sortable": true,
+        "editable": false
+      },
+      {
+        "key": "q4Revenue",
+        "label": "Q4",
+        "width": 120,
+        "type": "number",
+        "align": "right",
+        "sortable": true,
+        "editable": false
+      },
+      {
+        "key": "scoreChart",
+        "label": "Score",
+        "width": 290,
+        "type": "chart",
+        "editable": false,
+        "sortable": false,
+        "chart": {
+          "dataPath": "scoreChart",
+          "defaultType": "waterfall-chart",
+          "typeConfigMap": {
+            "waterfall-chart": {
+              "height": "140px"
+            }
+          }
+        }
+      },
+      {
+        "key": "healthChart",
+        "label": "Health",
+        "width": 990,
+        "type": "chart",
+        "editable": false,
+        "sortable": false,
+        "chart": {
+          "typeSourcePath": "id",
+          "dataPath": "healthChart",
+          "typeMap": {
+            "root-na": "donut-chart",
+            "root-emea": "donut-chart",
+            "root-apac": "bar-chart",
+            "root-latam": "line-chart",
+            "root-mea": "stack-bar-chart",
+            "root-anz": "bar-chart",
+            "root-japan": "line-chart",
+            "root-canada": "progress",
+            "root-donut-dynamic": "donut-chart",
+            "root-pie-dynamic": "pie-chart",
+            "root-stackbar-dynamic": "stack-bar-chart",
+            "root-supertable-dynamic": "config-driven-super-table"
+          },
+          "typeConfigMap": {
+            "donut-chart": {
+              "categoryKey": "abo_group_name_c",
+              "valueKey": "net_sales",
+              "height": "150px"
+            },
+            "pie-chart": {
+              "categoryKey": "name",
+              "valueKey": "value",
+              "height": "150px"
+            },
+            "stack-bar-chart": {
+              "dataKey": "engineModels",
+              "seriesKey": "engineModel",
+              "height": "150px",
+              "dataZoom": {
+                "enabled": true,
+                "threshold": 8,
+                "visibleCount": 8
+              }
+            },
+            "bar-chart": {
+              "height": "150px",
+              "dataZoom": {
+                "enabled": true,
+                "threshold": 8,
+                "visibleCount": 8
+              }
+            },
+            "line-chart": {
+              "height": "150px",
+              "dataZoom": {
+                "enabled": true,
+                "threshold": 10,
+                "visibleCount": 10
+              }
+            },
+            "config-driven-super-table": {
+              "height": "180px",
+              "tableHeight": "180px",
+              "rowHeight": 44,
+              "editable": false,
+              "freezePane": {
+                "topRows": 1,
+                "leftColumns": 1
+              },
+              "columns": [
+                {
+                  "key": "metric",
+                  "label": "Metric",
+                  "width": 110,
+                  "sticky": "left",
+                  "editable": false
+                },
+                {
+                  "key": "current",
+                  "label": "Current",
+                  "width": 90,
+                  "type": "number",
+                  "align": "right",
+                  "editable": false
+                },
+                {
+                  "key": "target",
+                  "label": "Target",
+                  "width": 90,
+                  "type": "number",
+                  "align": "right",
+                  "editable": false
+                }
+              ]
+            }
+          },
+          "defaultType": "line-chart"
+        }
+      },
+      {
+        "key": "lastUpdated",
+        "label": "Last Updated",
+        "width": 140,
+        "type": "text",
+        "sortable": true
+      },
+      {
+        "key": "recordLink",
+        "label": "Navigate",
+        "width": 150,
+        "type": "link",
+        "editable": false,
+        "navigation": {
+          "path": "/customer-overview",
+          "openInNewTab": true,
+          "queryParams": {
+            "account": "account",
+            "region": "region",
+            "segment": "segment"
+          }
+        }
+      },
+      {
+        "key": "comments",
+        "label": "Comments",
+        "width": 320,
+        "type": "textarea",
+        "sortable": false
+      },
+      {
+        "key": "rowActions",
+        "label": "Actions",
+        "width": 220,
+        "type": "action",
+        "editable": false,
+        "actions": [
+          {
+            "label": "Drill",
+            "value": "drill",
+            "eventName": "superTableRowAction"
+          },
+          {
+            "label": "Escalate",
+            "value": "escalate",
+            "eventName": "superTableRowAction"
+          },
+          {
+            "label": "Flag",
+            "value": "flag",
+            "eventName": "superTableRowAction"
+          }
+        ]
+      }
+    ],
+    "columnGroups": [
+      {
+        "label": "Hierarchy",
+        "columns": [
+          "accountImage",
+          "account",
+          "region",
+          "segment"
+        ]
+      },
+      {
+        "label": "Ownership",
+        "columns": [
+          "owner",
+          "status",
+          "priority"
+        ]
+      },
+      {
+        "label": "FY 2026",
+        "columns": [
+          "q1Revenue",
+          "q2Revenue",
+          "q3Revenue",
+          "q4Revenue"
+        ]
+      },
+      {
+        "label": "Performance",
+        "columns": [
+          "forecast",
+          "winRate",
+          "scoreChart",
+          "healthChart"
+        ]
+      },
+      {
+        "label": "Meta",
+        "columns": [
+          "lastUpdated",
+          "recordLink",
+          "comments",
+          "rowActions"
+        ]
+      }
+    ],
+    "rowGrouping": {
+      "enabled": true,
+      "groupBy": [
+        {
+          "key": "fiscalYear",
+          "label": "Fiscal Year",
+          "labelTemplate": "{label}: {value}",
+          "sort": "asc"
+        },
+        {
+          "key": "fiscalQuarter",
+          "label": "Quarter",
+          "labelTemplate": "{label}: {value}",
+          "sort": "asc"
+        }
+      ],
+      "labelColumnKey": "account",
+      "idPrefix": "grp",
+      "groupRowConfig": {
+        "editable": false,
+        "className": "row-group"
+      }
+    }
+  },
+  "configurable-multi-series-scatter-chart":{
+    "widgetId": "widget-configurable-multi-series-scatter-chart",
+    "type": "configurable-multi-series-scatter-chart",
+    "title": "Configurable Multi-Series Scatter Chart",
+    "class": "col-12 col-md-12 col-sm-12 col-lg-12",
+    "heightLg": "60vh",
+    "apiUrl": "assets/charts-config/configurable-multi-series-scatter-chart-config.json",
+    "method": "get",
+    "filterKey": "category",
+    "xAxis": "category",
+    "chartConfig": {
+      "categoryKey": "category",
+      "valueKey": "value",
+      "seriesKey": "series",
+      "customerKey": "customer",
+      "oemKey": "oem",
+      "labelKey": "label",
+      "showPointLabels": false,
+      "symbolSize": 12,
+      "symbols": [
+        "circle",
+        "rect",
+        "triangle",
+        "diamond",
+        "pin",
+        "arrow",
+        "roundRect"
+      ],
+      "yAxis": {
+        "name": "Y1 %",
+        "min": -30,
+        "max": 30,
+        "suffix": "%"
+      },
+      "yAxis2": {},
+      "xAxis": {
+        "showVerticalLines": true,
+        "verticalLineColor": "#d8dee4",
+        "verticalLineType": "solid"
+      },
+      "tooltip": {
+        "autoCapitalizeKeys": true,
+        "fields": [
+          {
+            "key": "_category",
+            "label": "Category"
+          },
+          {
+            "key": "_series",
+            "label": "Customer/OEM"
+          },
+          {
+            "key": "_value",
+            "label": "Y1",
+            "suffix": "%"
+          },
+          {
+            "key": "_customer",
+            "label": "Customer"
+          },
+          {
+            "key": "_oem",
+            "label": "OEM"
+          }
+        ]
+      },
+      "colorSyncEnabled": true
+    },
+    "filterListener": [],
+    "enableColorConsistency": true,
+    "enableLegendClick": true,
+    "legendKey": "series",
+    "legendListener": [],
+    "enableLabelClick": true,
+    "labelKey": "category",
+    "labelListener": [],
+    "isMultiSelect": true
+  }
+
+
+}

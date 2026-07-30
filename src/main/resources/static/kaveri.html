@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaveri • Maps & Code Generation</title>
+    <title>Kaveri • Maps, Code & DVM</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -130,6 +130,7 @@
         @keyframes cardAppear { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         .card-header { font-weight:600; font-size:0.9rem; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
         .card-title { display:flex; align-items:center; gap:8px; }
+
         .maps-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
         .map-card { background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); overflow:hidden; transition:var(--transition-smooth); box-shadow:var(--shadow-xs); animation: cardAppear 0.5s ease-out both; }
         .map-card:nth-child(1){animation-delay:0.08s}.map-card:nth-child(2){animation-delay:0.16s}.map-card:nth-child(3){animation-delay:0.24s}.map-card:nth-child(4){animation-delay:0.32s}
@@ -137,8 +138,16 @@
         .map-card-header { padding:14px 18px; background:var(--surface-alt); border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center; }
         .map-card-title { font-weight:600; font-size:0.88rem; display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
         .map-card-title .map-name-text { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+        /* Map Badges */
         .map-badge { font-size:0.65rem; padding:2px 8px; border-radius:10px; font-weight:600; white-space:nowrap; flex-shrink:0; }
-        .map-badge.deam{background:var(--accent-light);color:var(--accent-dark)}.map-badge.workflow{background:var(--purple-light);color:var(--purple)}.map-badge.fsm{background:#eef1ff;color:#4f6ef7}
+        .map-badge.deam { background:var(--accent-light); color:var(--accent-dark); }
+        .map-badge.workflow { background:var(--purple-light); color:var(--purple); }
+        .map-badge.fsm { background:#eef1ff; color:#4f6ef7; }
+        .map-badge.dvm { background:var(--amber-light); color:#a16207; }
+        .map-badge.dvm.loading { background:var(--amber-light); color:#a16207; animation: dvmPulse 1.2s ease-in-out infinite; }
+        @keyframes dvmPulse { 0%,100% { opacity:0.7; } 50% { opacity:1; box-shadow: 0 0 12px rgba(240,169,46,0.4); } }
+
         .map-card-actions { display:flex; gap:4px; flex-shrink:0; }
         .icon-btn { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); color:var(--text-muted); font-size:0.7rem; }
         .icon-btn:hover { background:var(--accent); color:white; border-color:var(--accent); transform:scale(1.1); }
@@ -150,8 +159,13 @@
         .edit-textarea { display:none; width:100%; min-height:180px; font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text-secondary); background:var(--surface-alt); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--accent); outline:none; resize:vertical; line-height:1.5; }
         .edit-actions { display:none; gap:6px; margin-top:8px; }
         .map-card-body.editing .edit-actions { display:flex; }
-        .code-block { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text-secondary); background:var(--surface-alt); padding:12px; border-radius:var(--radius-sm); white-space:pre-wrap; line-height:1.5; }
+
+        .code-block { font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--text-secondary); background:var(--surface-alt); padding:12px; border-radius:var(--radius-sm); white-space:pre-wrap; line-height:1.5; max-height:350px; overflow-y:auto; transition: box-shadow 0.4s ease; }
         .code-block.dark { background:#1a2722; color:#d1fae5; min-height:120px; max-height:350px; overflow-y:auto; }
+
+        .code-block.dvm-loading { background:#1a2722; color:var(--amber); border:1px dashed var(--amber); display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:140px; gap:12px; }
+        .code-block.dvm-loading .loader-spinner { width:32px; height:32px; border:3px solid rgba(240,169,46,0.15); border-top-color:var(--amber); border-radius:50%; animation:spin 1s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
         /* Fullscreen Overlay */
         .fullscreen-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); animation:fadeIn 0.2s ease; }
@@ -237,10 +251,10 @@
     </nav>
 
     <div class="progress-section" id="progressSection">
-        <div class="progress-header"><span class="progress-label"><span class="progress-phase-icon"></span><span id="globalPhaseLabel">Maps Generation</span></span><span class="progress-value" id="globalProgressPercent">30%</span></div>
-        <div class="progress-bar"><div class="progress-fill" id="globalProgressFill" style="width:30%;"></div></div>
+        <div class="progress-header"><span class="progress-label"><span class="progress-phase-icon"></span><span id="globalPhaseLabel">Initializing</span></span><span class="progress-value" id="globalProgressPercent">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="globalProgressFill" style="width:0%;"></div></div>
         <div class="progress-steps">
-            <div class="step-indicator"><div class="step-dot completed" id="gstep1"></div><div class="step-label">Upload</div></div>
+            <div class="step-indicator"><div class="step-dot" id="gstep1"></div><div class="step-label">Upload</div></div>
             <div class="step-indicator"><div class="step-dot active" id="gstep2"></div><div class="step-label active">Maps</div></div>
             <div class="step-indicator"><div class="step-dot" id="gstep3"></div><div class="step-label">Code</div></div>
             <div class="step-indicator"><div class="step-dot" id="gstep4"></div><div class="step-label">Test</div></div>
@@ -251,11 +265,16 @@
     <div class="main-content">
         <div class="page-container">
             <div class="section" id="mapsSection">
-                <div class="section-header"><div class="section-icon"><i class="fas fa-diagram-project"></i></div><h2 class="section-title">Configuration Maps</h2><p class="section-subtitle">Generating DEAM, Workflow Maps & FSM from uploaded TBRD document</p></div>
-                <div class="sub-progress-wrap"><div class="progress-bar"><div class="progress-fill" id="mapProgressFill" style="width:0%;"></div></div><p class="sub-progress-text" id="mapProgressText">Initializing...</p></div>
+                <div class="section-header">
+                    <div class="section-icon"><i class="fas fa-diagram-project"></i></div>
+                    <h2 class="section-title">Configuration Maps & DVM</h2>
+                    <p class="section-subtitle">Generating DEAM, Workflow Maps, FSM & DVM from uploaded TBRD document</p>
+                </div>
+
+                <div class="sub-progress-wrap"><div class="progress-bar"><div class="progress-fill" id="mapProgressFill" style="width:0%;"></div></div><p class="sub-progress-text" id="mapProgressText">Waiting for file...</p></div>
                 <div class="maps-grid" id="mapsGrid">
                     <div class="map-card" style="grid-column:1/-1;text-align:center;padding:30px;">
-                        <div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Processing TBRD document...</div>
+                        <div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Loading document...</div>
                     </div>
                 </div>
                 <div class="button-row" id="mapsButtons">
@@ -265,10 +284,10 @@
             </div>
             <div class="divider" id="sectionDivider" style="display:none;"><span><i class="fas fa-arrow-down arrow-icon"></i> Sequential Flow <i class="fas fa-arrow-down arrow-icon"></i></span></div>
             <div class="section" id="codeSection" style="display:none;">
-                <div class="section-header"><div class="section-icon"><i class="fas fa-code"></i></div><h2 class="section-title">Code Synthesis</h2><p class="section-subtitle">Generating production-ready code from configuration maps</p></div>
+                <div class="section-header"><div class="section-icon"><i class="fas fa-code"></i></div><h2 class="section-title">Code Synthesis</h2><p class="section-subtitle">Streaming production-ready microservice code from configuration maps</p></div>
                 <div class="sub-progress-wrap"><div class="progress-bar"><div class="progress-fill" id="codeProgressFill" style="width:0%;"></div></div><p class="sub-progress-text" id="codeProgressText">0%</p></div>
-                <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-file-code" style="color:var(--accent);"></i> Generated Code</div><div style="display:flex;gap:4px;"><button class="icon-btn" onclick="copyCode()"><i class="fas fa-copy"></i></button><button class="icon-btn" onclick="saveCode()"><i class="fas fa-save"></i></button></div></div><div class="code-block dark" id="generatedCode">// Waiting for map generation to complete...</div></div>
-                <div class="button-row"><button class="btn btn-outline" onclick="window.location.href='pahal.html'"><i class="fas fa-arrow-left"></i> Back</button><button class="btn btn-primary" id="proceedToTestBtn" disabled><i class="fas fa-arrow-right"></i> Proceed to Testing</button></div>
+                <div class="card"><div class="card-header"><div class="card-title"><i class="fas fa-file-code" style="color:var(--accent);"></i> Generated Microservice Methods</div><div style="display:flex;gap:4px;"><button class="icon-btn" onclick="copyCode()"><i class="fas fa-copy"></i></button><button class="icon-btn" onclick="saveCode()"><i class="fas fa-save"></i></button></div></div><div class="code-block dark" id="generatedCode">// Waiting for map generation to complete...</div></div>
+                <div class="button-row"><button class="btn btn-outline" onclick="window.location.href='pahal.html'"><i class="fas fa-arrow-left"></i> Back</button><button class="btn btn-primary" id="proceedToTestBtn" disabled><i class="fas fa-arrow-right"></i> Proceed to Sangam for deployment</button></div>
             </div>
         </div>
     </div>
@@ -276,23 +295,29 @@
 <div class="toast" id="toast"></div>
 
 <script>
+    console.log("🚀 KAVERI.HTML SCRIPT LOADED - STREAMING MICROSERVICE API ACTIVATED");
+
+    // ============================================================
+    // CONFIG & STATE
+    // ============================================================
     const API_BASE_URL = 'http://localhost:8080/api';
-    let generatedMaps = [], mapsGenerated = false;
-    let fullscreenMapIndex = -1;
-    let editingIndex = -1;
-    let originalContent = '';
+    let generatedMaps = [];
+    let mapsGenerated = false;
+
+    // Fullscreen state
+    let fullscreenMapIndex = -1, editingIndex = -1, originalContent = '';
     let isFullscreenEditing = false;
 
-    // CURSOR
+    // ============================================================
+    // MOUSE & VISUAL EFFECTS
+    // ============================================================
     const cursor = document.getElementById('cursor'), cursorDot = document.getElementById('cursorDot'), cursorTrail = document.getElementById('cursorTrail');
     let mouseX=0, mouseY=0, cursorX=0, cursorY=0, trailX=0, trailY=0;
     document.addEventListener('mousemove',(e)=>{mouseX=e.clientX;mouseY=e.clientY;cursorDot.style.left=mouseX+'px';cursorDot.style.top=mouseY+'px';});
     document.querySelectorAll('a,button,.btn,.nav-link,.workspace-btn,.user-btn,input,textarea,select,.map-card,.card,.icon-btn,.progress-section,.fullscreen-overlay,.fullscreen-close').forEach(el=>{el.addEventListener('mouseenter',()=>cursor.classList.add('hover'));el.addEventListener('mouseleave',()=>cursor.classList.remove('hover'));});
-    document.addEventListener('mousedown',()=>cursor.classList.add('click'));
-    document.addEventListener('mouseup',()=>cursor.classList.remove('click'));
+    document.addEventListener('mousedown',()=>cursor.classList.add('click')); document.addEventListener('mouseup',()=>cursor.classList.remove('click'));
     (function animateCursor(){cursorX+=(mouseX-cursorX)*0.1;cursorY+=(mouseY-cursorY)*0.1;trailX+=(mouseX-trailX)*0.04;trailY+=(mouseY-trailY)*0.04;cursor.style.left=cursorX+'px';cursor.style.top=cursorY+'px';cursorTrail.style.left=trailX+'px';cursorTrail.style.top=trailY+'px';requestAnimationFrame(animateCursor);})();
 
-    // RIPPLE
     const canvas=document.getElementById('rippleCanvas'),ctx=canvas.getContext('2d');
     let ripples=[],rippleParticles=[];
     function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
@@ -302,22 +327,24 @@
     document.addEventListener('mousemove',(e)=>{const n=Date.now();if(n-lastAutoRipple>150&&(Math.abs(e.movementX)>3||Math.abs(e.movementY)>3)){ripples.push({x:e.clientX,y:e.clientY,radius:0,maxRadius:12,opacity:0.3,speed:1.5});lastAutoRipple=n;}});
     function drawRipples(){ctx.clearRect(0,0,canvas.width,canvas.height);const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,22);g.addColorStop(0,'rgba(14,168,130,0.07)');g.addColorStop(1,'transparent');ctx.beginPath();ctx.arc(mouseX,mouseY,22,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ripples=ripples.filter(r=>{r.radius+=r.speed;r.opacity-=0.02;if(r.opacity>0&&r.radius<r.maxRadius){ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(14,168,130,${r.opacity})`;ctx.lineWidth=1.5;ctx.stroke();return true;}return false;});rippleParticles=rippleParticles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.03;p.vx*=0.96;p.vy*=0.96;if(p.life>0){ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(14,168,130,${p.life*0.6})`;ctx.fill();return true;}return false;});requestAnimationFrame(drawRipples);}
     drawRipples();
-
-    // PARTICLES
     (function(){const c=document.getElementById('particlesBg'),cols=['#0ea882','#14d4a6','#089170','#7c5cfc','#f0a92e'];for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particle';p.style.width=(Math.random()*5+2)+'px';p.style.height=p.style.width;p.style.left=Math.random()*100+'%';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.animationDelay=Math.random()*12+'s';p.style.animationDuration=(Math.random()*10+8)+'s';c.appendChild(p);}})();
 
-    function showToast(m,e){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');if(e)t.classList.add('error');else t.classList.remove('error');clearTimeout(t._timeout);t._timeout=setTimeout(()=>{t.classList.remove('show','error');},3000);}
-
-    const workspaces=['Project Kaveri','Project Ganga','Project Yamuna','Project Sangam'];let wsIdx=0;
-    document.getElementById('workspaceBtn').addEventListener('click',()=>{wsIdx=(wsIdx+1)%workspaces.length;document.getElementById('workspaceName').textContent=workspaces[wsIdx];showToast('Switched to '+workspaces[wsIdx]);});
-    document.getElementById('userBtn').addEventListener('click',()=>showToast('User profile'));
-
-    function updateGlobalProgress(pct,phase,step){
-        document.getElementById('globalProgressFill').style.width=pct+'%';document.getElementById('globalProgressPercent').textContent=pct+'%';document.getElementById('globalPhaseLabel').textContent=phase;
-        for(let i=1;i<=5;i++){const d=document.getElementById('gstep'+i),l=d.parentElement.querySelector('.step-label');d.classList.remove('active','completed');l.classList.remove('active');if(i<step)d.classList.add('completed');if(i===step){d.classList.add('active');l.classList.add('active');}}
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function showToast(msg, isError) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        if (isError) t.classList.add('error');
+        else t.classList.remove('error');
+        clearTimeout(t._timeout);
+        t._timeout = setTimeout(() => { t.classList.remove('show','error'); }, 3000);
     }
 
-    // FULLSCREEN FUNCTIONS
+    // ============================================================
+    // FULLSCREEN CONTROLS
+    // ============================================================
     const fullscreenOverlay=document.getElementById('fullscreenOverlay');
     const fullscreenTitle=document.getElementById('fullscreenTitle');
     const fullscreenCodeBlock=document.getElementById('fullscreenCodeBlock');
@@ -325,36 +352,29 @@
 
     function openFullscreen(index){
         if(index<0||index>=generatedMaps.length)return;
-        fullscreenMapIndex=index;
-        isFullscreenEditing=false;
-        fullscreenSaveBtn.style.display='none';
+        fullscreenMapIndex=index; isFullscreenEditing=false; fullscreenSaveBtn.style.display='none';
         const map=generatedMaps[index];
-        const icons={deam:'📐',workflow:'🔄',fsm:'🧠'};
+        const icons={deam:'📐',workflow:'🔄',fsm:'🧠',dvm:'🤖'};
         fullscreenTitle.innerHTML=`<span>${icons[map.type]||'📄'}</span> ${map.title} <span class="map-badge ${map.type}" style="font-size:0.7rem;padding:3px 10px;">${map.type.toUpperCase()}</span>`;
-        fullscreenCodeBlock.textContent=map.content;
-        fullscreenCodeBlock.contentEditable='false';
-        fullscreenCodeBlock.style.border='none';
-        fullscreenCodeBlock.style.outline='none';
-        fullscreenCodeBlock.style.background='var(--surface-alt)';
-        fullscreenOverlay.classList.add('show');
-        document.body.style.overflow='hidden';
+        fullscreenCodeBlock.textContent=map.content; fullscreenCodeBlock.contentEditable='false'; fullscreenCodeBlock.style.border='none'; fullscreenCodeBlock.style.outline='none'; fullscreenCodeBlock.style.background='var(--surface-alt)';
+        fullscreenOverlay.classList.add('show'); document.body.style.overflow='hidden';
     }
     function closeFullscreen(){
-        fullscreenOverlay.classList.remove('show');fullscreenMapIndex=-1;isFullscreenEditing=false;fullscreenSaveBtn.style.display='none';
-        fullscreenCodeBlock.contentEditable='false';fullscreenCodeBlock.style.border='none';fullscreenCodeBlock.style.outline='none';fullscreenCodeBlock.style.background='var(--surface-alt)';
+        fullscreenOverlay.classList.remove('show'); fullscreenMapIndex=-1; isFullscreenEditing=false; fullscreenSaveBtn.style.display='none';
+        fullscreenCodeBlock.contentEditable='false'; fullscreenCodeBlock.style.border='none'; fullscreenCodeBlock.style.outline='none'; fullscreenCodeBlock.style.background='var(--surface-alt)';
         document.body.style.overflow='';
     }
     function editInFullscreen(){
-        if(fullscreenMapIndex<0)return;isFullscreenEditing=true;
-        fullscreenCodeBlock.contentEditable='true';fullscreenCodeBlock.style.border='1px solid var(--accent)';fullscreenCodeBlock.style.outline='none';fullscreenCodeBlock.style.background='#fffff9';
-        fullscreenCodeBlock.focus();fullscreenSaveBtn.style.display='flex';showToast('✏️ Editing enabled - click save icon when done');
+        if(fullscreenMapIndex<0)return; isFullscreenEditing=true;
+        fullscreenCodeBlock.contentEditable='true'; fullscreenCodeBlock.style.border='1px solid var(--accent)'; fullscreenCodeBlock.style.outline='none'; fullscreenCodeBlock.style.background='#fffff9';
+        fullscreenCodeBlock.focus(); fullscreenSaveBtn.style.display='flex'; showToast('✏️ Editing enabled - click save icon when done');
     }
     function saveFullscreenEdit(){
         if(fullscreenMapIndex<0||!isFullscreenEditing)return;
-        const newContent=fullscreenCodeBlock.textContent;generatedMaps[fullscreenMapIndex].content=newContent;
-        const cardCodeBlock=document.querySelector(`#mapBody${fullscreenMapIndex} .code-block`);if(cardCodeBlock)cardCodeBlock.textContent=newContent;
-        isFullscreenEditing=false;fullscreenCodeBlock.contentEditable='false';fullscreenCodeBlock.style.border='none';fullscreenCodeBlock.style.outline='none';fullscreenCodeBlock.style.background='var(--surface-alt)';
-        fullscreenSaveBtn.style.display='none';showToast('💾 Map saved!');
+        const newContent=fullscreenCodeBlock.textContent; generatedMaps[fullscreenMapIndex].content=newContent;
+        const cardCodeBlock=document.querySelector(`#mapBody${fullscreenMapIndex} .code-block`); if(cardCodeBlock)cardCodeBlock.textContent=newContent;
+        isFullscreenEditing=false; fullscreenCodeBlock.contentEditable='false'; fullscreenCodeBlock.style.border='none'; fullscreenCodeBlock.style.outline='none'; fullscreenCodeBlock.style.background='var(--surface-alt)';
+        fullscreenSaveBtn.style.display='none'; showToast('💾 Map saved!');
     }
     function copyFullscreenContent(){if(fullscreenMapIndex>=0)navigator.clipboard.writeText(generatedMaps[fullscreenMapIndex].content).then(()=>showToast('📋 Content copied!'));}
     async function saveFullscreenContent(){
@@ -368,7 +388,6 @@
         if((e.ctrlKey||e.metaKey)&&e.key==='s'&&fullscreenOverlay.classList.contains('show')&&isFullscreenEditing){e.preventDefault();saveFullscreenEdit();}
     });
 
-    // INLINE EDIT
     function startInlineEdit(index){
         if(editingIndex>=0)cancelInlineEdit(editingIndex);editingIndex=index;originalContent=generatedMaps[index].content;
         const body=document.getElementById('mapBody'+index);body.classList.add('editing');
@@ -384,129 +403,460 @@
         const body=document.getElementById('mapBody'+index);generatedMaps[index].content=originalContent;body.classList.remove('editing');editingIndex=-1;
     }
 
-    // BACKEND API
-    async function processFile(file){
-        const grid=document.getElementById('mapsGrid'),mf=document.getElementById('mapProgressFill'),mt=document.getElementById('mapProgressText');
-        grid.innerHTML='<div class="map-card" style="grid-column:1/-1;text-align:center;padding:30px;"><div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Calling backend API...</div></div>';
-        mf.style.width='15%';mt.textContent='Uploading...';
-        const fd=new FormData();fd.append('file',file);
-        try{
-            mf.style.width='30%';mt.textContent='Processing...';
-            const res=await fetch(`${API_BASE_URL}/tbrd/process-docx`,{method:'POST',body:fd});
-            mf.style.width='60%';mt.textContent='Parsing response...';
-            if(!res.ok)throw new Error(`Backend error (${res.status})`);
-            const data=await res.json();
-            mf.style.width='80%';mt.textContent='Building maps...';
-            generatedMaps=[];
-            if(data.DEAMs&&data.DEAMs.length>0)data.DEAMs.forEach(d=>generatedMaps.push({title:d.entity||'DEAM_Entity',type:'deam',content:JSON.stringify(d,null,2)}));
-            if(data.WFMs&&data.WFMs.length>0)data.WFMs.forEach(w=>generatedMaps.push({title:w.workflowName||'Workflow_Map',type:'workflow',content:JSON.stringify(w,null,2)}));
-            if(data.FSM)generatedMaps.push({title:'FSM_'+(data.FSM.document_name||'Structure'),type:'fsm',content:JSON.stringify(data.FSM,null,2)});
-            if(generatedMaps.length===0)generatedMaps.push({title:'TBRD_Result',type:'fsm',content:JSON.stringify(data,null,2)});
+    // ============================================================
+    // RENDER MAPS
+    // ============================================================
+    function renderMaps() {
+        const grid = document.getElementById('mapsGrid');
+        const icons = { deam: '📐', workflow: '🔄', fsm: '🧠', dvm: '🤖' };
+        const labels = { deam: 'DEAM', workflow: 'Workflow', fsm: 'FSM', dvm: 'DVM' };
+
+        grid.innerHTML = generatedMaps.map((m, i) => {
+            const isDvmLoading = (m.type === 'dvm' && m._loading === true);
+            const badgeClass = isDvmLoading ? 'dvm loading' : m.type;
+            const contentHtml = isDvmLoading
+                ? `<div class="code-block dvm-loading">
+                      <div class="loader-spinner"></div>
+                      <div style="font-weight:600; color:var(--amber);">⏳ Generating DVM Map...</div>
+                      <div style="font-size:0.7rem; color:var(--text-muted);">Waiting for FSM dependency, then triggering API.</div>
+                   </div>`
+                : `<div class="code-block">${m.content}</div>`;
+
+            return `
+            <div class="map-card" style="animation-delay:${i*0.08}s; ${isDvmLoading ? 'border-color:var(--amber);' : ''}">
+                <div class="map-card-header">
+                    <div class="map-card-title"><span>${icons[m.type]||'📄'}</span><span class="map-name-text">${m.title}</span><span class="map-badge ${badgeClass}">${labels[m.type]||m.type}${isDvmLoading ? ' ⏳' : ''}</span></div>
+                    <div class="map-card-actions">
+                        <button class="icon-btn" onclick="toggleMinimize(${i})" title="Minimize"><i class="fas fa-minimize"></i></button>
+                        <button class="icon-btn" onclick="openFullscreen(${i})" title="Maximize"><i class="fas fa-maximize"></i></button>
+                        <button class="icon-btn" onclick="copyMap(${i})" title="Copy"><i class="fas fa-copy"></i></button>
+                        <button class="icon-btn" onclick="saveMap(${i})" title="Save"><i class="fas fa-save"></i></button>
+                        ${!isDvmLoading ? `<button class="icon-btn" onclick="startInlineEdit(${i})" title="Edit"><i class="fas fa-edit"></i></button>` : ''}
+                    </div>
+                </div>
+                <div class="map-card-body" id="mapBody${i}">
+                    ${contentHtml}
+                    <textarea class="edit-textarea" spellcheck="false"></textarea>
+                    <div class="edit-actions">
+                        <button class="btn btn-primary btn-sm" onclick="saveInlineEdit(${i})"><i class="fas fa-check"></i> Save</button>
+                        <button class="btn btn-outline btn-sm" onclick="cancelInlineEdit(${i})"><i class="fas fa-times"></i> Cancel</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ============================================================
+    // EXPLICIT TRIGGER FOR DVM API
+    // ============================================================
+    async function triggerDvmGeneration(fsmStringData, dvmIndexTarget) {
+        console.log("--> Firing DVM generation API request");
+        try {
+            const payload = {
+                fsm: fsmStringData,
+                model: 'gemini-1.5-pro'
+            };
+
+            const res = await fetch(`${API_BASE_URL}/agent/generate-dvm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error(`Backend error (${res.status})`);
+            const fullResponse = await res.json();
+
+            // 🎯 EXTRACT JUST THE DVM MAP DATA FROM THE ENVELOPE
+            let extractedDvm = fullResponse;
+            if (fullResponse.response && fullResponse.response.dvm) {
+                extractedDvm = fullResponse.response.dvm;
+            } else if (fullResponse.response_payload && fullResponse.response_payload.dvm) {
+                extractedDvm = fullResponse.response_payload.dvm;
+            } else if (fullResponse.dvm) {
+                extractedDvm = fullResponse.dvm;
+            }
+
+            // Try to extract a clean title from the map itself
+            const mapTitle = extractedDvm['dashboard-name'] || extractedDvm.title || 'DVM_Generated_Map';
+
+            // Populate array with cleanly extracted data and drop the loading flag
+            generatedMaps[dvmIndexTarget] = {
+                title: mapTitle,
+                type: 'dvm',
+                content: JSON.stringify(extractedDvm, null, 2),
+                _loading: false
+            };
+
             renderMaps();
-            mf.style.width='100%';mt.textContent='100%';mapsGenerated=true;
-            updateGlobalProgress(45,'Maps Complete',2);document.getElementById('proceedToCodeBtn').disabled=false;
-            showToast(`✅ Generated ${generatedMaps.length} maps!`);
-        }catch(err){
-            console.error(err);mf.style.width='100%';mt.textContent='Fallback';
-            showToast('⚠️ Backend unavailable - demo maps',true);loadDemoMaps();
+            showToast('✅ DVM Map successfully generated!');
+            document.getElementById('mapProgressText').textContent = 'DVM map complete';
+            document.getElementById('mapProgressFill').style.width = '100%';
+
+        } catch (err) {
+            console.error('DVM Generation Error:', err);
+
+            // Populate array with error info
+            generatedMaps[dvmIndexTarget] = {
+                title: 'DVM Generation Failed',
+                type: 'dvm',
+                content: `// The API /agent/generate-dvm failed.\n// Error: ${err.message}`,
+                _loading: false
+            };
+
+            renderMaps();
+            showToast('⚠️ DVM map generation failed', true);
+            document.getElementById('mapProgressText').textContent = 'DVM step failed';
+            document.getElementById('mapProgressFill').style.width = '100%';
         }
     }
 
-    function loadDemoMaps(){
-        generatedMaps=[{title:'DEAM_User_Entity',type:'deam',content:'{"entity":"User","attributesList":[{"name":"uuid","type":"string","businessKey":true},{"name":"email","type":"string"}]}'},{title:'DEAM_Order_Entity',type:'deam',content:'{"entity":"Order","attributesList":[{"name":"order_id","type":"string","businessKey":true}]}'},{title:'WORKFLOW_MAP_OrderProcessing',type:'workflow',content:'{"workflowName":"OrderProcessing","subWorkflowExecution":[{"entityName":"Order","sourceType":"API_SOURCE"}]}'},{title:'FSM_StateMachine',type:'fsm',content:'{"model":"TBRD_FSM","states":["INIT","VALIDATION","PROCESSING","COMPLETE"]}'}];
-        renderMaps();document.getElementById('mapProgressFill').style.width='100%';document.getElementById('mapProgressText').textContent='100% (Demo)';
-        mapsGenerated=true;updateGlobalProgress(45,'Maps Complete',2);document.getElementById('proceedToCodeBtn').disabled=false;showToast('📋 Demo maps loaded');
-    }
+    // ============================================================
+    // MAIN PROCESSING PIPELINE
+    // ============================================================
+    async function processFile(file) {
+        const grid = document.getElementById('mapsGrid');
+        const mf = document.getElementById('mapProgressFill');
+        const mt = document.getElementById('mapProgressText');
 
-    function renderMaps(){
-        const grid=document.getElementById('mapsGrid');
-        const icons={deam:'📐',workflow:'🔄',fsm:'🧠'},labels={deam:'DEAM',workflow:'Workflow',fsm:'FSM'};
-        grid.innerHTML=generatedMaps.map((m,i)=>`
-        <div class="map-card" style="animation-delay:${i*0.08}s">
-            <div class="map-card-header">
-                <div class="map-card-title"><span>${icons[m.type]||'📄'}</span><span class="map-name-text">${m.title}</span><span class="map-badge ${m.type}">${labels[m.type]||m.type}</span></div>
-                <div class="map-card-actions">
-                    <button class="icon-btn" onclick="toggleMinimize(${i})" title="Minimize"><i class="fas fa-minimize"></i></button>
-                    <button class="icon-btn" onclick="openFullscreen(${i})" title="Maximize"><i class="fas fa-maximize"></i></button>
-                    <button class="icon-btn" onclick="copyMap(${i})" title="Copy"><i class="fas fa-copy"></i></button>
-                    <button class="icon-btn" onclick="saveMap(${i})" title="Save"><i class="fas fa-save"></i></button>
-                    <button class="icon-btn" onclick="startInlineEdit(${i})" title="Edit"><i class="fas fa-edit"></i></button>
-                </div>
-            </div>
-            <div class="map-card-body" id="mapBody${i}">
-                <div class="code-block">${m.content}</div>
-                <textarea class="edit-textarea" spellcheck="false"></textarea>
-                <div class="edit-actions">
-                    <button class="btn btn-primary btn-sm" onclick="saveInlineEdit(${i})"><i class="fas fa-check"></i> Save</button>
-                    <button class="btn btn-outline btn-sm" onclick="cancelInlineEdit(${i})"><i class="fas fa-times"></i> Cancel</button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    }
+        grid.innerHTML = '<div class="map-card" style="grid-column:1/-1;text-align:center;padding:30px;"><div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Calling process-docx API...</div></div>';
+        mf.style.width = '15%'; mt.textContent = 'Uploading...';
+        updateGlobalProgress(20, 'Uploading TBRD', 2);
 
-    window.toggleMinimize=(i)=>{document.getElementById('mapBody'+i).classList.toggle('minimized');};
-    window.copyMap=(i)=>navigator.clipboard.writeText(generatedMaps[i].content).then(()=>showToast('📋 Map copied!'));
-    window.saveMap=async(i)=>{
-        try{const h=await window.showSaveFilePicker({suggestedName:generatedMaps[i].title+'.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]});const w=await h.createWritable();await w.write(generatedMaps[i].content);await w.close();showToast('💾 Map saved!');}
-        catch(err){if(err.name==='AbortError')return;const b=new Blob([generatedMaps[i].content],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=generatedMaps[i].title+'.json';a.click();URL.revokeObjectURL(u);showToast('💾 Map downloaded!');}
-    };
-    window.copyCode=()=>navigator.clipboard.writeText(document.getElementById('generatedCode').textContent).then(()=>showToast('📋 Code copied!'));
-    window.saveCode=async()=>{
-        const c=document.getElementById('generatedCode').textContent;
-        try{const h=await window.showSaveFilePicker({suggestedName:'generated_code.txt',types:[{description:'Code',accept:{'text/plain':['.txt','.js','.py','.ts']}}]});const w=await h.createWritable();await w.write(c);await w.close();showToast('💾 Code saved!');}
-        catch(err){if(err.name==='AbortError')return;const b=new Blob([c],{type:'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='generated_code.txt';a.click();URL.revokeObjectURL(u);showToast('💾 Code downloaded!');}
-    };
+        const fd = new FormData();
+        fd.append('file', file);
 
-    // CODE GENERATION
-    const sampleCode=`// Generated Service Module\nimport { Injectable } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\n\n@Injectable({ providedIn: 'root' })\nexport class DataService {\n  private apiUrl = 'https://api.example.com/v1';\n  constructor(private http: HttpClient) {}\n  getData(id: string): Observable<any> {\n    return this.http.get(\`\${this.apiUrl}/data/\${id}\`);\n  }\n}`;
-    document.getElementById('proceedToCodeBtn').addEventListener('click',()=>{
-        if(!mapsGenerated){showToast('⚠️ Generate maps first!',true);return;}
-        document.getElementById('mapsButtons').style.display='none';document.getElementById('sectionDivider').style.display='block';document.getElementById('codeSection').style.display='block';
-        updateGlobalProgress(50,'Code Generation',3);
-        const cf=document.getElementById('codeProgressFill'),ct=document.getElementById('codeProgressText'),cb=document.getElementById('generatedCode');
-        let v=0;const iv=setInterval(()=>{v+=Math.random()*14+7;if(v>=100){v=100;clearInterval(iv);cf.style.width='100%';ct.textContent='100%';cb.textContent=sampleCode;updateGlobalProgress(70,'Code Complete',3);document.getElementById('proceedToTestBtn').disabled=false;showToast('💻 Code synthesis complete!');}else{cf.style.width=v+'%';ct.textContent=Math.floor(v)+'%';if(v>25)cb.textContent=sampleCode.substring(0,Math.floor(v*sampleCode.length/100));}},180);
-    });
-    document.getElementById('proceedToTestBtn').addEventListener('click',()=>{window.location.href='yamuna.html';});
-    document.getElementById('progressSection').addEventListener('click',()=>showToast('📊 Progress: '+document.getElementById('globalProgressPercent').textContent));
+        try {
+            // STEP 1: Process initial docx
+            mf.style.width = '30%'; mt.textContent = 'Processing...';
+            const res = await fetch(`${API_BASE_URL}/tbrd/process-docx`, { method: 'POST', body: fd });
+            if (!res.ok) throw new Error(`Backend error (${res.status})`);
+            const data = await res.json();
 
-    // ============================================
-    // INIT - Get file from sessionStorage & process
-    // ============================================
-    async function init(){
-        updateGlobalProgress(30,'Maps Generation',2);
+            // STEP 2: Parse standard maps to array
+            mf.style.width = '60%'; mt.textContent = 'Parsing maps...';
+            generatedMaps = [];
 
-        // Try to get file data from sessionStorage (passed from pahal.html)
-        const fileData = sessionStorage.getItem('tbrdFileData');
-        const fileName = sessionStorage.getItem('tbrdFileName');
-
-        if(fileData && fileName){
-            try{
-                // Convert base64 back to blob
-                const byteString = atob(fileData.split(',')[1]);
-                const mimeType = fileData.split(',')[0].split(':')[1].split(';')[0];
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-                for(let i=0;i<byteString.length;i++)ia[i]=byteString.charCodeAt(i);
-                const blob = new Blob([ab],{type:mimeType});
-                const file = new File([blob],fileName,{type:mimeType});
-
-                // Clear sessionStorage
-                sessionStorage.removeItem('tbrdFileData');
-                sessionStorage.removeItem('tbrdFileName');
-
-                await processFile(file);
-            }catch(err){
-                console.error('Failed to process file from session:',err);
-                loadDemoMaps();
+            if (data.DEAMs && Array.isArray(data.DEAMs)) {
+                data.DEAMs.forEach(d => generatedMaps.push({ title: d.entity || 'DEAM_Entity', type: 'deam', content: JSON.stringify(d, null, 2), _loading: false }));
             }
-        }else{
-            // No file passed - try demo or show message
-            console.log('No file in sessionStorage, trying demo');
+            if (data.WFMs && Array.isArray(data.WFMs)) {
+                data.WFMs.forEach(w => generatedMaps.push({ title: w.workflowName || 'Workflow_Map', type: 'workflow', content: JSON.stringify(w, null, 2), _loading: false }));
+            }
+
+            let fsmData = data.FSM || data.fsm || data;
+            generatedMaps.push({
+                title: 'FSM_' + (fsmData.document_name || 'Structure'),
+                type: 'fsm',
+                content: JSON.stringify(fsmData, null, 2),
+                _loading: false
+            });
+
+            // STEP 3: STRICT FRONTEND VALIDATION – only trigger DVM if TBRD-05: Frontend exists
+            let hasFrontend = false;
+
+            if (fsmData && Array.isArray(fsmData.sections)) {
+                // DVM only triggers if a section title contains both "tbrd-05" and "frontend"
+                hasFrontend = fsmData.sections.some(section => {
+                    const title = (section.section_title || '').toLowerCase();
+                    return title.includes('tbrd-05') && title.includes('frontend');
+                });
+            }
+
+            let dvmIndex = -1;
+            if (hasFrontend) {
+                dvmIndex = generatedMaps.length;
+                generatedMaps.push({
+                    title: 'DVM Map (Pending FSM)',
+                    type: 'dvm',
+                    content: '',
+                    _loading: true
+                });
+            }
+
+            // STEP 4: Render all maps
+            renderMaps();
+
+            mapsGenerated = true;
+            document.getElementById('proceedToCodeBtn').disabled = false;
+
+            // STEP 5: Trigger DVM (only if frontend section was securely found)
+            if (hasFrontend) {
+                mf.style.width = '80%'; mt.textContent = 'Triggering DVM...';
+                showToast('✅ Base maps ready. Initializing DVM LLM Call...');
+
+                setTimeout(() => {
+                    const fsmMapItem = generatedMaps.find(m => m.type === 'fsm');
+                    const fsmStringForPayload = fsmMapItem ? fsmMapItem.content : JSON.stringify(fsmData);
+                    triggerDvmGeneration(fsmStringForPayload, dvmIndex);
+                }, 600);
+            } else {
+                mf.style.width = '100%'; mt.textContent = 'Maps complete';
+                showToast('✅ Maps successfully generated! (No Frontend section found)');
+            }
+
+        } catch (err) {
+            console.error('Process error:', err);
+            mf.style.width = '100%';
+            mt.textContent = 'Fallback to demo';
+            showToast('⚠️ Backend unavailable - loading demo maps', true);
             loadDemoMaps();
         }
     }
 
+    // ============================================================
+    // DEMO MODE (fallback)
+    // ============================================================
+    function loadDemoMaps() {
+        generatedMaps = [
+            { title: 'DEAM_User_Entity', type: 'deam', content: '{"entity":"User","attributesList":[{"name":"uuid","type":"string","businessKey":true},{"name":"email","type":"string"}]}', _loading: false },
+            { title: 'DEAM_Order_Entity', type: 'deam', content: '{"entity":"Order","attributesList":[{"name":"order_id","type":"string","businessKey":true}]}', _loading: false },
+            { title: 'WORKFLOW_OrderProcessing', type: 'workflow', content: '{"workflowName":"OrderProcessing","subWorkflowExecution":[{"entityName":"Order","sourceType":"API_SOURCE"}]}', _loading: false },
+            { title: 'FSM_StateMachine', type: 'fsm', content: '{"model":"TBRD_FSM","states":["INIT","VALIDATION","PROCESSING","COMPLETE"]}', _loading: false }
+        ];
+
+        // Demo has no frontend section by default, so we skip DVM.
+        renderMaps();
+
+        mapsGenerated = true;
+        document.getElementById('proceedToCodeBtn').disabled = false;
+
+        const mf = document.getElementById('mapProgressFill');
+        const mt = document.getElementById('mapProgressText');
+        if (mf) mf.style.width = '100%';
+        if (mt) mt.textContent = 'Maps complete';
+
+        showToast('📋 Demo maps loaded. (No Frontend section)');
+    }
+
+    // ============================================================
+    // UTILITY FUNCTIONS
+    // ============================================================
+    window.toggleMinimize = (i) => {
+        const body = document.getElementById('mapBody' + i);
+        if (body) body.classList.toggle('minimized');
+    };
+    window.copyMap = (i) => {
+        if (generatedMaps[i] && generatedMaps[i].content) {
+            navigator.clipboard.writeText(generatedMaps[i].content).then(() => showToast('📋 Map copied!'));
+        }
+    };
+    window.saveMap = async (i) => {
+        if (!generatedMaps[i]) return;
+        const map = generatedMaps[i];
+        try {
+            const h = await window.showSaveFilePicker({
+                suggestedName: map.title + '.json',
+                types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+            });
+            const w = await h.createWritable();
+            await w.write(map.content);
+            await w.close();
+            showToast('💾 Map saved!');
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            const b = new Blob([map.content], { type: 'application/json' });
+            const u = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = map.title + '.json';
+            a.click();
+            URL.revokeObjectURL(u);
+            showToast('💾 Map downloaded!');
+        }
+    };
+
+    window.copyCode = () => {
+        const code = document.getElementById('generatedCode').textContent;
+        navigator.clipboard.writeText(code).then(() => showToast('📋 Code copied!'));
+    };
+    window.saveCode = async () => {
+        const code = document.getElementById('generatedCode').textContent;
+        try {
+            const h = await window.showSaveFilePicker({
+                suggestedName: 'generated_code.txt',
+                types: [{ description: 'Code', accept: { 'text/plain': ['.txt', '.js', '.py', '.ts'] } }]
+            });
+            const w = await h.createWritable();
+            await w.write(code);
+            await w.close();
+            showToast('💾 Code saved!');
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            const b = new Blob([code], { type: 'text/plain' });
+            const u = URL.createObjectURL(b);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = 'generated_code.txt';
+            a.click();
+            URL.revokeObjectURL(u);
+            showToast('💾 Code downloaded!');
+        }
+    };
+
+    function updateGlobalProgress(pct, phase, step) {
+        document.getElementById('globalProgressFill').style.width = pct + '%';
+        document.getElementById('globalProgressPercent').textContent = pct + '%';
+        document.getElementById('globalPhaseLabel').textContent = phase;
+        for (let i = 1; i <= 5; i++) {
+            const d = document.getElementById('gstep' + i);
+            const l = d ? d.parentElement.querySelector('.step-label') : null;
+            if (d) {
+                d.classList.remove('active', 'completed');
+                if (i < step) d.classList.add('completed');
+                if (i === step) { d.classList.add('active'); if (l) l.classList.add('active'); }
+            }
+        }
+    }
+
+    // ============================================================
+    // STREAMING SSE PARSER (Adapted from microservice.html)
+    // ============================================================
+    function processSseEvent(eventType, rawData, progressFill, progressText, codeBlock) {
+        // Un-escape backend newlines
+        let cleanData = rawData.replace(/\n$/, '').replace(/\\n/g, "\n");
+
+        if (eventType === "progress") {
+            const percent = parseInt(cleanData, 10) || 0;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = percent + '%';
+        } else if (eventType === "method") {
+            // Append newly streamed code
+            codeBlock.textContent += cleanData + "\n\n";
+            // Auto-scroll to bottom of the code block window
+            codeBlock.scrollTop = codeBlock.scrollHeight;
+            // Add momentary visual flash effect to indicate incoming stream chunk
+            codeBlock.style.boxShadow = "inset 0 0 20px rgba(45,212,191,0.5)";
+            setTimeout(() => codeBlock.style.boxShadow = "none", 500);
+        } else if (eventType === "complete") {
+            codeBlock.textContent = cleanData;
+            progressFill.style.width = '100%';
+            progressText.textContent = '100%';
+            updateGlobalProgress(70, 'Code Complete', 3);
+            document.getElementById('proceedToTestBtn').disabled = false;
+            showToast('💻 Code synthesis complete!');
+        }
+    }
+
+    // ============================================================
+    // TRIGGER SSE MICROSERVICE GENERATION (proceed to code)
+    // ============================================================
+    document.getElementById('proceedToCodeBtn').addEventListener('click', async () => {
+        if (!mapsGenerated) { showToast('⚠️ Generate maps first!', true); return; }
+
+        // Hide map buttons, show code generation UI
+        document.getElementById('mapsButtons').style.display = 'none';
+        document.getElementById('sectionDivider').style.display = 'block';
+        document.getElementById('codeSection').style.display = 'block';
+
+        updateGlobalProgress(50, 'Code Generation', 3);
+
+        const cf = document.getElementById('codeProgressFill');
+        const ct = document.getElementById('codeProgressText');
+        const cb = document.getElementById('generatedCode');
+
+        // Wipe existing content and prepare for stream
+        cb.textContent = "// Connection established. Awaiting initial generation packet...\n\n";
+        cf.style.width = '5%';
+        ct.textContent = '5%';
+
+        try {
+            // Stringify all generated configuration maps to send as the context payload
+            const payload = JSON.stringify(generatedMaps);
+
+            const response = await fetch(`${API_BASE_URL}/stream/generate-java-stream`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream'
+                },
+                body: payload
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.body) throw new Error("ReadableStream not supported by browser.");
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            let buffer = "";
+            let currentEvent = null;
+            let currentData = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                let lines = buffer.split(/\r\n|\n|\r/);
+                buffer = lines.pop(); // Hold incomplete last line in buffer
+
+                for (let line of lines) {
+                    if (line.trim() === "") {
+                        if (currentEvent || currentData) {
+                            processSseEvent(currentEvent || "message", currentData, cf, ct, cb);
+                            currentEvent = null;
+                            currentData = "";
+                        }
+                    } else if (line.startsWith("event:")) {
+                        currentEvent = line.substring(6).trim();
+                    } else if (line.startsWith("data:")) {
+                        currentData += line.substring(5).replace(/^\s/, '') + "\n";
+                    }
+                }
+            }
+
+            // Flush remaining data
+            if (currentEvent || currentData) {
+                processSseEvent(currentEvent || "message", currentData, cf, ct, cb);
+            }
+
+        } catch (error) {
+            console.error("Streaming failed:", error);
+            cb.textContent += `\n\n// FATAL ERROR: ${error.message}\n// Connection Disrupted. Check Backend Server and CORS.`;
+            showToast('⚠️ Code generation streaming failed', true);
+            cf.style.backgroundColor = 'var(--red)';
+        }
+    });
+
+    document.getElementById('proceedToTestBtn').addEventListener('click', () => {
+        window.location.href = 'sangam.html';
+    });
+
+    document.getElementById('progressSection').addEventListener('click', () => {
+        showToast('📊 Progress: ' + document.getElementById('globalProgressPercent').textContent);
+    });
+
+    // ============================================================
+    // INIT — on load
+    // ============================================================
+    async function init() {
+        updateGlobalProgress(10, 'Initializing', 2);
+        const fileData = sessionStorage.getItem('tbrdFileData');
+        const fileName = sessionStorage.getItem('tbrdFileName');
+
+        if (fileData && fileName) {
+            try {
+                const byteString = atob(fileData.split(',')[1]);
+                const mimeType = fileData.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+                const blob = new Blob([ab], { type: mimeType });
+                const file = new File([blob], fileName, { type: mimeType });
+                sessionStorage.removeItem('tbrdFileData');
+                sessionStorage.removeItem('tbrdFileName');
+                await processFile(file);
+            } catch (err) {
+                console.error('Failed to process file from session:', err);
+                loadDemoMaps();
+            }
+        } else {
+            console.log('No file in sessionStorage, using demo');
+            loadDemoMaps();
+        }
+    }
+
+    // Start the application
     init();
 </script>
 </body>

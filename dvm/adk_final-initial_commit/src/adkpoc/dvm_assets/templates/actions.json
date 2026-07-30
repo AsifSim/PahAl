@@ -1,0 +1,22 @@
+{
+  "button": {
+    "key": "abca",
+    "label": "abca",
+    "type": "button",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },
+    "apiUrl": "/dashboard/downloadOption?key=excel"
+  },
+  "icon": {
+    "key": "download",
+    "label": "download",
+    "type": "icon",
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },
+    "apiUrl": "/dashboard/downloadOption?key=excel"
+  }
+}

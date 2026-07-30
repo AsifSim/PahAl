@@ -1,0 +1,16 @@
+services:
+  postgres-db-adk:
+    container_name: postgres-db-adk
+    image: postgres:14.19
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: adk
+    restart: unless-stopped
+    ports:
+      - "5492:5432"
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:

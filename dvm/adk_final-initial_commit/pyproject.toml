@@ -1,0 +1,25 @@
+[project]
+name = "adkpoc"
+version = "0.1.0"
+description = "Adk POC by SEEIT Team"
+authors = [
+    { name = "Dinesh-chandra-v", email = "dinesh.vytla@simadvisory.com" }
+]
+classifiers = [
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Private :: Do Not Upload",
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.118.0",
+    "google-adk>=1.15.1",
+    "litellm>=1.77.7",
+    "psycopg2-binary>=2.9.10",
+    "python-dotenv>=1.1.1",
+    "rich>=14.1.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.24,<0.9.0"]
+build-backend = "uv_build"

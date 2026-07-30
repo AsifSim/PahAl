@@ -1,0 +1,453 @@
+{
+  "FSM" : {
+    "model" : "NA",
+    "document_name" : "NewSample (1)",
+    "sections" : [ {
+      "section_title" : "TBRD-01: Business Data Entity (BDE) & Schema (DEAMs)",
+      "raw_content" : [ "TBRD-01: Business Data Entity (BDE) & Schema (DEAMs)", "DEAM Name: Employee", "Database Engine:", "Postgres", "Postgres extensions (if applicable):", "Pgvector", "Documents storage through jsonB", "Table/Collection Type:", "☐ Master Data (Immutable/Independent. e.g- customer data)", "☐ Transactional (Status-driven/Microservice-managed. e.g – Price Request)", "☐ Reference/Configurations (lookup data. e.g – currency conversions)", "Primary Key:", "Format Type", "☐ UUID", "☐ Integer / BigInt", "☐ Composite Key", "Item_id (e.g)", "Region_id (e.g)", "Key Generation Algorithm", "☐ Standard Random (Fully Non-Deterministic)", "☐ Sequential/Ordered", "☐ Timestamp-Prefix (Custom)", "Logic: 10-Digit Unix Timestamp (Seconds since epoch) + Suffix (Random or Entity-specific hash))", "Business Key:", "Single - employee_code", "Composite", "Abc", "Def", "1.6", "Attribute Specifications and Inline Rules:", "Attr1_name: employee_code", "Data Type: string (50)", "Nullable: No", "Rule: Must be unique", "Attr2_name: employee_name", "Data Type: string (200)", "Nullable: No", "Attr3_name: email", "Data Type: string (200)", "Nullable: No", "Rule: Must be valid email format", "Attr4_name: department", "Data Type: string (100)", "Nullable: Yes", "Attr5_name: designation", "Data Type: string (100)", "Nullable: Yes", "Attr6_name: joining_date", "Data Type: date", "Nullable: No", "Attr7_name: base_salary", "Data Type: numeric (12,2)", "Nullable: Yes", "Rule: Must be ≥ 0", "1.7 Status Lifecycle", "1.8 Transition Applicable/Allowed", "1.9 Workflows Associated", "1.10 Versioning", "2.1", "DEAM Name: Payroll Transaction", "2.2", "Database Engine:", "☒ Postgres", "Postgres extensions (if applicable):", "☐ Pgvector", "☐ Documents storage through jsonB", "2.3 Table/Collection Type:", "☐ Master Data (Immutable/Independent. e.g- customer data)", "☐ Transactional (Status-driven/Microservice-managed. e.g – Price Request)", "☐ Reference/Configurations (lookup data. e.g – currency conversions)", "2.4", "Primary Key:", "Format Type", "☐ UUID", "☐ Integer / BigInt", "☐ Composite Key", "Item_id (e.g)", "Region_id (e.g)", "Key Generation Algorithm", "☐ Standard Random (Fully Non-Deterministic)", "☐ Sequential/Ordered", "☐ Timestamp-Prefix (Custom)", "Logic: 10-Digit Unix Timestamp (Seconds since epoch) + Suffix (Random or Entity-specific hash))", "2.5", "Business Key", "Single - xyz", "Composite", "employee_code", "payroll_month", "2.6", "Attribute Specifications and Inline Rules", "Attr1_name: employee_code", "Data Type: string (50)", "Nullable: No", "Rule: Must exist in Employee DEAM", "Attr2_name: payroll_month", "Data Type: string (7) (YYYY-MM)", "Nullable: No", "Attr3_name: basic_salary", "Data Type: numeric (12,2)", "Nullable: No", "Attr4_name: bonus", "Data Type: numeric (12,2)", "Nullable: Yes", "Rule: ≥ 0", "Attr5_name: deductions", "Data Type: numeric (12,2)", "Nullable: Yes", "Rule: ≥ 0", "Attr6_name: net_salary", "Data Type: numeric (12,2)", "Nullable: No", "Rule:", "net_salary = basic_salary + bonus - deductions", "Attr7_name: payment_date", "Data Type: date", "Nullable: Yes", "2.7 Status Lifecycle", "2.8 Transition Applicable/Allowed", "2.9 Workflows Associated", "2.10 Versioning" ]
+    }, {
+      "section_title" : "TBRD-02: Workflows & Orchestration",
+      "raw_content" : [ "TBRD-02: Workflows & Orchestration", "1.1", "Workflow Name - Price Update", "1.2 Target DEAM (Workflow mainly changes status of this DEAM)", "item_master", "ede", "1.3 CTM /Secondary DEAMs (Workflow uses these DEAMs to change status of target DEAM)", "DEAM1", "Name", "Attributes list for eligibility, validity and computation of Business rules", "Atr1", "Atr2", "DEAM2", "Name", "Attributes list for eligibility, validity and computation of Business rules", "Atr3", "Atr4", "1.4 Status transition-", "Start status – Draft (101-102)", "Completion Status – Pending Review (102-103)", "1.5 Orchestration (Workflow Trigger)", "☐ Inbound Event - (File arrival, API Call, message queue)", "☐ User Action – (Button click on UI Screen)", "☐ Time-Based/Data Trigger – (Scheduler, date-based execution)", "Run at a particular time", "Run after the previous execution updates", "1.6 Service Names in Execution Sequence", "Function name: microservice1", "Version: 1.0", "Function name: microservice1", "Version: 1.0", "1.7 File Name: abc1.csv, abc3.csv", "2.1", "Workflow Name - Price Update2", "2.2 Target DEAM (Workflow mainly changes status of this DEAM)", "item_master", "ede", "2.3 CTM /Secondary DEAMs (Workflow uses these DEAMs to change status of target DEAM)", "DEAM1", "Name", "Attributes list for eligibility, validity and computation of Business rules", "Atr1", "Atr2", "DEAM2", "Name", "Attributes list for eligibility, validity and computation of Business rules", "Atr3", "Atr4", "2.4 Status transition-", "Start status – Draft (101-102)", "Completion Status – Pending Review (102-103)", "2.5 Orchestration (Workflow Trigger)", "☐ Inbound Event - (File arrival, API Call, message queue)", "☐ User Action – (Button click on UI Screen)", "☐ Time-Based/Data Trigger – (Scheduler, date-based execution)", "Run at a particular time", "Run after the previous execution updates", "2.6 Service Names in Execution Sequence", "Function name: microservice1", "Version: 1.0", "Function name: microservice1", "Version: 1.0", "2.7 File Name: abc2.csv" ]
+    }, {
+      "section_title" : "TBRD-03: Microservices & Business Rules (API)",
+      "raw_content" : [ "TBRD-03: Microservices & Business Rules (API)", "1.1 Service Name – cu_ms_rer_engine_attributes_update", "1.2 Associated Workflow - cu_wf_rer_engine_attributes_update", "1.3 Sample Data", "Attributes List:", "-Customer Name [All,ABB INC. ,GVM,INC.]", "- Country [All,CAD,SP,US]", "- Regions [All,CANADA,NORTHERN,SOUTHERN,WESTERN]", "- Account Manager [All, John Smith, David Miller, Sarah Wilson, Mike Johnson]", "- Application [Agri,Cons,Mari,Mari Aux]", "- All Account Types [Select All]", "- Product Price Type [Key Accounts, MFN/STAR, Review/Others,Strategic/Target]", "1.4 Microservice logic", "# This file fully describes a single microservice:", "#   - Metadata", "#   - Optional state machine (for record‑level lifecycle management)", "#   - Database entities", "#   - Request payload", "#   - Validations (technical & functional)", "#   - Data enrichment (external lookups)", "#   - Business rules (conditions + actions)", "#   - Calculations (standalone or embedded)", "#   - Response structure & final DB mutations", "#   - Error code dictionary", "#", "# All expression fields (condition, expression, valueSource) support", "# 58 Excel‑like functions: SUM, AVERAGE, IF, AND, OR, ROUND, etc.", "# =============================================================================", "# --- SERVICE METADATA --------------------------------------------------------", "service:", "name: \"\"                     # *Required* – microservice name, e.g., \"MerchantPayoutService\"", "workflow: \"\"                 # *Required* – associated workflow name, e.g., \"merchant_instant_payout_flow\"", "version: \"\"                  # *Required* – workflow version, e.g., \"v4.0\"", "platformTriggered: false     # *Required* – true if the service is invoked by the platform itself", "description: \"\"              # Optional – human‑readable description of the service", "# --- STATE MACHINE -----------------------------------------------------------", "# Defines the lifecycle of a stateful entity, if any.", "# Omit this entire block if the entity is stateless.", "stateMachine:", "entity: \"\"                   # *Required* – logical entity name that holds the state (e.g., \"PayoutRequest\")", "stateColumn: \"\"              # *Required* – database column that stores the state value (e.g., \"payout_status\")", "initialState: \"\"             # *Required* – state value when a new record is created (e.g., \"INITIATED\")", "states:                      # *Required* – list of all allowed state values", "- \"\"                       # e.g., \"INITIATED\"", "# - \"VALIDATION_PASSED\"", "transitions:                 # *Required* – list of allowed transitions", "- from: \"\"                 # source state, or \"*\" for ANY state", "to: \"\"                   # target state", "command: \"\"              # command name that triggers this transition (e.g., \"validatePayout\")", "event: \"\"                # domain event published after successful transition (e.g., \"PayoutValidated\")", "guards:                  # Optional – guards that must pass before the transition", "- ruleName: \"\"         # business rule name that acts as guard", "onViolation: \"\"      # \"REJECT\" (throw error) or \"ALTERNATE_TRANSITION\" (fire different command)", "alternateTransition: \"\"  # required only if onViolation = ALTERNATE_TRANSITION", "entryActions:                # Optional – actions executed when ENTERING a state", "\"\" :                       # state name as key (e.g., \"PROCESSING\")", "- \"\"                     # list of business rule names to execute", "exitActions:                 # Optional – actions executed when LEAVING a state", "\"\" :                       # state name as key", "- \"\"", "# --- DATABASE ENTITIES -------------------------------------------------------", "entities:", "- name: \"\"                   # logical entity name (e.g., \"merchant_profile\")", "table: \"\"                  # actual DB table name (e.g., \"merchant_profile\")", "idField: \"\"                #", "primary key column (e.g., \"mid\")", "fields:                    # all columns that may be accessed", "- name: \"\"               # logical field name (e.g., \"status\")", "type: \"\"               #", "data type: String, Integer, Decimal, Boolean, Date, etc.", "column: \"\"             # actual column name in the table (e.g., \"status\")", "operations:                # intended CRUD operations on this entity", "- READ", "- UPDATE", "# - INSERT (if needed)", "# --- REQUEST PAYLOAD ---------------------------------------------------------", "request:", "fields:", "- name: \"\"                 # field name (e.g., \"merchant_id\")", "type: \"\"                 #", "data type: String, Integer, Decimal, Boolean, etc.", "required: false          # true if this field is mandatory", "validation:              # optional – inline simple validation", "typeCheck: \"\"          # expected runtime type (e.g., \"Integer\")", "constraints:           # optional – additional constraint expressions", "- expression: \"\"     # Boolean expression (supports Excel functions, e.g., \"AND(payout_amount >= 100, payout_amount <= 500000)\")", "errorCode: \"\"      # error code if constraint fails", "# --- VALIDATIONS (pre‑processing) --------------------------------------------", "validations:", "technical:                   # type/format validations", "- name: \"\"                 # rule name (e.g., \"type_check_payout\")", "expression: \"\"           # Boolean expression, e.g., \"TYPEOF(Request.payout_amount) == 'Integer'\"", "onFailure: \"\"            # action on failure: \"HALT_TECHNICAL:<ERROR_CODE>\"", "functional:                  # business‑rule validations", "- name: \"\"", "expression: \"\"           # e.g., \"AND(Request.payout_amount >= 100, Request.payout_amount <= 500000)\"", "onFailure: \"\"            # \"HALT_FUNCTIONAL:<ERROR_CODE>\"", "# --- DATA ENRICHMENT (external lookups) --------------------------------------", "dataEnrichment:", "- name: \"\"                   # unique enrichment name (e.g., \"MerchantRiskProfileData\")", "consumes: \"\"               # data source used for filtering, usually \"Request\"", "entity: \"\"                 # logical entity to read from (must be defined in 'entities')", "exactly_match: false       # true → expects exactly one record, false → multiple rows are possible", "where:                     # filter condition", "field: \"\"                # column name to filter on", "operator: \"\"             # operator: \"=\", \"IN\", \">\", \"<\", etc.", "valueSource: \"\"          # expression for the filter value (e.g., \"Request.merchant_id\")", "produces:                  # columns returned and their aliases in the context", "- name: \"\"               # column name in the database (e.g., \"risk_tier\")", "alias: \"\"              # variable name to use in later expressions (e.g., \"risk_tier\")", "list: false            # true if this variable is a LIST of records (enables aggregation)", "# --- BUSINESS RULES (conditions + actions) -----------------------------------", "businessRules:", "- name: \"\"                   # unique rule name (referenced by guards, entry/exit actions)", "description: \"\"            # human‑readable description", "condition: \"\"              # Boolean expression; if empty or omitted, always evaluates to true", "# Supports Excel functions: IF, AND, OR, NOT, comparison operators, etc.", "actions:                   # executed when condition is true", "- type: \"\"               # action type: one of STATE_TRANSITION, DB_UPDATE, RETURN_ERROR, COMPUTE, PUBLISH_EVENT", "params:                # parameters depend on the chosen type", "# For STATE_TRANSITION", "command: \"\"          # command name to fire (must exist in state machine transitions)", "# For DB_UPDATE", "entity: \"\"           # logical entity name to update", "where:", "field: \"\"          # column for the WHERE clause", "valueSource: \"\"    # expression for the matching value", "set:                 # columns to update", "- field: \"\"        # column name", "valueSource: \"\"  # expression for the new value", "# For RETURN_ERROR", "errorCode: \"\"        # error code (must be defined in errorCodes)", "# For COMPUTE", "targetVariable: \"\"   # variable name to store the computed result", "expression: \"\"       # computation expression (e.g., \"ROUND(payout_amount * 0.05, 2)\")", "# For PUBLISH_EVENT", "eventName: \"\"        # domain event name to publish", "elseActions:               # optional – executed when condition is false", "- type: \"\"", "params: {}", "# --- CALCULATIONS (standalone) ------------------------------------------------", "calculations:", "- name: \"\"                   # calculation name", "consumes:                  # list of data source names used in expressions", "- \"\"                     # e.g., \"Request\"", "# - \"MerchantRiskProfileData\"", "rules:                     # sequence of conditional computations", "- condition: \"\"          # Boolean expression; if omitted, always true", "compute:", "variable: \"\"         # context variable to store the result", "expression: \"\"       # formula (e.g., \"IF(fraud_score>70, ROUND(payout_amount*0.05,2), ROUND(payout_amount*0.02,2))\")", "sideEffects:           # optional – DB updates tied to this computation branch", "- type: \"\"           # usually \"DB_UPDATE\"", "params:", "entity: \"\"", "where:", "field: \"\"", "valueSource: \"\"", "set:", "- field: \"\"", "valueSource: \"\"", "# --- RESPONSE OUTPUT ---------------------------------------------------------", "response:", "success:", "payload:                   # list of fields returned in a successful response", "- name: \"\"               # field name (e.g., \"execution_status\")", "valueSource: \"\"        # expression or literal (e.g., \"'SUCCESS'\")", "dbMutations:               # optional – final DB updates after successful processing", "- entity: \"\"             # logical entity name", "where:", "field: \"\"", "valueSource: \"\"", "set:", "- field: \"\"", "valueSource: \"\"", "error:                       # list of possible error responses", "- errorCode: \"\"            # must match an error code defined below", "payload:                 # response fields for this error", "- name: \"\"", "valueSource: \"\"", "# --- ERROR CODES DICTIONARY --------------------------------------------------", "errorCodes:", "- code: \"\"                   # error code string (e.g., \"ERR_INVALID_PAYOUT_TYPE\")", "type: \"\"                   # classification: \"TECHNICAL\", \"FUNCTIONAL\", or \"BUSINESS\"", "message: \"\"                # human‑readable message", "1.5 TEST REQUIREMENTS :", "Eligibility Check:", "- rule_id: E001", "source_entity: account_manager", "lookup:", "entity: account_manager dashboard", "condition:", "Dashboard is loaded successfully", "AND all filters are visible", "AND all KPI cards are visible", "retrieve:", "- Customer Name", "- Country", "- Regions", "- Account Manager", "- Application", "- All Account Types", "- Product Price Type", "- Total Sales", "- Price Change %", "- Total Impact", "- Total Account", "Computational Rules:", "- rule_id: C001", "operation: filter", "source_entity: Dashboard", "target_attribute: customer_name", "action:", "select Customer Name", "retrieve:", "- filtered dashboard data with that one customer name", "- rule_id: C002", "operation: filter", "source_entity: Dashboard", "target_attribute: country", "action:", "select Country", "retrieve:", "- filtered dashboard data", "- rule_id: C003", "operation: filter", "source_entity: Dashboard", "target_attribute: region", "action:", "select Region", "retrieve:", "- filtered dashboard data", "- rule_id: C004", "operation: filter", "source_entity: Dashboard", "target_attribute: account_manager", "action:", "select Account Manager", "retrieve:", "- filtered dashboard data", "- rule_id: C005", "operation: filter", "source_entity: Dashboard", "target_attribute: application", "action:", "select one or more Application values", "retrieve:", "- filtered dashboard data", "- rule_id: C006", "operation: filter", "source_entity: Dashboard", "target_attribute: account_type", "action:", "select Account Type", "retrieve:", "- filtered dashboard data", "- rule_id: C007", "operation: filter", "source_entity: Dashboard", "target_attribute: product_price_type", "action:", "select one or more Product Price Type values", "retrieve:", "- filtered dashboard data", "- rule_id: C008", "operation: Computation", "source_entity: Dashboard", "condition:", "any filter value changes", "retrieve:", "- Total Sales", "- Price Change %", "- Total Impact", "- Total Account", "Total sales = sum of net sales fields", "- rule_id: C009", "operation: validation", "target_attribute: total_sales", "condition:", "dashboard refreshed successfully", "retrieve:", "- Total Sales", "- rule_id: C010", "operation: validation", "target_attribute: price_change_percentage", "condition:", "dashboard refreshed successfully", "retrieve:", "- Planned Price Change %", "- Potential Price Change %", "- rule_id: C011", "operation: validation", "target_attribute: total_impact", "condition:", "dashboard refreshed successfully", "retrieve:", "- Planned Total Impact", "- Potential Total Impact", "- rule_id: C012", "operation: validation", "target_attribute: total_account", "condition:", "dashboard refreshed successfully", "retrieve:", "- Planned Total Account", "- Potential Total Account" ]
+    }, {
+      "section_title" : "TBRD-04: Inbound / Outbound / Dashboard / Excel Integration",
+      "raw_content" : [ "TBRD-04: Inbound / Outbound / Dashboard / Excel Integration", "1.1 Inbound/Outbound", "1.1.1 Data Source", "☒ Inbound File", "File Name: abc1.csv", "SFTP location", "☐ API", "☐ Message Queue", "☐ Excel Upload/UI", "1.1.2 DEAM Create Required?", "☐ Yes (Please fill the DEAM TBRD )", "☐ No", "1.1.3 DEAM Modification/Supplementary DEAM", "1.1.4", "Workflow Name – Price Update", "1.1.5 Source Fields", "Product_ID — varchar(100)", "Product_Name — varchar(200)", "Product_Category — varchar(100)", "Region — varchar(100)", "Base_Price — numeric", "Discount_Percent — numeric", "Pricing_Action — varchar(100)", "Change_Reason — varchar(200)", "Code — varchar(100)", "Future_Price — numeric", "Order_ID — varchar(100)", "Customer_Name — varchar(200)", "Customer_Segment — varchar(100)", "Quantity — numeric", "Order_Date — date", "1.1.6 Output Field Mapping", "Pricing_Action ← PRICING_ACTION", "Change_Reason ← CHANGE_REASON", "Price_Movement_Id ← Code, Future_Price", "Product_ID ← PRODUCT_ID", "Region ← REGION", "Final_Price ← BASE_PRICE, DISCOUNT_PERCENT", "Sales_Value ← FINAL_PRICE, QUANTITY", "1.1.7 Format", "☒ CSV", "☐ Excel", "☐ PDF", "☐ JSON", "☐ XML", "☐ Other - ________", "1.1.8 Global Record Filtering", "1.1.9 Attribute-Level Filtering", "Records with null Product_ID or Region are ignored.", "1.1.10 Source Configuration", "Hostname: data.company.com", "Port: 22", "Username: data_user", "Remote Path: /data/pricing_orders", "Local Destination: /app/data/", "SFTP Enabled: Yes", "1.1.11 Scheduling Details", "Start Time: DAILY_02_00_00", "Poll Time: 3,600,000 milliseconds (1 hour)", "Poll Interval: 10,000 milliseconds (10 seconds)", "1.112 Target Deams :", "2.1.1 Data Source", "☒ Inbound File", "File Name: abc2.csv", "SFTP location", "☐ API", "☐ Message Queue", "☐ Excel Upload/UI", "2.1.2 DEAM Create Required?", "☐ Yes (Please fill the DEAM TBRD )", "☐ No", "2.1.3 DEAM Modification/Supplementary DEAM", "2.1.4", "Workflow Name – Price Update2", "2.1.5 Source Fields", "Product_ID — varchar(100)", "Product_Name — varchar(200)", "Product_Category — varchar(100)", "Region — varchar(100)", "Base_Price — numeric", "Discount_Percent — numeric", "Pricing_Action — varchar(100)", "Change_Reason — varchar(200)", "Code — varchar(100)", "Future_Price — numeric", "Order_ID — varchar(100)", "Customer_Name — varchar(200)", "Customer_Segment — varchar(100)", "Quantity — numeric", "Order_Date — date", "2.1.6 Output Field Mapping", "Pricing_Action ← PRICING_ACTION", "Change_Reason ← CHANGE_REASON", "Price_Movement_Id ← Code, Future_Price", "Product_ID ← PRODUCT_ID", "Region ← REGION", "Final_Price ← BASE_PRICE, DISCOUNT_PERCENT", "Sales_Value ← FINAL_PRICE, QUANTITY", "2.1.7 Format", "☒ CSV", "☐ Excel", "☐ PDF", "☐ JSON", "☐ XML", "☐ Other - ________", "2.1.8 Global Record Filtering", "2.1.9 Attribute-Level Filtering", "Records with null Product_ID or Region are ignored.", "2.1.10 Source Configuration (SFTP)", "Hostname: data.company.com", "Port: 22", "Username: data_user", "Remote Path: /data/pricing_orders", "Local Destination: /app/data/", "SFTP Enabled: Yes", "2.1.11 Scheduling Details", "Start Time: DAILY_02_00_00", "Poll Time: 3,600,000 milliseconds (1 hour)", "Poll Interval: 10,000 milliseconds (10 seconds)", "1.2 Frontend", "Dashboard Name", "Product Pricing and Sales Overview", "Filters", "1. List of Filters:", "Name: payroll_month", "key: payroll_month", "Actions : NA", "Widgets", "Position: Row 1 Widget1", "Widget Key: bar_chart", "Type: bar_chart", "Title: Monthly Payroll Summary", "Series of the data: data", "Prefix: $", "ApiUrl: /spriced/platform", "functionName: PascalCaseService", "version: 1.0", "defaultRequestData: {\"uuid\": null}", "headers: { \"X-TENANT-ID\": \"tenantA\" }", "Position: Row 2 Widget2", "Widget Key: table", "Type: table", "Title: Payroll Transactions", "Series of the data: data", "Prefix: $", "ApiUrl: /spriced/platform", "functionName: PascalCaseService", "version: 1.0", "defaultRequestData: {\"uuid\": null}", "headers: { \"X-TENANT-ID\": \"tenantA\" }" ]
+    } ]
+  },
+  "deam_count" : 2,
+  "DEAMs" : [ {
+    "entity" : "employee",
+    "displayName" : "Employee",
+    "attributesList" : [ {
+      "name" : "employee_code",
+      "type" : "string",
+      "scale" : null,
+      "unique" : true,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Employee code",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "employee_name",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 200,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Employee name",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "email",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : 200,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Email",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "department",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : false,
+      "maxLength" : 100,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Department",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "designation",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : false,
+      "maxLength" : 100,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Designation",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "joining_date",
+      "type" : "datetime",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Joining date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "base_salary",
+      "type" : "numeric",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : false,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Base salary",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    } ],
+    "primaryKeyType" : "string",
+    "primaryKey" : "uuid",
+    "businessRules" : [ ],
+    "childEntities" : [ ],
+    "deamReads" : [ {
+      "filter" : {
+        "join" : { },
+        "limit" : null,
+        "where" : [ {
+          "operator" : "=",
+          "attributeName" : "employee_code",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "employee_name",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "email",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "department",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "designation",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "joining_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "base_salary",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "is not",
+          "attributeName" : "uuid",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        } ],
+        "offset" : null,
+        "orderBy" : { },
+        "attributeNames" : [ "*" ]
+      },
+      "filterName" : "dynamic_filter",
+      "filterType" : "dynamic"
+    } ]
+  }, {
+    "entity" : "payroll_transaction",
+    "displayName" : "Payroll transaction",
+    "attributesList" : [ {
+      "name" : "employee_code",
+      "type" : "string",
+      "scale" : null,
+      "unique" : true,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 50,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Employee code",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "payroll_month",
+      "type" : "string",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : true,
+      "mandatory" : true,
+      "maxLength" : 7,
+      "precision" : null,
+      "businessKey" : true,
+      "displayName" : "Payroll month",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "basic_salary",
+      "type" : "numeric",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Basic salary",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "bonus",
+      "type" : "numeric",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : false,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Bonus",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "deductions",
+      "type" : "numeric",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : false,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Deductions",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "net_salary",
+      "type" : "numeric",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : true,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Net salary",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    }, {
+      "name" : "payment_date",
+      "type" : "datetime",
+      "scale" : null,
+      "unique" : false,
+      "indexed" : false,
+      "mandatory" : false,
+      "maxLength" : null,
+      "precision" : null,
+      "businessKey" : false,
+      "displayName" : "Payment date",
+      "validValues" : [ ],
+      "staticString" : "",
+      "autoGenerated" : false,
+      "enableAttribute" : true
+    } ],
+    "primaryKeyType" : "string",
+    "primaryKey" : "uuid",
+    "businessRules" : [ ],
+    "childEntities" : [ ],
+    "deamReads" : [ {
+      "filter" : {
+        "join" : { },
+        "limit" : null,
+        "where" : [ {
+          "operator" : "=",
+          "attributeName" : "employee_code",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "payroll_month",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "basic_salary",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "bonus",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "deductions",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "net_salary",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "=",
+          "attributeName" : "payment_date",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        }, {
+          "operator" : "is not",
+          "attributeName" : "uuid",
+          "attributeValue" : [ ],
+          "logicalOperator" : "AND"
+        } ],
+        "offset" : null,
+        "orderBy" : { },
+        "attributeNames" : [ "*" ]
+      },
+      "filterName" : "dynamic_filter",
+      "filterType" : "dynamic"
+    } ]
+  } ],
+  "wfm_count" : 2,
+  "WFMs" : [ {
+    "workflowName" : "Price Update",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "abc1.csv, abc3" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "businessKey" : [ ],
+        "operation" : "insert"
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "abc1.csv, abc3.csv",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "sinkPath" : "",
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ {
+        "version" : "1.0",
+        "functionName" : "microservice1"
+      }, {
+        "version" : "1.0",
+        "functionName" : "microservice1"
+      } ]
+    } ]
+  }, {
+    "workflowName" : "Price Update2",
+    "subWorkflowExecution" : [ {
+      "ttm" : {
+        "abc2" : {
+          "sourceMetadata" : [ ],
+          "targetMetadata" : [ ],
+          "globalRecordFilter" : [ ]
+        }
+      },
+      "crud" : {
+        "businessKey" : [ ],
+        "operation" : "insert"
+      },
+      "start_time" : "",
+      "poll_time" : "",
+      "poll_interval" : "",
+      "fileName" : "abc2.csv",
+      "sourceType" : "LOCAL_SOURCE",
+      "SourceConfig" : {
+        "hostname" : "",
+        "port" : "",
+        "username" : "",
+        "splitSize" : "",
+        "sftpRemotePath" : "",
+        "destination" : "",
+        "sftpPassphrase" : "",
+        "sftpPrivateKey" : "",
+        "decryptPassphrase" : "",
+        "decryptPrivateKey" : "",
+        "localSourceDir" : "",
+        "sftpEnabled" : false
+      },
+      "sinkType" : "GRPC_SINK",
+      "sinkConfig" : {
+        "sinkPath" : "",
+        "encryptPublicKey" : "",
+        "api_url" : "",
+        "encryptPassphrase" : ""
+      },
+      "entityName" : "",
+      "referenceEntity" : [ ],
+      "serviceName" : [ {
+        "version" : "1.0",
+        "functionName" : "microservice1"
+      }, {
+        "version" : "1.0",
+        "functionName" : "microservice1"
+      } ]
+    } ]
+  } ]
+}

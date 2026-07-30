@@ -189,7 +189,7 @@
 <div class="particles-bg" id="particlesBg"></div>
 
 <!-- Hidden file input -->
-<input type="file" id="fileInput" style="display:none;" accept=".docx">
+<input type="file" id="fileInput" style="display:none;" accept=".docx,.txt">
 
 <div class="app">
     <nav class="navbar">
@@ -243,7 +243,7 @@
                     <div class="dropzone" id="dropZone">
                         <div class="dropzone-icon"><i class="fas fa-cloud-arrow-up"></i></div>
                         <div class="dropzone-text">Drop TBRD Document Here</div>
-                        <div class="dropzone-hint">or click to browse • .docx format</div>
+                        <div class="dropzone-hint">or click to browse • .docx, .txt format</div>
                         <div class="dropzone-file-name" id="dropzoneFileName"></div>
                     </div>
                     <div style="text-align:center;margin-top:12px;">
@@ -333,32 +333,33 @@
     });
 
     function handleFile(file) {
-        if (!file.name.toLowerCase().endsWith('.docx')) {
-            showToast('❌ Please select a .docx file');
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith('.docx') && !fileName.endsWith('.txt')) {
+            showToast('❌ Please select a .docx or .txt file[cite: 4]');
             return;
         }
         if (file.size > 50 * 1024 * 1024) {
-            showToast('❌ File too large. Maximum 50MB.');
+            showToast('❌ File too large. Maximum 50MB.[cite: 4]');
             return;
         }
         selectedFile = file;
-        dropzoneFileName.textContent = '📎 ' + file.name + ' (' + formatSize(file.size) + ')';
+        dropzoneFileName.textContent = '📎 ' + file.name + ' (' + formatSize(file.size) + ')[cite: 4]';
         dropzoneFileName.style.display = 'block';
         dropZone.classList.add('has-file');
         startBtn.disabled = false;
         heroStartBtn.style.display = 'inline-flex';
-        showToast('✅ File ready: ' + file.name);
+        showToast('✅ File ready: ' + file.name + '[cite: 4]');
     }
 
     function formatSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / 1048576).toFixed(1) + ' MB';
+        if (bytes < 1024) return bytes + ' B[cite: 4]';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB[cite: 4]';
+        return (bytes / 1048576).toFixed(1) + ' MB[cite: 4]';
     }
 
     // Pass file to kaveri.html via sessionStorage
     function goToKaveri() {
-        if (!selectedFile) { showToast('Please select a file first'); return; }
+        if (!selectedFile) { showToast('Please select a file first[cite: 4]'); return; }
         const reader = new FileReader();
         reader.onload = function(e) {
             sessionStorage.setItem('tbrdFileData', e.target.result);
@@ -375,7 +376,7 @@
     const workspaces = ['Project Mercury','Project Apollo','Project Artemis','Project Nova'];
     let wsIdx = 0;
     document.getElementById('workspaceBtn').addEventListener('click',()=>{wsIdx=(wsIdx+1)%workspaces.length;document.getElementById('workspaceName').textContent=workspaces[wsIdx];showToast('Switched to '+workspaces[wsIdx]);});
-    document.getElementById('userBtn').addEventListener('click',()=>showToast('User profile • Settings'));
+    document.getElementById('userBtn').addEventListener('click',()=>showToast('User profile • Settings[cite: 4]'));
 </script>
 </body>
 </html>

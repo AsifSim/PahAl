@@ -1,0 +1,13 @@
+(adk-modular) PS C:\codes\adk-modular\adkpoc> uv run .\src\adkpoc\main.py
+Traceback (most recent call last):
+  File "C:\codes\adk-modular\adkpoc\src\adkpoc\main.py", line 19, in <module>
+    from adkpoc.database.session import session_service
+  File "C:\codes\adk-modular\adkpoc\src\adkpoc\database\session.py", line 45, in <module>
+    session_service = ADKSessionService(db_url=_get_postgres_url())
+                                               ^^^^^^^^^^^^^^^^^^^
+  File "C:\codes\adk-modular\adkpoc\src\adkpoc\database\session.py", line 13, in _get_postgres_url
+    host = get_env("DB_HOST")
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\codes\adk-modular\adkpoc\src\adkpoc\utils\env.py", line 24, in get_env
+    raise ValueError(f"Environment variable {key} not set")
+ValueError: Environment variable DB_HOST not set

@@ -1,0 +1,15 @@
+{
+  "dropdown_base": {
+    "name": "Name",
+    "key": "name",
+    "options": "name",
+    "type": "dropdown",
+    "isMultiSelect": false,
+    "isfirstOptionDefault": false,
+    "defaultRequestData": {
+      "uuid": null
+    },
+    "headers": { "X-TENANT-ID": "tenantA" },
+    "isQueryParam": false
+  }
+}

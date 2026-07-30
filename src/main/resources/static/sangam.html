@@ -592,6 +592,41 @@
             font-size: 0.9rem;
         }
 
+        /* Input Fields for Config */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .form-control {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+        /* Style adjustments for dropdowns */
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c4532' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 14px;
+            padding-right: 36px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
         /* Cards */
         .card {
             background: var(--surface);
@@ -943,8 +978,8 @@
                 <i class="fas fa-chevron-down" style="font-size:0.6rem;transition:transform 0.3s;"></i>
             </div>
             <div class="user-btn" id="userBtn">
-                <div class="user-avatar">AK</div>
-                <span class="user-name">Arjun Kumar</span>
+                <div class="user-avatar">AA</div>
+                <span class="user-name">Asif Azmi</span>
             </div>
         </div>
     </nav>
@@ -976,16 +1011,59 @@
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-value" data-count="4">0</div>
-                    <div class="stat-label">Pipeline Steps</div>
+                    <div class="stat-value"><span data-count="38">0</span>%</div>
+                    <div class="stat-label">Avg CPU Usage</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" data-count="98">0</div>
-                    <div class="stat-label">Deploy Score</div>
+                    <div class="stat-value"><span data-count="62">0</span>%</div>
+                    <div class="stat-label">RAM Utilization</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="uptimeValue">99.9%</div>
-                    <div class="stat-label">Uptime</div>
+                    <div class="stat-label">Cluster Uptime</div>
+                </div>
+            </div>
+
+            <!-- Deployment Configuration Section -->
+            <div class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-sliders" style="color:var(--accent);"></i> Deployment Configuration</div>
+                    </div>
+                    <div class="input-group">
+                        <select id="repoName" class="form-control">
+                            <option value="" disabled selected>Select Repository</option>
+                            <option value="platform-2.0">Platform 2.0</option>
+                            <option value="ib-ob">IB-OB</option>
+                            <option value="gyanshikha-times">Gyanshikha Times</option>
+                            <option value="sangam-backend">Sangam Backend</option>
+                        </select>
+                        <select id="branchName" class="form-control">
+                            <option value="" disabled selected>Select Branch</option>
+                            <option value="main">main</option>
+                            <option value="develop">develop</option>
+                            <option value="release/v2.1">release/v2.1</option>
+                        </select>
+                        <select id="serverName" class="form-control">
+                            <option value="" disabled selected>Select Target Server</option>
+                            <option value="prod-server-01">prod-server-01</option>
+                            <option value="staging-env">staging-env</option>
+                            <option value="qa-cluster">qa-cluster</option>
+                        </select>
+                    </div>
+
+                    <!-- Deployment Action Buttons Moved Here -->
+                    <div class="button-row" style="margin-top: 24px; justify-content: flex-start;">
+                        <button class="btn btn-outline" onclick="window.location.href='yamuna.html'">
+                            <i class="fas fa-arrow-left"></i> Back to Testing
+                        </button>
+                        <button class="btn btn-primary" id="startDeployBtn">
+                            <i class="fas fa-rocket"></i> Start Deployment
+                        </button>
+                        <button class="btn btn-success" id="finalizeBtn" disabled>
+                            <i class="fas fa-check-circle"></i> Finalize & Complete
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1049,17 +1127,6 @@
                     <div class="log-terminal" id="logTerminal">
                         <span class="log-line log-info">[INFO] Initializing deployment pipeline...</span>
                     </div>
-                </div>
-                <div class="button-row">
-                    <button class="btn btn-outline" onclick="window.location.href='yamuna.html'">
-                        <i class="fas fa-arrow-left"></i> Back to Testing
-                    </button>
-                    <button class="btn btn-primary" id="startDeployBtn">
-                        <i class="fas fa-rocket"></i> Start Deployment
-                    </button>
-                    <button class="btn btn-success" id="finalizeBtn" disabled>
-                        <i class="fas fa-check-circle"></i> Finalize & Complete
-                    </button>
                 </div>
             </div>
         </div>
@@ -1221,7 +1288,7 @@
     // STATS COUNTER
     // ============================================
     function animateStats() {
-        document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+        document.querySelectorAll('span[data-count]').forEach(el => {
             const target = parseFloat(el.getAttribute('data-count'));
             const startTime = performance.now();
 
@@ -1256,16 +1323,13 @@
     }
 
     // ============================================
-    // DEPLOYMENT PIPELINE SIMULATION
+    // DEPLOYMENT PIPELINE API INTEGRATION
     // ============================================
     const pipelineSteps = [
         { id: 'pipeStep1', name: 'Build Artifacts', icon: 'fa-box', log: 'Building application bundles...' },
-        { id: 'pipeStep2', name: 'Push to Registry', icon: 'fa-cloud-arrow-up',
-            log: 'Uploading container images to artifact registry...' },
-        { id: 'pipeStep3', name: 'Provision Infrastructure', icon: 'fa-server',
-            log: 'Configuring cloud resources and networking...' },
-        { id: 'pipeStep4', name: 'Health Check & Finalize', icon: 'fa-circle-check',
-            log: 'Verifying deployment health and updating DNS records...' },
+        { id: 'pipeStep2', name: 'Push to Registry', icon: 'fa-cloud-arrow-up', log: 'Uploading container images to artifact registry...' },
+        { id: 'pipeStep3', name: 'Provision Infrastructure', icon: 'fa-server', log: 'Configuring cloud resources and networking...' },
+        { id: 'pipeStep4', name: 'Health Check & Finalize', icon: 'fa-circle-check', log: 'Verifying deployment health and updating DNS records...' },
     ];
 
     async function runDeployment() {
@@ -1274,58 +1338,90 @@
         const deployFill = document.getElementById('deployProgressFill');
         const deployText = document.getElementById('deployProgressText');
 
+        // 1. Fetch values from inputs
+        const repoName = document.getElementById('repoName').value;
+        const branchName = document.getElementById('branchName').value;
+        const serverName = document.getElementById('serverName').value;
+
+        // 2. Validate inputs
+        if (!repoName || !branchName || !serverName) {
+            showToast('❌ Please select all deployment configurations!');
+            return;
+        }
+
         startBtn.disabled = true;
         updateGlobalProgress(78, 'Deployment In Progress', 5);
         addLog('[INFO] ========== Deployment Started ==========', 'info');
+        addLog(`[INFO] Target -> Repo: ${repoName} | Branch: ${branchName} | Server: ${serverName}`, 'info');
 
-        for (let i = 0; i < pipelineSteps.length; i++) {
-            const step = pipelineSteps[i];
+        // Visually set all steps to running
+        pipelineSteps.forEach(step => {
             const stepEl = document.getElementById(step.id);
-            const statusEl = stepEl.querySelector('.pipeline-step-status');
-
-            // Mark as active
             stepEl.classList.add('active');
-            statusEl.textContent = 'Running';
-            statusEl.className = 'pipeline-step-status running';
-            addLog(`[EXEC] ${step.log}`, 'info');
+            stepEl.querySelector('.pipeline-step-status').textContent = 'Running';
+            stepEl.querySelector('.pipeline-step-status').className = 'pipeline-step-status running';
+        });
 
-            // Simulate step progress
-            const stepStart = (i / pipelineSteps.length) * 100;
-            const stepEnd = ((i + 1) / pipelineSteps.length) * 100;
-            let stepProgress = stepStart;
+        deployFill.style.width = '50%';
+        deployText.textContent = '50%';
 
-            await new Promise(resolve => {
-                const interval = setInterval(() => {
-                    stepProgress += Math.random() * 4 + 2;
-                    if (stepProgress >= stepEnd) {
-                        stepProgress = stepEnd;
-                        clearInterval(interval);
-                        deployFill.style.width = stepProgress + '%';
-                        deployText.textContent = Math.floor(stepProgress) + '%';
-                        resolve();
-                    } else {
-                        deployFill.style.width = stepProgress + '%';
-                        deployText.textContent = Math.floor(stepProgress) + '%';
-                    }
-                }, 150);
+        try {
+            addLog('[EXEC] Contacting Sangam Deployment API...', 'info');
+
+            // 3. Call backend API
+            const response = await fetch('/api/v1/direct-deploy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    repo_name: repoName,
+                    branch_name: branchName,
+                    server_name: serverName
+                })
             });
 
-            // Mark as completed
-            stepEl.classList.remove('active');
-            stepEl.classList.add('completed');
-            statusEl.textContent = 'Success';
-            statusEl.className = 'pipeline-step-status success';
-            addLog(`[OK] ${step.name} - Completed successfully`, 'success');
-            updateGlobalProgress(78 + Math.floor((i + 1) * 5), 'Deployment Phase', 5);
-        }
+            const result = await response.json();
 
-        deployFill.style.width = '100%';
-        deployText.textContent = '100%';
-        addLog('[INFO] ========== All Pipeline Steps Complete ==========', 'info');
-        addLog('[SUCCESS] Deployment ready for finalization!', 'success');
-        updateGlobalProgress(92, 'Deployment Ready', 5);
-        finalizeBtn.disabled = false;
-        showToast('🚀 Deployment pipeline complete!');
+            // 4. Handle backend response
+            if (response.ok && result.status === 'success') {
+                if (result.logs && result.logs.length > 0) {
+                    result.logs.forEach(logLine => addLog(`[SERVER] ${logLine}`, 'info'));
+                }
+
+                pipelineSteps.forEach(step => {
+                    const stepEl = document.getElementById(step.id);
+                    stepEl.classList.remove('active');
+                    stepEl.classList.add('completed');
+                    stepEl.querySelector('.pipeline-step-status').textContent = 'Success';
+                    stepEl.querySelector('.pipeline-step-status').className = 'pipeline-step-status success';
+                });
+
+                deployFill.style.width = '100%';
+                deployText.textContent = '100%';
+                addLog('[SUCCESS] ========== All Pipeline Steps Complete ==========', 'success');
+                updateGlobalProgress(92, 'Deployment Ready', 5);
+
+                finalizeBtn.disabled = false;
+                showToast('🚀 Deployment pipeline complete!');
+
+            } else {
+                throw new Error(result.error || 'Server encountered an error during deployment.');
+            }
+
+        } catch (error) {
+            addLog(`[ERROR] ${error.message}`, 'highlight');
+
+            pipelineSteps.forEach(step => {
+                const stepEl = document.getElementById(step.id);
+                stepEl.classList.remove('active');
+                stepEl.querySelector('.pipeline-step-status').textContent = 'Failed';
+                stepEl.querySelector('.pipeline-step-status').className = 'pipeline-step-status pending';
+            });
+
+            startBtn.disabled = false;
+            showToast('❌ Deployment failed. Check terminal logs.');
+        }
     }
 
     function finalizeDeployment() {
