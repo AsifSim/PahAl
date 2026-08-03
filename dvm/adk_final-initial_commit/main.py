@@ -296,7 +296,7 @@ async def call_run_agent(session_id, fsm_json):
     if fsm_json == "Hi":
         extracted_fsm_string = "Hi"
     else:
-        extracted_frontend_fsm = extract_relevant_fsm_section(fsm_json, "TBRD-04: Inbound / Outbound / Dashboard / Excel Integration")
+        extracted_frontend_fsm = extract_relevant_fsm_section(fsm_json, "TBRD-05: Frontend & Screens")
         logger.info(f"extracted_frontend_fsm = {extracted_frontend_fsm}")
 
         frontend_started = False

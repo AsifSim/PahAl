@@ -156,6 +156,7 @@ public class TbrdDocumentPipelineController {
         cleanText = cleanText.replaceAll("(?i)(Samay Scheduler:)", "\n$1");
         cleanText = cleanText.replaceAll("(?i)(DEAM Lookup Validation:)", "\n$1");
         cleanText = cleanText.replaceAll("(?i)(Mapped Output Fields \\(TTM\\):)", "\n$1");
+        cleanText = cleanText.replaceAll("(?i)(Reference Entities \\(Sequential Subworkflows After Main\\):?)", "\n$1");
 
         return cleanText.trim();
     }
@@ -178,15 +179,10 @@ public class TbrdDocumentPipelineController {
         Matcher markerMatcher = markerPattern.matcher(text);
 
         List<int[]> markers = new ArrayList<>();
+        // Removed `exists` check here to allow parsing of multiple Subworkflows natively
         while (markerMatcher.find()) {
             int sectionNum = Integer.parseInt(markerMatcher.group(1));
-            boolean exists = false;
-            for (int[] m : markers) {
-                if (m[1] == sectionNum) { exists = true; break; }
-            }
-            if (!exists) {
-                markers.add(new int[]{markerMatcher.start(), sectionNum});
-            }
+            markers.add(new int[]{markerMatcher.start(), sectionNum});
         }
 
         markers.sort(Comparator.comparingInt(m -> m[0]));
@@ -410,18 +406,67 @@ public class TbrdDocumentPipelineController {
         Map<String, List<String>> wfBlocks = splitByWorkflowName(workflowLines);
         Map<String, List<String>> intBlocks = splitIntegrationBlocks(integrationLines);
 
+        Map<String, Map<String, Object>> parsedSubWorkflows = new LinkedHashMap<>();
+
+        // 1. Build all subworkflows independently first
         for (Map.Entry<String, List<String>> entry : wfBlocks.entrySet()) {
             String wfName = entry.getKey();
             List<String> wfBlock = entry.getValue();
             List<String> intBlock = findMatchingIntegrationBlock(wfName, intBlocks);
 
+            Map<String, Object> subWf = buildSubWorkflow(wfName, wfBlock, intBlock);
+            parsedSubWorkflows.put(wfName, subWf);
+        }
+
+        List<String> processedRefs = new ArrayList<>();
+
+        // 2. Link reference subworkflows properly inside the referenceEntity property of their Main Workflow
+        for (Map.Entry<String, List<String>> entry : wfBlocks.entrySet()) {
+            String wfName = entry.getKey();
+            if (processedRefs.contains(wfName)) continue;
+
+            List<String> wfBlock = entry.getValue();
+            String refsStr = "";
+
+            for (int i = 0; i < wfBlock.size(); i++) {
+                if (wfBlock.get(i).toLowerCase().contains("reference entities")) {
+                    String sameLine = wfBlock.get(i).replaceAll(".*(?i)reference entities[^:]*:\\s*", "").trim();
+                    if (!sameLine.isEmpty()) {
+                        refsStr = sameLine;
+                    } else if (i + 1 < wfBlock.size()) {
+                        refsStr = wfBlock.get(i+1).trim();
+                    }
+                    break;
+                }
+            }
+
+            Map<String, Object> mainSub = parsedSubWorkflows.get(wfName);
+            List<Map<String, Object>> refList = new ArrayList<>();
+
+            if (!refsStr.isEmpty() && !refsStr.equalsIgnoreCase("none")) {
+                String[] refNames = refsStr.split(",");
+                for (String rName : refNames) {
+                    String cleanRefName = rName.trim();
+                    for (String key : parsedSubWorkflows.keySet()) {
+                        if (key.equalsIgnoreCase(cleanRefName)) {
+                            refList.add(parsedSubWorkflows.get(key));
+                            processedRefs.add(key);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Assign nested Subworkflows directly into referenceEntity
+            mainSub.put("referenceEntity", refList);
+
             Map<String, Object> wfMap = new LinkedHashMap<>();
             wfMap.put("workflowName", wfName);
-            wfMap.put("subWorkflowExecution", Collections.singletonList(
-                    buildSubWorkflow(wfName, wfBlock, intBlock)
-            ));
+            wfMap.put("subWorkflowExecution", Collections.singletonList(mainSub));
+
             maps.add(wfMap);
         }
+
         return maps;
     }
 
@@ -454,33 +499,7 @@ public class TbrdDocumentPipelineController {
     }
 
     private Map<String, List<String>> splitIntegrationBlocks(List<String> lines) {
-        Map<String, List<String>> blocks = new LinkedHashMap<>();
-        String currentName = "";
-        List<String> currentBlock = new ArrayList<>();
-
-        for (String line : lines) {
-            String trimmed = line.trim();
-            String lower = trimmed.toLowerCase();
-
-            if (lower.contains("data source") || lower.matches(".*\\d+\\.\\d+\\.\\d+.*")) {
-                if (!currentName.isEmpty() && !currentBlock.isEmpty()) {
-                    blocks.put(currentName, new ArrayList<>(currentBlock));
-                }
-                currentBlock = new ArrayList<>();
-                currentName = "";
-            }
-
-            currentBlock.add(trimmed);
-
-            if (lower.contains("workflow name")) {
-                currentName = extractValue(trimmed, "workflow name");
-            }
-        }
-
-        if (!currentName.isEmpty() && !currentBlock.isEmpty()) {
-            blocks.put(currentName, currentBlock);
-        }
-        return blocks;
+        return splitByWorkflowName(lines);
     }
 
     private List<String> findMatchingIntegrationBlock(String wfName, Map<String, List<String>> intBlocks) {
@@ -497,6 +516,7 @@ public class TbrdDocumentPipelineController {
         List<String> activeBlock = intBlock.isEmpty() ? wfBlock : intBlock;
 
         String entityName = extractTargetDeam(activeBlock);
+
         String sourceType = detectSourceType(intBlock);
         String fileName = extractFieldFromBlocks(wfBlock, intBlock, "file name");
 
@@ -550,8 +570,14 @@ public class TbrdDocumentPipelineController {
         sub.put("fileName", fileName);
         sub.put("sourceType", sourceType);
         sub.put("SourceConfig", sourceConfig);
-        sub.put("sinkType", "GRPC_SINK"); // Can be abstracted via extractValue(lines, "sink type")
-        sub.put("sinkConfig", Map.of("api_url", "", "sinkPath", "", "encryptPublicKey", "", "encryptPassphrase", ""));
+
+        String sinkTypeRaw = extractFieldFromBlocks(wfBlock, intBlock, "sink type");
+        if (sinkTypeRaw.isEmpty()) sinkTypeRaw = "GRPC_SINK";
+        sub.put("sinkType", sinkTypeRaw);
+
+        String apiUrl = extractFieldFromBlocks(wfBlock, intBlock, "api_url");
+        sub.put("sinkConfig", Map.of("api_url", apiUrl, "sinkPath", "", "encryptPublicKey", "", "encryptPassphrase", ""));
+
         sub.put("entityName", entityName);
         sub.put("referenceEntity", new ArrayList<>());
         sub.put("serviceName", services);
@@ -567,24 +593,35 @@ public class TbrdDocumentPipelineController {
 
     private List<Map<String, Object>> extractServices(List<String> lines) {
         List<Map<String, Object>> services = new ArrayList<>();
-        String currentFunction = "";
-        String currentVersion = "1.0";
 
-        for (String line : lines) {
-            String lower = line.toLowerCase().trim();
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i).trim();
+            String lower = line.toLowerCase();
 
-            if (lower.contains("function name")) {
-                currentFunction = extractValue(line, "function name");
-            }
+            // Strict search for exactly the line mentioning the services header
+            if (lower.contains("service names & versions") || lower.contains("service names and versions") || lower.contains("service names")) {
+                String valuesStr = "";
+                // Always grab the very next line if it exists
+                if (i + 1 < lines.size()) {
+                    valuesStr = lines.get(i + 1).trim();
+                }
 
-            if (lower.contains("version")) {
-                String version = extractValue(line, "version");
-                if (!version.isEmpty()) currentVersion = version;
+                if (!valuesStr.isEmpty() && !valuesStr.equalsIgnoreCase("none")) {
+                    String[] svcParts = valuesStr.split(",");
+                    for (String part : svcParts) {
+                        String cleanPart = part.trim();
+                        Matcher m = Pattern.compile("^(.*?)(?:\\s*\\(?v([0-9.]+)\\)?)?$").matcher(cleanPart);
+                        if (m.find()) {
+                            String fName = m.group(1).trim();
+                            String fVer = m.group(2) != null ? m.group(2).trim() : "1.0";
 
-                if (!currentFunction.isEmpty()) {
-                    services.add(Map.of("functionName", currentFunction, "version", currentVersion));
-                    currentFunction = "";
-                    currentVersion = "1.0";
+                            fName = fName.replaceAll("(?i)none|in execution sequence", "").trim();
+
+                            if (!fName.isEmpty()) {
+                                services.add(Map.of("functionName", fName, "version", fVer));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -638,11 +675,11 @@ public class TbrdDocumentPipelineController {
         if (line == null) return "";
         String cleaned = line.replaceAll("^\\d+(\\.\\d+)*\\s*", "").trim();
 
-        Pattern p = Pattern.compile(Pattern.quote(keyword) + "\\s*[:\\-–]?\\s*(.*)", Pattern.CASE_INSENSITIVE);
+        // STRICT MATCH: Keyword must be at the very start of the cleaned line
+        Pattern p = Pattern.compile("^" + Pattern.quote(keyword) + "\\s*[:\\-–]?\\s*(.*)", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(cleaned);
         if (m.find()) {
             String val = m.group(1).trim();
-            // Truncate at common inline trailing stop-words to clean values cleanly
             val = val.replaceAll("(?i)\\s*(Data Type|Nullable|Primary Key|Business Key|Database Engine|Table / Collection|Attribute Specifications|Workflow Name|Status transition|Orchestration|Service Names|File Name|Source Type|Sink Type|Samay Scheduler|Start Time|Time|Day/Date|Cron Expression|Poll Window|Poll Interval|CRUD Operation Override|DEAM Lookup Validation|Mapped Output Fields|Transforms Sequence).*$", "").trim();
             return val;
         }
@@ -661,7 +698,6 @@ public class TbrdDocumentPipelineController {
         if (value == null) return "";
         value = value.toLowerCase().trim();
 
-        // Stop at any residual XML tag markers if encountered
         if (value.contains("w_")) {
             value = value.split("w_")[0];
         }
@@ -691,7 +727,11 @@ public class TbrdDocumentPipelineController {
     }
 
     private String extractTargetDeam(List<String> lines) {
-        return normalizeName(extractValue(lines, "target deam"));
+        String val = extractValue(lines, "target deams");
+        if (val.isEmpty()) val = extractValue(lines, "target deam");
+        val = normalizeName(val);
+        if (val.equalsIgnoreCase("none") || val.equalsIgnoreCase("s_none")) return "";
+        return val;
     }
 
     private String detectSourceType(List<String> lines) {
