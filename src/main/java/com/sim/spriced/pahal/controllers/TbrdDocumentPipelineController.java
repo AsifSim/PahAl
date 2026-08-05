@@ -228,6 +228,72 @@ public class TbrdDocumentPipelineController {
     // ============================================
     // DEAM PARSING
     // ============================================
+//    private List<Map<String, Object>> parseDeamEntities(List<String> lines) {
+//        List<Map<String, Object>> deams = new ArrayList<>();
+//        String currentEntity = null;
+//        List<Map<String, Object>> currentAttributes = new ArrayList<>();
+//        List<String> currentBusinessKeys = new ArrayList<>();
+//
+//        for (int i = 0; i < lines.size(); i++) {
+//            String line = lines.get(i).trim();
+//            if (line.isEmpty()) continue;
+//            String lowerLine = line.toLowerCase();
+//
+//            if (lowerLine.contains("deam name")) {
+//                if (currentEntity != null && !currentAttributes.isEmpty()) {
+//                    deams.add(createDeamObject(currentEntity, currentAttributes));
+//                }
+//                currentEntity = normalizeName(extractValue(line, "DEAM Name"));
+//                currentAttributes = new ArrayList<>();
+//                currentBusinessKeys = new ArrayList<>();
+//                continue;
+//            }
+//
+//            if (lowerLine.contains("business key")) {
+//                i++;
+//                while (i < lines.size()) {
+//                    String bkLine = lines.get(i).trim();
+//                    String lowerBk = bkLine.toLowerCase();
+//                    if (lowerBk.contains("attribute spec") || lowerBk.contains("attr")) break;
+//
+//                    String cleaned = bkLine.replaceAll("[☒☐·•\\-]", "").trim();
+//                    String normalized = normalizeName(cleaned);
+//                    if (!normalized.isEmpty() && !normalized.contains("single") && !normalized.contains("composite")) {
+//                        currentBusinessKeys.add(normalized);
+//                    }
+//                    i++;
+//                }
+//                continue;
+//            }
+//
+//            if (lowerLine.matches(".*attr\\d+_name\\s*:.*") || (lowerLine.contains("attr") && lowerLine.contains("_name"))) {
+//                String attrName = extractValue(line, "_name");
+//                if (attrName.isEmpty()) {
+//                    attrName = extractValue(line, "name");
+//                }
+//
+//                String dataTypeLine = "";
+//                String nullableLine = "";
+//
+//                if (i + 1 < lines.size() && lines.get(i + 1).toLowerCase().contains("data type")) {
+//                    dataTypeLine = lines.get(i + 1).trim();
+//                }
+//                if (i + 2 < lines.size() && lines.get(i + 2).toLowerCase().contains("nullable")) {
+//                    nullableLine = lines.get(i + 2).trim();
+//                }
+//
+//                Map<String, Object> attr = createAttribute(attrName, dataTypeLine, nullableLine, currentBusinessKeys);
+//                currentAttributes.add(attr);
+//            }
+//        }
+//
+//        if (currentEntity != null && !currentAttributes.isEmpty()) {
+//            deams.add(createDeamObject(currentEntity, currentAttributes));
+//        }
+//
+//        return deams;
+//    }
+
     private List<Map<String, Object>> parseDeamEntities(List<String> lines) {
         List<Map<String, Object>> deams = new ArrayList<>();
         String currentEntity = null;
@@ -267,9 +333,13 @@ public class TbrdDocumentPipelineController {
             }
 
             if (lowerLine.matches(".*attr\\d+_name\\s*:.*") || (lowerLine.contains("attr") && lowerLine.contains("_name"))) {
-                String attrName = extractValue(line, "_name");
-                if (attrName.isEmpty()) {
-                    attrName = extractValue(line, "name");
+
+                // BUG FIX: Extract the value directly by splitting on the colon.
+                // The extractValue() method fails here because it strictly checks the start of the line.
+                String attrName = "";
+                String[] parts = line.split(":", 2);
+                if (parts.length > 1) {
+                    attrName = parts[1].trim();
                 }
 
                 String dataTypeLine = "";
@@ -510,6 +580,81 @@ public class TbrdDocumentPipelineController {
         return new ArrayList<>();
     }
 
+//    private Map<String, Object> buildSubWorkflow(String wfName, List<String> wfBlock, List<String> intBlock) {
+//        Map<String, Object> sub = new LinkedHashMap<>();
+//
+//        List<String> activeBlock = intBlock.isEmpty() ? wfBlock : intBlock;
+//
+//        String entityName = extractTargetDeam(activeBlock);
+//
+//        String sourceType = detectSourceType(intBlock);
+//        String fileName = extractFieldFromBlocks(wfBlock, intBlock, "file name");
+//
+//        // Advanced Samay Scheduler logic mapping
+//        String startTimeRaw = extractFieldFromBlocks(wfBlock, intBlock, "start time");
+//        String timeRaw = extractFieldFromBlocks(wfBlock, intBlock, "time");
+//        String cronRaw = extractFieldFromBlocks(wfBlock, intBlock, "cron expression");
+//
+//        String finalStartTime = startTimeRaw;
+//        if (!cronRaw.isEmpty()) {
+//            finalStartTime = cronRaw;
+//        } else if (!startTimeRaw.isEmpty() && !timeRaw.isEmpty()) {
+//            finalStartTime = startTimeRaw.toUpperCase() + "_" + timeRaw.replace(":", "_");
+//        }
+//
+//        String pollTime = extractFieldFromBlocks(wfBlock, intBlock, "poll window");
+//        if (pollTime.isEmpty()) pollTime = extractFieldFromBlocks(wfBlock, intBlock, "poll time");
+//        String pollInterval = extractFieldFromBlocks(wfBlock, intBlock, "poll interval");
+//
+//        // CRUD Parsing logic
+//        String crudOp = extractFieldFromBlocks(wfBlock, intBlock, "crud operation override");
+//        Map<String, Object> crudMap = new LinkedHashMap<>();
+//        crudMap.put("operation", crudOp.toLowerCase());
+//        crudMap.put("businessKey", new ArrayList<>());
+//
+//        Map<String, Object> sourceConfig = extractSourceConfig(intBlock, sourceType);
+//        List<Map<String, Object>> sourceMetadata = extractSourceMetadata(intBlock);
+//        List<Map<String, Object>> targetMetadata = extractTargetMetadata(intBlock, sourceMetadata);
+//        List<Map<String, Object>> services = extractServices(wfBlock);
+//        Map<String, Object> deamLookup = extractDeamLookup(activeBlock);
+//
+//        String ttmKey = fileName.replaceAll("(?i)\\.(csv|xlsx|json|xml)$", "").trim();
+//        if (ttmKey.isEmpty()) ttmKey = "default";
+//
+//        Map<String, Object> ttmInner = new LinkedHashMap<>();
+//        ttmInner.put("sourceMetadata", sourceMetadata);
+//        ttmInner.put("targetMetadata", targetMetadata);
+//        ttmInner.put("globalRecordFilter", new ArrayList<>());
+//        if (!deamLookup.isEmpty()) {
+//            ttmInner.put("deamLookup", deamLookup);
+//        }
+//
+//        Map<String, Object> ttm = new LinkedHashMap<>();
+//        ttm.put(ttmKey, ttmInner);
+//
+//        sub.put("ttm", ttm);
+//        sub.put("crud", crudMap);
+//        sub.put("start_time", finalStartTime);
+//        sub.put("poll_time", pollTime);
+//        sub.put("poll_interval", pollInterval);
+//        sub.put("fileName", fileName);
+//        sub.put("sourceType", sourceType);
+//        sub.put("SourceConfig", sourceConfig);
+//
+//        String sinkTypeRaw = extractFieldFromBlocks(wfBlock, intBlock, "sink type");
+//        if (sinkTypeRaw.isEmpty()) sinkTypeRaw = "GRPC_SINK";
+//        sub.put("sinkType", sinkTypeRaw);
+//
+//        String apiUrl = extractFieldFromBlocks(wfBlock, intBlock, "api_url");
+//        sub.put("sinkConfig", Map.of("api_url", apiUrl, "sinkPath", "", "encryptPublicKey", "", "encryptPassphrase", ""));
+//
+//        sub.put("entityName", entityName);
+//        sub.put("referenceEntity", new ArrayList<>());
+//        sub.put("serviceName", services);
+//
+//        return sub;
+//    }
+
     private Map<String, Object> buildSubWorkflow(String wfName, List<String> wfBlock, List<String> intBlock) {
         Map<String, Object> sub = new LinkedHashMap<>();
 
@@ -536,8 +681,12 @@ public class TbrdDocumentPipelineController {
         if (pollTime.isEmpty()) pollTime = extractFieldFromBlocks(wfBlock, intBlock, "poll time");
         String pollInterval = extractFieldFromBlocks(wfBlock, intBlock, "poll interval");
 
-        // CRUD Parsing logic
+        // BUG FIX: Provide a default fallback if the TBRD document omits the CRUD declaration
         String crudOp = extractFieldFromBlocks(wfBlock, intBlock, "crud operation override");
+        if (crudOp.isEmpty()) {
+            crudOp = "insert";
+        }
+
         Map<String, Object> crudMap = new LinkedHashMap<>();
         crudMap.put("operation", crudOp.toLowerCase());
         crudMap.put("businessKey", new ArrayList<>());
@@ -787,17 +936,122 @@ public class TbrdDocumentPipelineController {
         return config;
     }
 
+//    private List<Map<String, Object>> extractSourceMetadata(List<String> lines) {
+//        List<Map<String, Object>> metadata = new ArrayList<>();
+//        boolean capture = false;
+//        for (String line : lines) {
+//            String lower = line.toLowerCase().trim();
+//            if (lower.contains("source fields") || lower.contains("mapped output fields")) { capture = true; continue; }
+//            if (capture && (lower.contains("output field mapping") || lower.contains("samay scheduler"))) break;
+//
+//            // Automatically extract Source Columns natively mapped by the UI builder
+//            if (capture && line.contains("→")) {
+//                String[] parts = line.split("→");
+//                if (parts.length >= 2) {
+//                    String sourceRaw = parts[0].replaceAll("\\[.*?\\]", "").trim();
+//                    metadata.add(Map.of(normalizeName(sourceRaw), Map.of("dataType", "string", "length", "")));
+//                }
+//                continue;
+//            }
+//
+//            if (!capture || (!line.contains("—") && !line.contains("-"))) continue;
+//
+//            String[] parts = line.split("[—\\-]");
+//            if (parts.length < 2) continue;
+//            String field = normalizeName(parts[0].trim());
+//            String typeText = parts[1].trim().toLowerCase();
+//
+//            String dataType = "string";
+//            String length = "";
+//            if (typeText.contains("varchar")) {
+//                dataType = "string";
+//                Matcher m = Pattern.compile("\\((\\d+)\\)").matcher(typeText);
+//                if (m.find()) length = m.group(1);
+//            } else if (typeText.matches(".*(numeric|decimal|double).*")) {
+//                dataType = "numeric";
+//            } else if (typeText.contains("date")) {
+//                dataType = "datetime";
+//            }
+//            metadata.add(Map.of(field, Map.of("dataType", dataType, "length", length)));
+//        }
+//        return metadata;
+//    }
+
+
+
+//    private List<Map<String, Object>> extractTargetMetadata(List<String> lines, List<Map<String, Object>> sourceMetadata) {
+//        List<Map<String, Object>> metadata = new ArrayList<>();
+//        Map<String, Map<String, Object>> typeMap = new LinkedHashMap<>();
+//        for (Map<String, Object> item : sourceMetadata) {
+//            item.forEach((k, v) -> typeMap.put(k, (Map<String, Object>) v));
+//        }
+//        boolean capture = false;
+//        for (String line : lines) {
+//            String lower = line.toLowerCase().trim();
+//            if (lower.contains("output field mapping") || lower.contains("mapped output fields")) { capture = true; continue; }
+//            if (capture && (lower.contains("format") || lower.contains("samay scheduler"))) break;
+//
+//            // Handle the UI Builder's right arrow format -> '[random.xlsx] col → [target] col'
+//            if (capture && line.contains("→")) {
+//                String[] parts = line.split("→");
+//                if (parts.length < 2) continue;
+//                String sourceRaw = parts[0].replaceAll("\\[.*?\\]", "").trim();
+//                String targetRaw = parts[1].replaceAll("\\[.*?\\]", "").trim();
+//
+//                String source = normalizeName(sourceRaw);
+//                String target = normalizeName(targetRaw);
+//
+//                Map<String, Object> st = typeMap.getOrDefault(source, Map.of("dataType", "string"));
+//
+//                metadata.add(Map.of(
+//                        "mapTo", Collections.singletonList(target),
+//                        "dataType", st.getOrDefault("dataType", "string"),
+//                        "attributes", Collections.singletonList(sourceRaw),
+//                        "filtration", new HashMap<>(),
+//                        "transformations", Map.of("operations", new ArrayList<>())
+//                ));
+//                continue;
+//            }
+//
+//            if (!capture || !line.contains("←")) continue;
+//
+//            // Legacy parsing
+//            String[] parts = line.split("←");
+//            if (parts.length < 2) continue;
+//            String target = normalizeName(parts[0].trim());
+//            String source = normalizeName(parts[1].trim());
+//
+//            Map<String, Object> st = typeMap.getOrDefault(source, Map.of("dataType", "string"));
+//
+//            metadata.add(Map.of(
+//                    "mapTo", Collections.singletonList(target),
+//                    "dataType", st.getOrDefault("dataType", "string"),
+//                    "attributes", Collections.singletonList(source),
+//                    "filtration", new HashMap<>(),
+//                    "transformations", Map.of("operations", new ArrayList<>())
+//            ));
+//        }
+//        return metadata;
+//    }
+
     private List<Map<String, Object>> extractSourceMetadata(List<String> lines) {
         List<Map<String, Object>> metadata = new ArrayList<>();
         boolean capture = false;
         for (String line : lines) {
             String lower = line.toLowerCase().trim();
             if (lower.contains("source fields") || lower.contains("mapped output fields")) { capture = true; continue; }
-            if (capture && (lower.contains("output field mapping") || lower.contains("samay scheduler"))) break;
+
+            // BUG FIX: Removed `lower.startsWith("[")` and replaced with specific subworkflow block markers
+            // so it doesn't accidentally break on valid mapping lines like `[File.csv] Col -> [Table] Col`.
+            if (capture && (lower.contains("output field mapping") || lower.contains("samay scheduler")
+                    || line.startsWith("===") || lower.startsWith("tbrd-")
+                    || lower.contains("[ main subworkflow") || lower.contains("[ reference subworkflow"))) {
+                break;
+            }
 
             // Automatically extract Source Columns natively mapped by the UI builder
-            if (capture && line.contains("→")) {
-                String[] parts = line.split("→");
+            if (capture && (line.contains("→") || line.contains("->"))) {
+                String[] parts = line.split("→|->");
                 if (parts.length >= 2) {
                     String sourceRaw = parts[0].replaceAll("\\[.*?\\]", "").trim();
                     metadata.add(Map.of(normalizeName(sourceRaw), Map.of("dataType", "string", "length", "")));
@@ -823,7 +1077,10 @@ public class TbrdDocumentPipelineController {
             } else if (typeText.contains("date")) {
                 dataType = "datetime";
             }
-            metadata.add(Map.of(field, Map.of("dataType", dataType, "length", length)));
+
+            if (!field.isEmpty()) {
+                metadata.add(Map.of(field, Map.of("dataType", dataType, "length", length)));
+            }
         }
         return metadata;
     }
@@ -838,11 +1095,17 @@ public class TbrdDocumentPipelineController {
         for (String line : lines) {
             String lower = line.toLowerCase().trim();
             if (lower.contains("output field mapping") || lower.contains("mapped output fields")) { capture = true; continue; }
-            if (capture && (lower.contains("format") || lower.contains("samay scheduler"))) break;
+
+            // BUG FIX: Removed `lower.startsWith("[")` and replaced with specific subworkflow block markers
+            if (capture && (lower.contains("format") || lower.contains("samay scheduler")
+                    || line.startsWith("===") || lower.startsWith("tbrd-")
+                    || lower.contains("[ main subworkflow") || lower.contains("[ reference subworkflow"))) {
+                break;
+            }
 
             // Handle the UI Builder's right arrow format -> '[random.xlsx] col → [target] col'
-            if (capture && line.contains("→")) {
-                String[] parts = line.split("→");
+            if (capture && (line.contains("→") || line.contains("->"))) {
+                String[] parts = line.split("→|->");
                 if (parts.length < 2) continue;
                 String sourceRaw = parts[0].replaceAll("\\[.*?\\]", "").trim();
                 String targetRaw = parts[1].replaceAll("\\[.*?\\]", "").trim();
