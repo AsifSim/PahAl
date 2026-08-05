@@ -195,7 +195,7 @@ public class PythonEnvironmentService {
 
             // Install packages one at a time with --no-deps flag first
             String[] packages = {
-                    "google-adk",
+                    "google-adk[extensions]",
                     "google-cloud-aiplatform",
                     "google-generativeai"
             };
