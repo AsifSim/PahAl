@@ -6,6 +6,8 @@
     <title>Kaveri • Maps, Code & DVM</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- JSZip Library for client-side ZIP generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --bg: #f8faf7;
@@ -131,6 +133,12 @@
         .card-header { font-weight:600; font-size:0.9rem; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
         .card-title { display:flex; align-items:center; gap:8px; }
 
+        /* Form & Setup Elements */
+        .form-group { display:flex; flex-direction:column; gap:6px; flex:1; min-width:200px; }
+        .form-label { font-size:0.75rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; }
+        .form-control { width:100%; padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-family:inherit; font-size:0.85rem; transition:var(--transition); outline:none; }
+        .form-control:focus { border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 3px var(--accent-glow); }
+
         .maps-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
         .map-card { background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); overflow:hidden; transition:var(--transition-smooth); box-shadow:var(--shadow-xs); animation: cardAppear 0.5s ease-out both; }
         .map-card:nth-child(1){animation-delay:0.08s}.map-card:nth-child(2){animation-delay:0.16s}.map-card:nth-child(3){animation-delay:0.24s}.map-card:nth-child(4){animation-delay:0.32s}
@@ -246,7 +254,7 @@
         </div>
         <div class="navbar-right">
             <div class="workspace-btn" id="workspaceBtn"><span class="workspace-dot"></span><span id="workspaceName">Project Kaveri</span><i class="fas fa-chevron-down" style="font-size:0.6rem;"></i></div>
-            <div class="user-btn" id="userBtn"><div class="user-avatar">AK</div><span class="user-name">Arjun Kumar</span></div>
+            <div class="user-btn" id="userBtn"><div class="user-avatar">AK</div><span class="user-name">Asif Azmi</span></div>
         </div>
     </nav>
 
@@ -277,12 +285,49 @@
                         <div style="font-size:1rem;color:var(--accent);"><i class="fas fa-spinner fa-spin"></i> Loading document...</div>
                     </div>
                 </div>
+
+                <!-- Repository Setup UI -->
+                <div class="card" id="repoSetupCard" style="display:none; margin-bottom: 20px;">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-code-branch" style="color:var(--accent);"></i> Repository & Workspace Configuration</div>
+                    </div>
+                    <div style="display:flex; gap:16px; flex-wrap:wrap; padding: 4px 0;">
+                        <div class="form-group">
+                            <label class="form-label">Target Repository</label>
+                            <select id="repoSelect" class="form-control">
+                                <option value="application-interface">application-interface (GitHub)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Base Branch</label>
+                            <select id="baseBranchSelect" class="form-control">
+                                <option value="">Loading branches...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Branch Name</label>
+                            <input type="text" id="newBranchInput" class="form-control" placeholder="e.g. feature/order-api">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Service Name (Optional)</label>
+                            <input type="text" id="serviceNameInput" class="form-control" placeholder="e.g. order-service">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TBRD YAML (Required for code)</label>
+                            <input type="file" id="tbrdYamlInput" class="form-control" accept=".yaml,.yml" style="padding: 7px 14px;">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="button-row" id="mapsButtons">
                     <button class="btn btn-outline" onclick="window.location.href='pahal.html'"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+                    <button class="btn btn-outline" id="saveAllMapsBtn" onclick="saveAllMaps()" disabled><i class="fas fa-download"></i> Save All Maps (ZIP)</button>
                     <button class="btn btn-primary" id="proceedToCodeBtn" disabled><i class="fas fa-arrow-right"></i> Proceed to Code Generation</button>
                 </div>
             </div>
+
             <div class="divider" id="sectionDivider" style="display:none;"><span><i class="fas fa-arrow-down arrow-icon"></i> Sequential Flow <i class="fas fa-arrow-down arrow-icon"></i></span></div>
+
             <div class="section" id="codeSection" style="display:none;">
                 <div class="section-header"><div class="section-icon"><i class="fas fa-code"></i></div><h2 class="section-title">Code Synthesis</h2><p class="section-subtitle">Streaming production-ready microservice code from configuration maps</p></div>
                 <div class="sub-progress-wrap"><div class="progress-bar"><div class="progress-fill" id="codeProgressFill" style="width:0%;"></div></div><p class="sub-progress-text" id="codeProgressText">0%</p></div>
@@ -341,6 +386,43 @@
         clearTimeout(t._timeout);
         t._timeout = setTimeout(() => { t.classList.remove('show','error'); }, 3000);
     }
+
+    // ============================================================
+    // REPOSITORY & BRANCH SELECTION
+    // ============================================================
+    async function fetchBranches() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/repo/branches`);
+            if (res.ok) {
+                const branches = await res.json();
+                const select = document.getElementById('baseBranchSelect');
+                select.innerHTML = '<option value="">-- Select Base Branch --</option>' +
+                    branches.map(b => `<option value="${b}">${b}</option>`).join('');
+            } else {
+                showToast('⚠️ Failed to load branches', true);
+            }
+        } catch (e) {
+            console.error('Fetch branches error:', e);
+            showToast('⚠️ Error connecting to git repo', true);
+        }
+    }
+
+    function validateRepoForm() {
+        const base = document.getElementById('baseBranchSelect').value;
+        const newBranch = document.getElementById('newBranchInput').value.trim();
+        const btn = document.getElementById('proceedToCodeBtn');
+
+        if (mapsGenerated && base !== "" && newBranch !== "") {
+            btn.disabled = false;
+        } else {
+            btn.disabled = true;
+        }
+    }
+
+    document.getElementById('baseBranchSelect').addEventListener('change', validateRepoForm);
+    document.getElementById('newBranchInput').addEventListener('input', validateRepoForm);
+    document.getElementById('serviceNameInput').addEventListener('input', validateRepoForm);
+
 
     // ============================================================
     // FULLSCREEN CONTROLS
@@ -466,7 +548,6 @@
             if (!res.ok) throw new Error(`Backend error (${res.status})`);
             const fullResponse = await res.json();
 
-            // 🎯 EXTRACT JUST THE DVM MAP DATA FROM THE ENVELOPE
             let extractedDvm = fullResponse;
             if (fullResponse.response && fullResponse.response.dvm) {
                 extractedDvm = fullResponse.response.dvm;
@@ -476,10 +557,8 @@
                 extractedDvm = fullResponse.dvm;
             }
 
-            // Try to extract a clean title from the map itself
             const mapTitle = extractedDvm['dashboard-name'] || extractedDvm.title || 'DVM_Generated_Map';
 
-            // Populate array with cleanly extracted data and drop the loading flag
             generatedMaps[dvmIndexTarget] = {
                 title: mapTitle,
                 type: 'dvm',
@@ -494,15 +573,12 @@
 
         } catch (err) {
             console.error('DVM Generation Error:', err);
-
-            // Populate array with error info
             generatedMaps[dvmIndexTarget] = {
                 title: 'DVM Generation Failed',
                 type: 'dvm',
                 content: `// The API /agent/generate-dvm failed.\n// Error: ${err.message}`,
                 _loading: false
             };
-
             renderMaps();
             showToast('⚠️ DVM map generation failed', true);
             document.getElementById('mapProgressText').textContent = 'DVM step failed';
@@ -526,13 +602,11 @@
         fd.append('file', file);
 
         try {
-            // STEP 1: Process initial docx
             mf.style.width = '30%'; mt.textContent = 'Processing...';
             const res = await fetch(`${API_BASE_URL}/tbrd/process-docx`, { method: 'POST', body: fd });
             if (!res.ok) throw new Error(`Backend error (${res.status})`);
             const data = await res.json();
 
-            // STEP 2: Parse standard maps to array
             mf.style.width = '60%'; mt.textContent = 'Parsing maps...';
             generatedMaps = [];
 
@@ -551,11 +625,10 @@
                 _loading: false
             });
 
-            // STEP 3: STRICT FRONTEND VALIDATION – only trigger DVM if TBRD-05: Frontend exists
-            let hasFrontend = false;
+            const stringifiedData = JSON.stringify(data);
 
+            let hasFrontend = false;
             if (fsmData && Array.isArray(fsmData.sections)) {
-                // DVM only triggers if a section title contains both "tbrd-05" and "frontend"
                 hasFrontend = fsmData.sections.some(section => {
                     const title = (section.section_title || '').toLowerCase();
                     return title.includes('tbrd-05') && title.includes('frontend');
@@ -573,13 +646,49 @@
                 });
             }
 
-            // STEP 4: Render all maps
             renderMaps();
 
-            mapsGenerated = true;
-            document.getElementById('proceedToCodeBtn').disabled = false;
+            // ============================================================
+            // CHECK FOR TBRD-03 & dataEnrichment TO INVOKE DEAM READ CONTROLLER
+            // ============================================================
+            const hasDataEnrichment = stringifiedData.includes('tbrd-03') || stringifiedData.includes('dataEnrichment');
+            if (hasDataEnrichment) {
+                try {
+                    showToast('🔄 Synchronizing DEAM Reads via API...');
+                    const deamReadRes = await fetch(`${API_BASE_URL}/deam-reads/process`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-TENANT-ID': 'tenantA'
+                        },
+                        body: stringifiedData
+                    });
 
-            // STEP 5: Trigger DVM (only if frontend section was securely found)
+                    if (deamReadRes.ok) {
+                        const deamReadData = await deamReadRes.json();
+                        generatedMaps.push({
+                            title: 'DEAM_Reads_Sync_Result',
+                            type: 'workflow',
+                            content: JSON.stringify(deamReadData, null, 2),
+                            _loading: false
+                        });
+                        renderMaps();
+                        showToast('✅ DEAM Reads successfully processed!');
+                    } else {
+                        console.warn('DEAM reads call returned non-200 status');
+                    }
+                } catch (err) {
+                    console.error('DEAM Reads processing error:', err);
+                    showToast('⚠️ DEAM Reads endpoint call failed', true);
+                }
+            }
+
+            mapsGenerated = true;
+            document.getElementById('repoSetupCard').style.display = 'block';
+            document.getElementById('saveAllMapsBtn').disabled = false;
+            fetchBranches();
+            validateRepoForm();
+
             if (hasFrontend) {
                 mf.style.width = '80%'; mt.textContent = 'Triggering DVM...';
                 showToast('✅ Base maps ready. Initializing DVM LLM Call...');
@@ -591,7 +700,7 @@
                 }, 600);
             } else {
                 mf.style.width = '100%'; mt.textContent = 'Maps complete';
-                showToast('✅ Maps successfully generated! (No Frontend section found)');
+                showToast('✅ Maps successfully generated!');
             }
 
         } catch (err) {
@@ -614,18 +723,20 @@
             { title: 'FSM_StateMachine', type: 'fsm', content: '{"model":"TBRD_FSM","states":["INIT","VALIDATION","PROCESSING","COMPLETE"]}', _loading: false }
         ];
 
-        // Demo has no frontend section by default, so we skip DVM.
         renderMaps();
 
         mapsGenerated = true;
-        document.getElementById('proceedToCodeBtn').disabled = false;
+        document.getElementById('repoSetupCard').style.display = 'block';
+        document.getElementById('saveAllMapsBtn').disabled = false;
+        fetchBranches();
+        validateRepoForm();
 
         const mf = document.getElementById('mapProgressFill');
         const mt = document.getElementById('mapProgressText');
         if (mf) mf.style.width = '100%';
         if (mt) mt.textContent = 'Maps complete';
 
-        showToast('📋 Demo maps loaded. (No Frontend section)');
+        showToast('📋 Demo maps loaded.');
     }
 
     // ============================================================
@@ -635,11 +746,13 @@
         const body = document.getElementById('mapBody' + i);
         if (body) body.classList.toggle('minimized');
     };
+
     window.copyMap = (i) => {
         if (generatedMaps[i] && generatedMaps[i].content) {
             navigator.clipboard.writeText(generatedMaps[i].content).then(() => showToast('📋 Map copied!'));
         }
     };
+
     window.saveMap = async (i) => {
         if (!generatedMaps[i]) return;
         const map = generatedMaps[i];
@@ -665,10 +778,66 @@
         }
     };
 
+    window.saveAllMaps = async () => {
+        if (!generatedMaps || generatedMaps.length === 0) {
+            showToast('⚠️ No maps available to save', true);
+            return;
+        }
+
+        if (typeof JSZip === 'undefined') {
+            showToast('⚠️ ZIP library failed to load. Please refresh.', true);
+            return;
+        }
+
+        try {
+            showToast('📦 Zipping files...');
+            const zip = new JSZip();
+            const folder = zip.folder("PahAl_Configuration_Maps");
+
+            generatedMaps.forEach((m, index) => {
+                let safeTitle = m.title.replace(/[^a-z0-9]/gi, '_');
+                if (!safeTitle) safeTitle = `map_${index}`;
+
+                let finalContent = m.content;
+                try {
+                    finalContent = JSON.stringify(JSON.parse(m.content), null, 2);
+                } catch (e) {}
+
+                folder.file(`${safeTitle}.json`, finalContent);
+            });
+
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: 'PahAl_Configuration_Maps.zip',
+                    types: [{ description: 'ZIP Archive', accept: { 'application/zip': ['.zip'] } }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(zipBlob);
+                await writable.close();
+                showToast('💾 All maps zipped and saved!');
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                const u = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = u;
+                a.download = 'PahAl_Configuration_Maps.zip';
+                a.click();
+                URL.revokeObjectURL(u);
+                showToast('💾 All maps downloaded as ZIP!');
+            }
+        } catch (err) {
+            console.error('Save all maps error:', err);
+            showToast('⚠️ Failed to package maps', true);
+        }
+    };
+
     window.copyCode = () => {
         const code = document.getElementById('generatedCode').textContent;
         navigator.clipboard.writeText(code).then(() => showToast('📋 Code copied!'));
     };
+
     window.saveCode = async () => {
         const code = document.getElementById('generatedCode').textContent;
         try {
@@ -709,10 +878,9 @@
     }
 
     // ============================================================
-    // STREAMING SSE PARSER (Adapted from microservice.html)
+    // STREAMING SSE PARSER
     // ============================================================
     function processSseEvent(eventType, rawData, progressFill, progressText, codeBlock) {
-        // Un-escape backend newlines
         let cleanData = rawData.replace(/\n$/, '').replace(/\\n/g, "\n");
 
         if (eventType === "progress") {
@@ -720,11 +888,8 @@
             progressFill.style.width = percent + '%';
             progressText.textContent = percent + '%';
         } else if (eventType === "method") {
-            // Append newly streamed code
             codeBlock.textContent += cleanData + "\n\n";
-            // Auto-scroll to bottom of the code block window
             codeBlock.scrollTop = codeBlock.scrollHeight;
-            // Add momentary visual flash effect to indicate incoming stream chunk
             codeBlock.style.boxShadow = "inset 0 0 20px rgba(45,212,191,0.5)";
             setTimeout(() => codeBlock.style.boxShadow = "none", 500);
         } else if (eventType === "complete") {
@@ -738,35 +903,79 @@
     }
 
     // ============================================================
-    // TRIGGER SSE MICROSERVICE GENERATION (proceed to code)
+    // TRIGGER REPO SETUP & MICROSERVICE GENERATION
     // ============================================================
     document.getElementById('proceedToCodeBtn').addEventListener('click', async () => {
         if (!mapsGenerated) { showToast('⚠️ Generate maps first!', true); return; }
 
-        // Hide map buttons, show code generation UI
+        const baseBranch = document.getElementById('baseBranchSelect').value;
+        const newBranchName = document.getElementById('newBranchInput').value.trim();
+        const serviceName = document.getElementById('serviceNameInput').value.trim();
+
+        // 1. Grab the YAML file if uploaded
+        const yamlInput = document.getElementById('tbrdYamlInput');
+        let yamlContent = null;
+        if (yamlInput && yamlInput.files.length > 0) {
+            try {
+                yamlContent = await yamlInput.files[0].text();
+                showToast('📄 YAML file loaded successfully!');
+            } catch (err) {
+                showToast('⚠️ Failed to read YAML file', true);
+                return;
+            }
+        } else {
+            showToast('⚠️ Please upload a TBRD YAML file first!', true);
+            return; // Enforce YAML file requirement
+        }
+
+        document.getElementById('repoSetupCard').style.display = 'none';
         document.getElementById('mapsButtons').style.display = 'none';
         document.getElementById('sectionDivider').style.display = 'block';
         document.getElementById('codeSection').style.display = 'block';
 
-        updateGlobalProgress(50, 'Code Generation', 3);
-
+        const cb = document.getElementById('generatedCode');
         const cf = document.getElementById('codeProgressFill');
         const ct = document.getElementById('codeProgressText');
-        const cb = document.getElementById('generatedCode');
 
-        // Wipe existing content and prepare for stream
-        cb.textContent = "// Connection established. Awaiting initial generation packet...\n\n";
+        cb.textContent = "// 🔄 Setting up repository workspace...\n";
+        updateGlobalProgress(40, 'Workspace Setup', 3);
+        cf.style.width = '2%';
+        ct.textContent = 'Setup';
+
+        try {
+            const setupRes = await fetch(`${API_BASE_URL}/repo/setup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ baseBranch, newBranchName, serviceName })
+            });
+
+            if (!setupRes.ok) throw new Error(`Backend error (${setupRes.status})`);
+            const setupData = await setupRes.json();
+
+            cb.textContent += `// ✅ Repository cloned successfully!\n// 📁 Workspace initialized at: ${setupData.submodulePath}\n\n`;
+            showToast('✅ Workspace configured in cloned_repositories!');
+
+        } catch (err) {
+            console.error('Repository setup failed:', err);
+            cb.textContent += `// ❌ ERROR: Workspace setup failed: ${err.message}\n// Aborting code generation stream.\n`;
+            showToast('⚠️ Repository setup failed', true);
+            cf.style.backgroundColor = 'var(--red)';
+            return;
+        }
+
+        updateGlobalProgress(50, 'Code Generation', 3);
+        cb.textContent += "// 📡 Connection established. Awaiting initial code generation packet...\n\n";
         cf.style.width = '5%';
         ct.textContent = '5%';
 
         try {
-            // Stringify all generated configuration maps to send as the context payload
-            const payload = JSON.stringify(generatedMaps);
+            // 2. Send ONLY the raw YAML text directly
+            const payload = yamlContent;
 
             const response = await fetch(`${API_BASE_URL}/stream/generate-java-stream`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'text/plain', // Updated content-type
                     'Accept': 'text/event-stream'
                 },
                 body: payload
@@ -788,7 +997,7 @@
 
                 buffer += decoder.decode(value, { stream: true });
                 let lines = buffer.split(/\r\n|\n|\r/);
-                buffer = lines.pop(); // Hold incomplete last line in buffer
+                buffer = lines.pop();
 
                 for (let line of lines) {
                     if (line.trim() === "") {
@@ -805,7 +1014,6 @@
                 }
             }
 
-            // Flush remaining data
             if (currentEvent || currentData) {
                 processSseEvent(currentEvent || "message", currentData, cf, ct, cb);
             }
@@ -856,7 +1064,6 @@
         }
     }
 
-    // Start the application
     init();
 </script>
 </body>

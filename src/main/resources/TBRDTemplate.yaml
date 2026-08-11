@@ -1,0 +1,186 @@
+# =============================================================================
+# TBRD Document – Generic Microservice & Business Rules Template
+# =============================================================================
+# This file fully describes a single microservice:
+#   - Metadata
+#   - Optional state machine (for record‑level lifecycle management)
+#   - Database entities
+#   - Request payload
+#   - Validations (technical & functional)
+#   - Data enrichment (external lookups)
+#   - Business rules (conditions + actions)
+#   - Calculations (standalone or embedded)
+#   - Response structure & final DB mutations
+#   - Error code dictionary
+#
+# All expression fields (condition, expression, valueSource) support
+# 58 Excel‑like functions: SUM, AVERAGE, IF, AND, OR, ROUND, etc.
+# =============================================================================
+
+# --- SERVICE METADATA --------------------------------------------------------
+service:
+  name: ""                     # *Required* – microservice name, e.g., "MerchantPayoutService"
+  workflow: ""                 # *Required* – associated workflow name, e.g., "merchant_instant_payout_flow"
+  version: ""                  # *Required* – workflow version, e.g., "v4.0"
+  platformTriggered: false     # *Required* – true if the service is invoked by the platform itself
+  description: ""              # Optional – human‑readable description of the service
+
+# --- STATE MACHINE -----------------------------------------------------------
+# Defines the lifecycle of a stateful entity, if any.
+# Omit this entire block if the entity is stateless.
+stateMachine:
+  entity: ""                   # *Required* – logical entity name that holds the state (e.g., "PayoutRequest")
+  stateColumn: ""              # *Required* – database column that stores the state value (e.g., "payout_status")
+  initialState: ""             # *Required* – state value when a new record is created (e.g., "INITIATED")
+  states:                      # *Required* – list of all allowed state values
+    - ""                       # e.g., "INITIATED"
+    # - "VALIDATION_PASSED"
+  transitions:                 # *Required* – list of allowed transitions
+    - from: ""                 # source state, or "*" for ANY state
+      to: ""                   # target state
+      command: ""              # command name that triggers this transition (e.g., "validatePayout")
+      event: ""                # domain event published after successful transition (e.g., "PayoutValidated")
+      guards:                  # Optional – guards that must pass before the transition
+        - ruleName: ""         # business rule name that acts as guard
+          onViolation: ""      # "REJECT" (throw error) or "ALTERNATE_TRANSITION" (fire different command)
+          alternateTransition: ""  # required only if onViolation = ALTERNATE_TRANSITION
+  entryActions:                # Optional – actions executed when ENTERING a state
+    "" :                       # state name as key (e.g., "PROCESSING")
+      - ""                     # list of business rule names to execute
+  exitActions:                 # Optional – actions executed when LEAVING a state
+    "" :                       # state name as key
+      - ""
+
+# --- DATABASE ENTITIES -------------------------------------------------------
+entities:
+  - name: ""                   # logical entity name (e.g., "merchant_profile")
+    table: ""                  # actual DB table name (e.g., "merchant_profile")
+    idField: ""                # primary key column (e.g., "mid")
+    fields:                    # all columns that may be accessed
+      - name: ""               # logical field name (e.g., "status")
+        type: ""               # data type: String, Integer, Decimal, Boolean, Date, etc.
+        column: ""             # actual column name in the table (e.g., "status")
+    operations:                # intended CRUD operations on this entity
+      - READ
+      - UPDATE
+      # - INSERT (if needed)
+
+# --- REQUEST PAYLOAD ---------------------------------------------------------
+request:
+  fields:
+    - name: ""                 # field name (e.g., "merchant_id")
+      type: ""                 # data type: String, Integer, Decimal, Boolean, etc.
+      required: false          # true if this field is mandatory
+      validation:              # optional – inline simple validation
+        typeCheck: ""          # expected runtime type (e.g., "Integer")
+        constraints:           # optional – additional constraint expressions
+          - expression: ""     # Boolean expression (supports Excel functions, e.g., "AND(payout_amount >= 100, payout_amount <= 500000)")
+            errorCode: ""      # error code if constraint fails
+
+# --- VALIDATIONS (pre‑processing) --------------------------------------------
+validations:
+  technical:                   # type/format validations
+    - name: ""                 # rule name (e.g., "type_check_payout")
+      expression: ""           # Boolean expression, e.g., "TYPEOF(Request.payout_amount) == 'Integer'"
+      onFailure: ""            # action on failure: "HALT_TECHNICAL:<ERROR_CODE>"
+  functional:                  # business‑rule validations
+    - name: ""
+      expression: ""           # e.g., "AND(Request.payout_amount >= 100, Request.payout_amount <= 500000)"
+      onFailure: ""            # "HALT_FUNCTIONAL:<ERROR_CODE>"
+
+# --- DATA ENRICHMENT (external lookups) --------------------------------------
+dataEnrichment:
+  - name: ""                   # unique enrichment name (e.g., "MerchantRiskProfileData")
+    consumes: ""               # data source used for filtering, usually "Request"
+    entity: ""                 # logical entity to read from (must be defined in 'entities')
+    exactly_match: false       # true → expects exactly one record, false → multiple rows are possible
+    where:                     # filter condition
+      field: ""                # column name to filter on
+      operator: ""             # operator: "=", "IN", ">", "<", etc.
+      valueSource: ""          # expression for the filter value (e.g., "Request.merchant_id")
+    produces:                  # columns returned and their aliases in the context
+      - name: ""               # column name in the database (e.g., "risk_tier")
+        alias: ""              # variable name to use in later expressions (e.g., "risk_tier")
+        list: false            # true if this variable is a LIST of records (enables aggregation)
+
+# --- BUSINESS RULES (conditions + actions) -----------------------------------
+businessRules:
+  - name: ""                   # unique rule name (referenced by guards, entry/exit actions)
+    description: ""            # human‑readable description
+    condition: ""              # Boolean expression; if empty or omitted, always evaluates to true
+                               # Supports Excel functions: IF, AND, OR, NOT, comparison operators, etc.
+    actions:                   # executed when condition is true
+      - type: ""               # action type: one of STATE_TRANSITION, DB_UPDATE, RETURN_ERROR, COMPUTE, PUBLISH_EVENT
+        params:                # parameters depend on the chosen type
+          # For STATE_TRANSITION
+          command: ""          # command name to fire (must exist in state machine transitions)
+
+          # For DB_UPDATE
+          entity: ""           # logical entity name to update
+          where:
+            field: ""          # column for the WHERE clause
+            valueSource: ""    # expression for the matching value
+          set:                 # columns to update
+            - field: ""        # column name
+              valueSource: ""  # expression for the new value
+
+          # For RETURN_ERROR
+          errorCode: ""        # error code (must be defined in errorCodes)
+
+          # For COMPUTE
+          targetVariable: ""   # variable name to store the computed result
+          expression: ""       # computation expression (e.g., "ROUND(payout_amount * 0.05, 2)")
+
+          # For PUBLISH_EVENT
+          eventName: ""        # domain event name to publish
+    elseActions:               # optional – executed when condition is false
+      - type: ""
+        params: {}
+
+# --- CALCULATIONS (standalone) ------------------------------------------------
+calculations:
+  - name: ""                   # calculation name
+    consumes:                  # list of data source names used in expressions
+      - ""                     # e.g., "Request"
+      # - "MerchantRiskProfileData"
+    rules:                     # sequence of conditional computations
+      - condition: ""          # Boolean expression; if omitted, always true
+        compute:
+          variable: ""         # context variable to store the result
+          expression: ""       # formula (e.g., "IF(fraud_score>70, ROUND(payout_amount*0.05,2), ROUND(payout_amount*0.02,2))")
+        sideEffects:           # optional – DB updates tied to this computation branch
+          - type: ""           # usually "DB_UPDATE"
+            params:
+              entity: ""
+              where:
+                field: ""
+                valueSource: ""
+              set:
+                - field: ""
+                  valueSource: ""
+
+# --- RESPONSE OUTPUT ---------------------------------------------------------
+response:
+  success:
+    payload:                   # list of fields returned in a successful response
+      - name: ""               # field name (e.g., "execution_status")
+        valueSource: ""        # expression or literal (e.g., "'SUCCESS'")
+    dbMutations:               # optional – final DB updates after successful processing
+      - entity: ""             # logical entity name
+        where:
+          field: ""
+          valueSource: ""
+        set:
+          - field: ""
+            valueSource: ""
+  error:                       # list of possible error responses
+    - errorCode: ""            # must match an error code defined below
+      payload:                 # response fields for this error
+        - name: ""
+          valueSource: ""
+
+# --- ERROR CODES DICTIONARY --------------------------------------------------
+errorCodes:
+  - code: ""                   # error code string (e.g., "ERR_INVALID_PAYOUT_TYPE")
+    type: ""                   # classification: "TECHNICAL", "FUNCTIONAL", or "BUSINESS"
+    message: ""                # human‑readable message
