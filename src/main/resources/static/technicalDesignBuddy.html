@@ -334,9 +334,15 @@
             <div class="panel-content" id="deamContent" style="display:none;">
                 <div class="upload-row">
                     <button class="btn btn-upload btn-sm" onclick="document.getElementById('deamFileInput').click()">
-                        <i class="fas fa-upload"></i> You already have the DEAM or create script
+                        <i class="fas fa-file-code"></i> Upload JSON/SQL
                     </button>
                     <input type="file" id="deamFileInput" class="file-input-hidden" accept=".json,.sql,.txt" onchange="handleDeamFileUpload(event)" />
+
+                    <!-- NEW EXCEL UPLOAD BUTTON -->
+                    <button class="btn btn-success btn-sm" onclick="document.getElementById('deamExcelInput').click()">
+                        <i class="fas fa-file-excel"></i> Upload Excel DEAM
+                    </button>
+                    <input type="file" id="deamExcelInput" class="file-input-hidden" accept=".xlsx,.xls" onchange="handleDeamExcelUpload(event)" />
                 </div>
 
                 <div class="search-box">
@@ -698,6 +704,86 @@
             });
         }
         return results;
+    }
+
+    // ============================================================
+    // DEAM UPLOAD — EXCEL MULTI-SHEET
+    // ============================================================
+    function handleDeamExcelUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                // The XLSX library is already imported in your <head>
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                let importCount = 0;
+
+                // Each sheet is treated as a separate database entity
+                workbook.SheetNames.forEach(sheetName => {
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    if (sheetData.length === 0) return;
+
+                    const attributes = [];
+                    let businessKeys = [];
+
+                    sheetData.forEach(row => {
+                        // Flexible mapping based on the DEAMS_Commercial_Exit_Auto_Segmentation.xlsx format
+                        const colName = row['Column Name'] || row['column_name'] || row['Name'] || '';
+                        const dataType = row['Data Type'] || row['data_type'] || row['Type'] || 'string';
+
+                        const nullableRaw = String(row['Nullable'] || row['nullable'] || 'Yes').trim().toLowerCase();
+                        const isNullable = nullableRaw === 'yes' || nullableRaw === 'y' || nullableRaw === 'true';
+
+                        const bkRaw = String(row['Business Key'] || row['business_key'] || row['PK'] || 'N').trim().toLowerCase();
+                        const isBk = bkRaw === 'yes' || bkRaw === 'y' || bkRaw === 'true';
+
+                        if (colName) {
+                            attributes.push({
+                                name: colName,
+                                type: dataType.toLowerCase(),
+                                nullable: isNullable,
+                                isPrimaryKey: isBk
+                            });
+
+                            if (isBk) businessKeys.push(colName);
+                        }
+                    });
+
+                    if (attributes.length > 0) {
+                        // Prevent duplicate entity creation
+                        if (!entities.find(e => e.name === sheetName)) {
+                            entities.push({
+                                name: sheetName,
+                                displayName: sheetName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                                attributes: attributes,
+                                businessKeys: businessKeys.length > 0 ? businessKeys : (attributes[0] ? [attributes[0].name] : []),
+                                source: 'excel_upload'
+                            });
+                            importCount++;
+                        }
+                    }
+                });
+
+                if (importCount > 0) {
+                    showToast(`✅ Imported ${importCount} entities from Excel`, 'success');
+                    renderEntityList(allDbTables);
+                    renderSubWorkflows();
+                    updateDocument();
+                } else {
+                    showToast(`⚠️ No new entities found or they already exist.`, 'info');
+                }
+
+            } catch (err) {
+                showToast('⚠️ Failed to parse Excel file: ' + err.message, 'error');
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
+        event.target.value = ''; // Reset input to allow re-uploading the same file
     }
 
     // ============================================================

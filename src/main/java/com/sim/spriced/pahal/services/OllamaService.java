@@ -50,11 +50,11 @@ public class OllamaService {
         requestBody.put("prompt", prompt);
         requestBody.put("stream", false);
         requestBody.put("options", Map.of(
-                "temperature", 0.1,
+                "temperature", 0,
                 "top_p", 0.9,
                 "top_k", 40,
                 "repeat_penalty", 1.1,
-                "num_ctx", 8192
+                "num_ctx", 12288
         ));
         log.debug("requestBody = {}", requestBody);
 
