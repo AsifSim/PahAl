@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sim.spriced.pahal.services.OllamaService;
-import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
@@ -14,14 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +28,6 @@ public class JavaStreamingController {
 
     private static final Logger log = LoggerFactory.getLogger(JavaStreamingController.class);
     private final OllamaService ollamaService;
-    private static final String REPO_URL = "https://github.com/AsifSim/application-interface";
 
     private static final String[] METHOD_SIGNATURES = {
             "",
@@ -48,9 +44,54 @@ public class JavaStreamingController {
         this.ollamaService = ollamaService;
     }
 
-    // ===================================================================
-    // STREAMING ENDPOINT
-    // ===================================================================
+    @PostMapping("/save-code")
+    public ResponseEntity<Map<String, String>> saveCodeToWorkspace(@RequestBody Map<String, String> request) {
+        String submodulePath = request.get("submodulePath");
+        String serviceName = request.get("serviceName");
+        String code = request.get("code");
+
+        if (submodulePath == null || serviceName == null || code == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Missing required fields: submodulePath, serviceName, or code"));
+        }
+
+        try {
+            // Navigate directly into the Maven package structure of the cloned repo
+            Path targetDir = Paths.get(submodulePath, "src", "main", "java", "com", "sim", "spriced", "application", "service");
+
+            // Ensure the base package directories exist
+            Files.createDirectories(targetDir);
+
+            // FIX: Strip out any branch prefixes (like "feat/" or "bugfix/") for the file name
+            String safeFileName = serviceName;
+            if (safeFileName.contains("/")) {
+                safeFileName = safeFileName.substring(safeFileName.lastIndexOf("/") + 1);
+            } else if (safeFileName.contains("\\")) {
+                safeFileName = safeFileName.substring(safeFileName.lastIndexOf("\\") + 1);
+            }
+
+            // Write the final .java file using the sanitized name (e.g., test777.java)
+            Path filePath = targetDir.resolve(safeFileName + ".java");
+
+            // Failsafe to guarantee the parent directory exists before writing
+            Files.createDirectories(filePath.getParent());
+
+            Files.writeString(filePath, code);
+
+            log.info("Successfully saved {} to {}", safeFileName + ".java", filePath);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "File saved successfully",
+                    "path", filePath.toString()
+            ));
+
+        } catch (Exception e) {
+            log.error("Failed to save code to workspace at {}", submodulePath, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to save file: " + e.getMessage()));
+        }
+    }
+
     @PostMapping(value = "/generate-java-stream", consumes = MediaType.TEXT_PLAIN_VALUE, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> streamJavaGeneration(@RequestBody String tbrdYaml) {
         Sinks.Many<ServerSentEvent<String>> sink = Sinks.many().multicast().onBackpressureBuffer();
@@ -80,8 +121,8 @@ public class JavaStreamingController {
                     };
 
                     String previousCode = stripLoggers(codeBuilder.toString());
+                    String body = generateMethodBody(i, yamlNode, yamlForMethod, previousCode);
 
-                    String body = generateMethodBody(i, yamlForMethod, previousCode);
                     String methodBlock = "// START BODY " + i + "\n" + METHOD_SIGNATURES[i] + "\n" + body + "\n";
                     codeBuilder.append(methodBlock).append("\n");
 
@@ -147,12 +188,505 @@ public class JavaStreamingController {
         return stripped.trim();
     }
 
-    private String generateMethodBody(int methodNumber, String yaml, String previousCode) {
-        String prompt = buildPrompt(methodNumber, yaml, previousCode);
+    private String generateMethodBody(int methodNumber, JsonNode yamlNode, String yamlForMethod, String previousCode) {
+        String prompt;
+        if (methodNumber >= 1 && methodNumber <= 3) {
+            // Original detailed prompts for methods 1-3
+            prompt = buildPrompt(methodNumber, yamlForMethod, previousCode);
+        } else {
+            // Fill-in-the-blank approach for methods 4-7
+            prompt = buildFillInPrompt(methodNumber, yamlNode, yamlForMethod, previousCode);
+        }
+
         String rawResponse = ollamaService.generate(prompt);
         return cleanMethodBody(rawResponse);
     }
 
+    // ------------------------------------------------------------------
+    // Original detailed prompts for methods 1-3 (unchanged)
+    // ------------------------------------------------------------------
+    private String buildPrompt(int methodNumber, String yaml, String previousCode) {
+        return switch (methodNumber) {
+            case 1 -> """
+            Output ONLY the raw Java body. You MUST wrap your entire response in outer curly braces { }.
+            DO NOT output the method signature. DO NOT output markdown or backticks.
+            
+            First lines exactly:
+            {
+                logger.info("Entering extractInputPayload()");
+                Map<String, Object> requestData = data.getRequestData() != null ? data.getRequestData() : new HashMap<>();
+                logger.debug("requestData = {}", requestData);
+            
+            After that, read the YAML under `request.fields`. For EACH top-level field, add this block (replace <name> with the field name and use the appropriate type block):
+            
+            If type is "Object":
+            Map<String, Object> <name> = (Map<String, Object>) requestData.get("<name>");
+            if (<name> == null) {
+                <name> = new HashMap<>(); 
+                requestData.put("<name>", <name>);
+            }
+            logger.debug("<name> = {}", <name>);
+            
+            If type is "Array":
+            List<Map<String, Object>> <name> = (List<Map<String, Object>>) requestData.get("<name>");
+            if (<name> == null) { 
+                <name> = new ArrayList<>(); 
+                requestData.put("<name>", <name>);
+            }
+            logger.debug("<name> = {}", <name>);
+            
+            If type is "String":
+            String <name> = (String) requestData.get("<name>");
+            logger.debug("<name> = {}", <name>);
+            
+            End with exactly:
+                logger.info("Exiting extractInputPayload()");
+                return requestData;
+            }
+            
+            IMPORTANT: Write each extraction individually. NO loops. Output plain Java inside { }.
+            
+            <TARGET_YAML>
+            """ + yaml + """
+            </TARGET_YAML>""";
+
+            case 2 -> """
+            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
+            
+            METHOD CONTEXT: `private ValidationStatus performTechnicalValidations(TransactionData data, Map<String, Object> requestData)`
+            
+            CRITICAL ANTI-HALLUCINATION RULES:
+            1. "REQUEST" KEYWORD BAN: The YAML prefix `Request.` implies the variable `requestData`. THERE IS NO KEY NAMED "Request". 
+               BAD: `requestData.get("Request").get("TemplateId")`
+               GOOD: `requestData.get("TemplateId")`
+            2. UNCAST CHAINING BAN: You MUST cast every level of a nested map before calling `.get()`.
+               BAD: `((Map) requestData.get("A")).get("B").get("C")`
+               GOOD: `((Map<String, Object>) ((Map<String, Object>) requestData.get("A")).get("B")).get("C")`
+            3. NPE SAFETY (OPERATOR PRECEDENCE): Wrap OR/AND conditions in parentheses.
+               BAD: `var != null && var.equals("A") || var.equals("B")`
+               GOOD: `(var != null && (var.equals("A") || var.equals("B")))`
+            4. SECTION ISOLATION: Translate ONLY the rules inside `validations.technical`.
+            
+            TRANSLATION DICTIONARY:
+            - TYPEOF(X) == 'Object'  -> `X instanceof Map`
+            - TYPEOF(X) == 'Array'   -> `X instanceof List`
+            - TYPEOF(X) == 'String'  -> `X instanceof String`
+            - LEN(X) > 0             -> `(X != null && X instanceof String && !((String) X).isEmpty())`
+            
+            TEMPLATE FOR EACH RULE:
+            Object <field_var> = <extract_safely_with_casts>;
+            boolean <rule_name>_valid = <translated_condition>;
+            if (!<rule_name>_valid) {
+                logger.warn("Validation failed: <rule_name> - <onFailure_string_from_yaml>");
+                return ValidationStatus.VALIDATION_FAILED;
+            }
+            
+            TASK: Start with `{ logger.info("Entering performTechnicalValidations()"); `. Translate rules. End with `logger.info("Exiting performTechnicalValidations()"); return ValidationStatus.VALIDATION_SUCCESS; }`.
+            
+            
+            <TARGET_YAML>
+            """ + yaml + """
+            </TARGET_YAML>""";
+
+            case 3 -> """
+            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
+            
+            METHOD CONTEXT: `private ValidationStatus performFunctionalValidations(TransactionData data, Map<String, Object> requestData)`
+            
+            CRITICAL ANTI-HALLUCINATION RULES:
+            1. "REQUEST" KEYWORD BAN: Strip `Request.` from paths. NEVER use `requestData.get("Request")`.
+            2. UNCAST CHAINING BAN: You MUST cast every level of a nested map before calling `.get()`.
+               GOOD: `((Map<String, Object>) ((Map<String, Object>) requestData.get("A")).get("B")).get("C")`
+            3. SECTION ISOLATION: Translate ONLY the rules inside `validations.functional`.
+            
+            TRANSLATION DICTIONARY:
+            - MATCHES(X, regex) -> `(X != null && X instanceof String && ((String) X).matches(regex))`
+            - OR(a, b) -> `(a || b)`
+            - AND(a, b) -> `(a && b)`
+            
+            TEMPLATE FOR EACH RULE:
+            Object <field_var> = <extract_safely_with_casts>;
+            boolean <rule_name>_valid = <translated_condition>;
+            if (!<rule_name>_valid) {
+                logger.warn("Validation failed: <rule_name> - <onFailure_string_from_yaml>");
+                return ValidationStatus.VALIDATION_FAILED;
+            }
+            
+            TASK: Start with `{ logger.info("Entering performFunctionalValidations()"); `. Translate rules. End with `logger.info("Exiting performFunctionalValidations()"); return ValidationStatus.VALIDATION_SUCCESS; }`.
+            
+            <TARGET_YAML>
+            """ + yaml + """
+            </TARGET_YAML>""";
+
+            default -> "";
+        };
+    }
+
+    // ------------------------------------------------------------------
+    // Fill-in-the-blank prompts for methods 4-7
+    // ------------------------------------------------------------------
+    private String buildFillInPrompt(int methodNumber, JsonNode yamlNode, String yamlForMethod, String previousCode) {
+        return switch (methodNumber) {
+            case 4 -> buildMethod4FillInPrompt(yamlNode);
+            case 5 -> buildMethod5FillInPrompt(yamlNode);
+            case 6 -> buildMethod6FillInPrompt(yamlNode);
+            case 7 -> buildMethod7FillInPrompt(yamlNode);
+            default -> "";
+        };
+    }
+
+    // ------------------------------------------------------------------
+// Method 4: fetchEnrichedData – FIXED
+// ------------------------------------------------------------------
+    private String buildMethod4FillInPrompt(JsonNode yamlNode) {
+        StringBuilder skeleton = new StringBuilder();
+        skeleton.append("""
+        Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
+
+        You are writing the `fetchEnrichedData` method. Use the EXACT Java code provided below, replacing nothing except if a placeholder is clearly marked with <...>. The code is already complete; just copy it and fill in the placeholders with the actual values from the YAML `dataEnrichment` section.
+
+        {
+            logger.info("Entering fetchEnrichedData()");
+            Map<String, Object> enriched = new ConcurrentHashMap<>();
+
+        """);
+
+        JsonNode enrichments = yamlNode.path("dataEnrichment");
+        if (enrichments.isArray()) {
+            for (JsonNode enrichment : enrichments) {
+                String name = enrichment.path("name").asText("");
+                String consumes = enrichment.path("consumes").asText("");
+                String entityTable = enrichment.path("entity").asText("");
+                boolean exactlyMatch = enrichment.path("exactly_match").asBoolean(true);
+                JsonNode where = enrichment.path("where");
+                String field = where.path("field").asText("");
+                String valueSource = where.path("valueSource").asText("");
+
+                skeleton.append("\n// Enrichment: ").append(name).append("\n");
+
+                // Determine if consumes is scalar or array
+                boolean isArray = consumes.endsWith("[]");
+
+                if (!isArray) {
+                    // Scalar consumption
+                    // e.g., consumes = "Request.TemplateId"
+                    String fieldName = consumes.substring("Request.".length());
+                    skeleton.append("String ").append(name.toLowerCase()).append("Input = (String) requestData.get(\"")
+                            .append(fieldName).append("\");\n");
+                    skeleton.append("if (").append(name.toLowerCase()).append("Input != null) {\n");
+                    skeleton.append("    Map<String, Object> params = new HashMap<>();\n");
+                    skeleton.append("    params.put(\"").append(field.trim()).append("\", ").append(name.toLowerCase()).append("Input);\n");
+                    skeleton.append("    List<Map<String, Object>> resultList = context.fetchDataFromDB(\"")
+                            .append(entityTable).append("\", params);\n");
+                    if (exactlyMatch) {
+                        skeleton.append("    if (!resultList.isEmpty()) {\n");
+                        skeleton.append("        enriched.put(\"").append(name).append("\", resultList.get(0));\n");
+                        skeleton.append("    }\n");
+                    } else {
+                        skeleton.append("    enriched.put(\"").append(name).append("\", resultList);\n");
+                    }
+                    skeleton.append("}\n");
+                } else {
+                    // Array consumption
+                    // e.g., consumes = "Request.QuoteDetails[].PartNumber"
+                    // We need to extract the parent array and the nested field
+                    String path = consumes.substring("Request.".length(), consumes.indexOf("[]"));
+                    String nestedField = consumes.substring(consumes.indexOf("[]") + 2);
+                    // Remove leading "." if present
+                    if (nestedField.startsWith(".")) {
+                        nestedField = nestedField.substring(1);
+                    }
+
+                    skeleton.append("List<Map<String, Object>> ").append(name.toLowerCase()).append("List = (List<Map<String, Object>>) requestData.get(\"")
+                            .append(path).append("\");\n");
+                    skeleton.append("Map<String, Map<String, Object>> ").append(name.toLowerCase()).append("Map = new ConcurrentHashMap<>();\n");
+                    skeleton.append("if (").append(name.toLowerCase()).append("List != null) {\n");
+                    skeleton.append("    ").append(name.toLowerCase()).append("List.stream().forEach(item -> {\n");
+                    skeleton.append("        String itemValue = (String) item.get(\"").append(nestedField).append("\");\n");
+                    skeleton.append("        if (itemValue != null) {\n");
+                    skeleton.append("            Map<String, Object> params = new HashMap<>();\n");
+                    skeleton.append("            params.put(\"").append(field.trim()).append("\", itemValue);\n");
+                    skeleton.append("            List<Map<String, Object>> resultList = context.fetchDataFromDB(\"")
+                            .append(entityTable).append("\", params);\n");
+                    if (exactlyMatch) {
+                        skeleton.append("            if (!resultList.isEmpty()) {\n");
+                        skeleton.append("                ").append(name.toLowerCase()).append("Map.put(itemValue, resultList.get(0));\n");
+                        skeleton.append("            }\n");
+                    } else {
+                        skeleton.append("            ").append(name.toLowerCase()).append("Map.put(itemValue, resultList);\n");
+                    }
+                    skeleton.append("        }\n");
+                    skeleton.append("    });\n");
+                    skeleton.append("    enriched.put(\"").append(name).append("\", ").append(name.toLowerCase()).append("Map);\n");
+                    skeleton.append("}\n");
+                }
+            }
+        }
+
+        skeleton.append("""
+            logger.info("Exiting fetchEnrichedData()");
+            return enriched;
+        }
+
+        Important:
+        - The code above is complete. Just replace any remaining placeholders with values from the YAML.
+        - Do NOT add any extra logic, try-catch, or validation.
+        - Output the final Java code exactly as shown (inside { }).
+        """);
+
+        return skeleton.toString();
+    }
+
+    // ------------------------------------------------------------------
+// Method 5: evaluateBusinessRules – FIXED
+// ------------------------------------------------------------------
+    private String buildMethod5FillInPrompt(JsonNode yamlNode) {
+        StringBuilder skeleton = new StringBuilder();
+        skeleton.append("""
+        Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
+
+        You are translating the `businessRules` section from the YAML below into Java code.
+        You MUST output real Java statements – NO pseudo‑code, NO undefined variables, NO helper methods.
+
+        ==========================
+        HOW TO PROCESS THE RULES
+        ==========================
+        1. Process each rule in the order they appear.
+        2. For each rule, process its actions.
+        3. Action types:
+           - "COMPUTE": translate the pseudo‑code expression into Java. Store the result in `requestData` using the key given by `targetVariable`.
+           - "DB_UPDATE": log `logger.warn("DB_UPDATE skipped");` and continue.
+
+        ==========================
+        TRANSLATION TABLE (pseudo‑function → Java)
+        ==========================
+        LOOKUP(enrichmentName, field1 = value1, ...)
+          -> Retrieve data from `enrichedData`.
+             If the enrichment result is a **Map** (scalar lookup), use:
+               `Map<String,Object> map = (Map<String,Object>) enrichedData.get("enrichmentName");`
+             If the enrichment result is a **Map<String, Map<String,Object>>** (nested/array lookup, e.g. from PartMasterLookup), use:
+               `Map<String, Map<String,Object>> lookupMap = (Map<String, Map<String,Object>>) enrichedData.get("enrichmentName");`
+               Then to find one item:
+               `Map<String,Object> found = lookupMap.get(keyValue);`
+             Always check for null before using.
+        PARALLEL_MAP(array, lambda) -> ((List<Map<String,Object>>) array).parallelStream().map(item -> { ...lambda body...; return result; }).collect(Collectors.toList())
+        MAP(array, lambda)          -> ((List<Map<String,Object>>) array).stream().map(item -> { ...lambda body...; return result; }).collect(Collectors.toList())
+        LET(var1 = expr1, ..., body) -> Declare local variables one after another, then use them in `body`.
+        IF(cond, t, f)               -> cond ? t : f
+        AND(cond1, cond2, ...)       -> cond1 && cond2 && ...
+        OR(cond1, cond2, ...)        -> cond1 || cond2 || ...
+        NOT(cond)                    -> !cond
+        CONTAINS(collection, item)   -> collection != null && ((List<?>) collection).contains(item)
+        CONCAT(a, b, ...)            -> a + b + ...   (all operands must be strings or convertible)
+        NOW()                        -> new Date()
+        NOW().getTime()              -> System.currentTimeMillis()
+        ROUND(value, decimals)       -> BigDecimal.valueOf(value).setScale(decimals, RoundingMode.HALF_UP).doubleValue()
+        JSON.stringify(obj)          -> new ObjectMapper().writeValueAsString(obj) (wrap in try‑catch)
+        MAP('key1', value1, ...)     -> Map.of("key1", value1, ...) (use HashMap if >10 keys)
+        IS_NOT_NULL(x)               -> x != null
+        == / =                       -> Objects.equals() for objects, == for primitives
+        SUM(array, lambda)           -> array.stream().mapToDouble(item -> lambda).sum()
+
+        ==================================
+        HANDLING UNSUPPORTED FUNCTIONS
+        ==================================
+        If you encounter a pseudo‑function not listed above (e.g., `MIDDLEWARE_DERIVE`, `TRUNCATE`, `PAD`, `DATE_FORMAT`, `FIND_HEADER`), do NOT invent Java code.
+        Instead, do the following:
+          1. Log a warning: `logger.warn("Skipping unsupported expression: <expression snippet>");`
+          2. Set the target variable to an empty list (for array results) or `null` (for scalar results), e.g.:
+             `requestData.put(targetVariable, Collections.emptyList());`
+             or
+             `requestData.put(targetVariable, null);`
+        You may also use common Java patterns for simple transformations (e.g., `String.format` for padding, `SimpleDateFormat` for date formatting), but if unsure, skip.
+
+        ==========================
+        EXAMPLE (partial)
+        ==========================
+        If a rule has:
+          targetVariable: "language_ok"
+          expression: |
+            LET(
+              template = LOOKUP(TemplateLookup, template_id = Request.TemplateId),
+              supported = template.supported_languages,
+              langOk = AND(supported IS NOT NULL, CONTAINS(supported, Request.DocumentData.Language)),
+              IF(langOk, true, false)
+            )
+        Your Java translation would be:
+          Map<String,Object> templateMap = (Map<String,Object>) enrichedData.get("TemplateLookup");
+          if (templateMap != null) {
+              List<Object> supportedList = (List<Object>) templateMap.get("supported_languages");
+              String requestedLanguage = (String) ((Map<String,Object>) requestData.get("DocumentData")).get("Language");
+              boolean langOk = supportedList != null && supportedList.contains(requestedLanguage);
+              requestData.put("language_ok", langOk);
+          } else {
+              requestData.put("language_ok", false);
+          }
+
+        Now, translate the rules from the YAML below into Java code using the same approach.
+
+        <YAML_BUSINESS_RULES>
+        """);
+
+        JsonNode businessRulesNode = yamlNode.path("businessRules");
+        skeleton.append(businessRulesNode.toPrettyString()).append("\n</YAML_BUSINESS_RULES>\n");
+
+        skeleton.append("""
+        Output only the Java code inside { }. Start with:
+            logger.info("Entering evaluateBusinessRules()");
+        and end with:
+            logger.info("Exiting evaluateBusinessRules()");
+        """);
+        return skeleton.toString();
+    }
+
+    // Method 6: calculations
+    private String buildMethod6FillInPrompt(JsonNode yamlNode) {
+        StringBuilder skeleton = new StringBuilder();
+        skeleton.append("""
+        Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
+
+        You are translating the `calculations` section from the YAML below into Java code.
+        The method must return a `Double`. If the calculation produces a complex object (Map/List), store it in `requestData` and return 0.0D.
+
+        ==========================
+        TRANSLATION RULES
+        ==========================
+        - Use `requestData` and `enrichedData` only; do NOT call `fetchDataFromDB`.
+        - Use Java Streams for any iteration (no for/while loops).
+        - Declare all variables before use.
+        - Log entry/exit with `logger.info()`.
+
+        ==========================
+        TRANSLATION TABLE (same as method 5)
+        ==========================
+        LOOKUP, MAP, PARALLEL_MAP, IF, AND, OR, NOT, CONTAINS, CONCAT, ROUND, SUM, JSON.stringify, etc.
+        (see method 5 for full mapping)
+
+        ==========================
+        EXAMPLE
+        ==========================
+        If YAML calculation is:
+          variable: "total_amount"
+          expression: |
+            IF(Request.DocumentData.Items IS NOT NULL,
+               SUM(Request.DocumentData.Items, item.Amount),
+               0.0
+            )
+        Your Java code should be:
+          logger.info("Entering calculations()");
+          List<Map<String,Object>> items = (List<Map<String,Object>>) ((Map<String,Object>) requestData.get("DocumentData")).get("Items");
+          double total = 0.0;
+          if (items != null) {
+              total = items.stream()
+                  .mapToDouble(item -> ((Number) item.get("Amount")).doubleValue())
+                  .sum();
+          }
+          requestData.put("total_amount", total);
+          logger.info("Exiting calculations()");
+          return 0.0D;
+
+        Now, translate the calculation(s) from the YAML below.
+
+        <YAML_CALCULATIONS>
+        """);
+
+        JsonNode calcsNode = yamlNode.path("calculations");
+        skeleton.append(calcsNode.toPrettyString()).append("\n</YAML_CALCULATIONS>\n");
+
+        skeleton.append("""
+        Output only the Java code inside { }. Start with:
+            logger.info("Entering calculations()");
+        and end with:
+            logger.info("Exiting calculations()");
+            return 0.0D;
+        """);
+        return skeleton.toString();
+    }
+
+    // Method 7: prepareResponseOutput
+    private String buildMethod7FillInPrompt(JsonNode yamlNode) {
+        StringBuilder skeleton = new StringBuilder();
+        skeleton.append("""
+        Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
+
+        You are building the final response and audit data according to the YAML sections `response.success.payload` and `response.success.dbMutations`.
+
+        ==========================
+        RULES
+        ==========================
+        1. You MUST return the `data` object.
+        2. The only allowed method on `data` is `data.setResponse(String key, List<Map<String,Object>> payload)`.
+        3. All values needed are in `requestData` or `enrichedData`.
+        4. JSON conversion: `new ObjectMapper().writeValueAsString(obj)` – wrap in try‑catch for `JsonProcessingException`.
+        5. Log entry/exit with `logger.info()`.
+
+        ==========================
+        STEP‑BY‑STEP
+        ==========================
+        1. **Build response payload** from `response.success.payload`.
+           For each entry:
+             - `name` is the response key.
+             - `valueSource` tells you how to get the value:
+               * If it starts with `MAP(` → translate the MAP expression to a Java Map.
+               * If it is a literal string (e.g., `'PROCESSING'`) → use the string without quotes.
+               * If it is a variable name (like `job_id`, `total_amount`, `template_version`):
+                 - If the variable was stored in `requestData` by earlier methods, use `requestData.get("variableName")`.
+                 - If it is part of an enrichment result, retrieve it from `enrichedData`, e.g.:
+                   `Map<String,Object> templateLookup = (Map<String,Object>) enrichedData.get("TemplateLookup");`
+                   then `templateLookup.get("template_version")`.
+           Put all entries into `Map<String,Object> responseMap`.
+
+        2. **Attach the response**:
+           `data.setResponse("Response", Collections.singletonList(responseMap));`
+
+        3. **Build audit records** from `response.success.dbMutations`.
+           For each mutation:
+             - `entity` is the table name.
+             - For each field in `set`:
+               - `field` is the key.
+               - Translate the `valueSource`:
+                 * `JSON.stringify(Request)` → `new ObjectMapper().writeValueAsString(requestData)` (in try‑catch)
+                 * `NOW()` → `new Date()`
+                 * A variable name → retrieve from `requestData` or `enrichedData`.
+                 * A string concatenation like `'https://...' + job_id + '.pdf'` → build the string in Java.
+             - Put the fields into a `Map<String,Object> auditRecord`, add to a list.
+           Store the list: `data.setResponse(entity, auditList);`
+
+        4. Return `data`.
+
+        ==========================
+        EXAMPLE
+        ==========================
+        If payload has:
+          - name: "JobId", valueSource: "job_id"
+          - name: "Status", valueSource: "'PROCESSING'"
+        Your code:
+          Map<String,Object> responseMap = new HashMap<>();
+          responseMap.put("JobId", requestData.get("job_id"));
+          responseMap.put("Status", "PROCESSING");
+          data.setResponse("Response", Collections.singletonList(responseMap));
+
+        Now, translate the YAML below.
+
+        <YAML_RESPONSE>
+        """);
+
+        JsonNode responseNode = yamlNode.path("response").path("success");
+        skeleton.append(responseNode.toPrettyString()).append("\n</YAML_RESPONSE>\n");
+
+        skeleton.append("""
+        Output only the Java code inside { }. Start with:
+            logger.info("Entering prepareResponseOutput()");
+        and end with:
+            logger.info("Exiting prepareResponseOutput()");
+            return data;
+        """);
+        return skeleton.toString();
+    }
+
+    // ------------------------------------------------------------------
+    // Clean / helper methods (unchanged)
+    // ------------------------------------------------------------------
     private String cleanMethodBody(String raw) {
         String code = extractCodeFromMarkdown(raw).trim();
         code = removeSignatureBeforeBraces(code);
@@ -301,568 +835,5 @@ public class JavaStreamingController {
                     }
                 }
                 """.formatted(serviceName, serviceName, serviceName, generatedCode);
-    }
-
-    // ===================================================================
-    // HIGH-PRECISION PROMPTS OPTIMIZED FOR GPT-OSS:20B
-    // ===================================================================
-// ===================================================================
-    // HIGH-PRECISION PROMPTS OPTIMIZED FOR GPT-OSS:20B
-    // ===================================================================
-//    private String buildPrompt(int methodNumber, String yaml, String previousCode) {
-//        return switch (methodNumber) {
-//
-//            case 1 -> """
-//            Output ONLY the raw Java body with curly brackets (no method signature). No markdown, no backticks.
-//
-//            First three lines exactly:
-//            {
-//            logger.info("Entering extractInputPayload()");
-//            Map<String, Object> requestData = data.getRequestData() != null ? data.getRequestData() : new HashMap<>();
-//            logger.debug("requestData = {}", requestData);
-//
-//            After that, read the YAML under `request.fields`. Each field has a `name` and a `type`.
-//            For EACH field, in the exact order they appear, add the following block (replace <name> with the actual YAML field name and use the appropriate type block below):
-//
-//            If type is "Object":
-//            Map<String, Object> <name> = (Map<String, Object>) requestData.get("<name>");
-//            if (<name> == null) {
-//                <name> = new HashMap<>();
-//                requestData.put("<name>", <name>);
-//            }
-//            logger.debug("<name> = {}", <name>);
-//
-//            If type is "Array":
-//            List<Map<String, Object>> <name> = (List<Map<String, Object>>) requestData.get("<name>");
-//            if (<name> == null) {
-//                <name> = new ArrayList<>();
-//                requestData.put("<name>", <name>);
-//            }
-//            logger.debug("<name> = {}", <name>);
-//
-//            If type is "String":
-//            String <name> = (String) requestData.get("<name>");
-//            logger.debug("<name> = {}", <name>); // null is allowed
-//
-//            After processing ALL fields, end with exactly:
-//            logger.info("Exiting extractInputPayload()");
-//            return requestData;
-//
-//            IMPORTANT:
-//            - Write each field extraction individually. NO loops, NO for/while.
-//            - Use the exact field names from the YAML. Do NOT use generic variables like "name" or "value".
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//
-//            case 2 -> """
-//            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-//
-//            METHOD CONTEXT: `private ValidationStatus performTechnicalValidations(TransactionData data, Map<String, Object> requestData)`
-//
-//            CRITICAL RULES (READ CAREFULLY):
-//            1. SECTION ISOLATION: Read ONLY from `validations.technical` in the <TARGET_YAML>. Do NOT read or process `validations.functional`.
-//            2. NPE SAFETY (OPERATOR PRECEDENCE): You MUST wrap OR/AND conditions in parentheses.
-//               BAD: `var != null && var.equals("A") || var.equals("B")`
-//               GOOD: `(var != null && (var.equals("A") || var.equals("B")))`
-//            3. NO UNCAST CHAINING: You MUST cast maps before getting nested keys.
-//               BAD: `requestData.get("DocumentData").get("Language")`
-//               GOOD: `((Map<String, Object>) requestData.get("DocumentData")).get("Language")`
-//            4. NO LOOPS: Use Java Streams. NO shadowing `requestData`.
-//
-//            TRANSLATION DICTIONARY FOR YAML EXPRESSIONS:
-//            - TYPEOF(X) == 'Object'  -> `X instanceof Map`
-//            - TYPEOF(X) == 'Array'   -> `X instanceof List`
-//            - TYPEOF(X) == 'String'  -> `X instanceof String`
-//            - LEN(X) > 0             -> `(X != null && X instanceof String && !((String) X).isEmpty())`
-//            - AND(a, b)              -> `(a && b)`
-//            - OR(a, b)               -> `(a || b)`
-//
-//            TEMPLATE TO FOLLOW FOR EACH RULE:
-//            Object <field_var> = <extract_field_safely>;
-//            boolean <rule_name>_valid = <translated_condition_with_safe_parentheses>;
-//            if (!<rule_name>_valid) {
-//                logger.warn("Validation failed: <rule_name> - <onFailure_string_from_yaml>");
-//                return ValidationStatus.VALIDATION_FAILED;
-//            }
-//
-//            TASK:
-//            Start exactly with `{ logger.info("Entering performTechnicalValidations()"); `.
-//            Translate every technical rule.
-//            End exactly with `logger.info("Exiting performTechnicalValidations()"); return ValidationStatus.VALIDATION_SUCCESS; }`.
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//
-//            case 3 -> """
-//            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-//
-//            METHOD CONTEXT: `private ValidationStatus performFunctionalValidations(TransactionData data, Map<String, Object> requestData)`
-//
-//            CRITICAL RULES (READ CAREFULLY):
-//            1. SECTION ISOLATION: Read ONLY from `validations.functional` in the <TARGET_YAML>. Do NOT read or process `validations.technical`.
-//            2. NPE SAFETY (OPERATOR PRECEDENCE): You MUST wrap OR/AND conditions in parentheses to prevent NullPointerExceptions.
-//            3. NO UNCAST CHAINING: You MUST cast maps before getting nested keys.
-//               GOOD: `((Map<String, Object>) requestData.get("DocumentData")).get("Language")`
-//            4. NO LOOPS: Use Java Streams (`.stream().allMatch(...)`).
-//
-//            TRANSLATION DICTIONARY FOR YAML EXPRESSIONS:
-//            - MATCHES(X, regex) -> `(X != null && ((String) X).matches(regex))`
-//            - TYPEOF(X) == 'String' -> `X instanceof String`
-//            - OR(a, b) -> `(a || b)`
-//
-//            TEMPLATE TO FOLLOW FOR EACH RULE:
-//            Object <field_var> = <extract_field_safely>;
-//            boolean <rule_name>_valid = <translated_condition>;
-//            if (!<rule_name>_valid) {
-//                logger.warn("Validation failed: <rule_name> - <onFailure_string_from_yaml>");
-//                return ValidationStatus.VALIDATION_FAILED;
-//            }
-//
-//            TASK:
-//            Start exactly with `{ logger.info("Entering performFunctionalValidations()"); `.
-//            Translate every functional rule.
-//            End exactly with `logger.info("Exiting performFunctionalValidations()"); return ValidationStatus.VALIDATION_SUCCESS; }`.
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//
-//            case 4 -> """
-//            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-//
-//            METHOD CONTEXT: `private Map<String, Object> fetchEnrichedData(PlatformContext context, TransactionData data, Map<String, Object> requestData)`
-//
-//            CRITICAL META-RULES (READ CAREFULLY):
-//            1. STRIP PREFIXES (CRITICAL): If the YAML says `Request.FieldName`, DO NOT write `requestData.get("Request.FieldName")`. You MUST strip the `Request.` prefix and write `requestData.get("FieldName")`.
-//            2. ASYNC ENFORCEMENT: You MUST execute every DB lookup asynchronously. Wrap every DB call inside `CompletableFuture.runAsync(() -> { ... })` and add it to a list of futures.
-//            3. EXACT API ARGUMENTS: `context.fetchDataFromDB(tableName, params)` takes EXACTLY TWO arguments. DO NOT pass a third boolean argument.
-//            4. DB RETURN TYPE: `context.fetchDataFromDB` returns `List<Map<String, Object>>`. You MUST check `!list.isEmpty()` before calling `list.get(0)`.
-//
-//            TEMPLATE TO FOLLOW:
-//            {
-//                logger.info("Entering fetchEnrichedData()");
-//                Map<String, Object> enriched = new ConcurrentHashMap<>();
-//                List<CompletableFuture<Void>> futures = new ArrayList<>();
-//
-//                // For each dataEnrichment in YAML:
-//                futures.add(CompletableFuture.runAsync(() -> {
-//                    // Extract params safely (No dot-notation chaining allowed)
-//                    // Call context.fetchDataFromDB
-//                    // Put results into `enriched` map
-//                }));
-//
-//                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-//                logger.info("Exiting fetchEnrichedData()");
-//                return enriched;
-//            }
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//
-//            case 5 -> """
-//            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-//
-//            METHOD CONTEXT: `private void evaluateBusinessRules(PlatformContext context, TransactionData data, Map<String, Object> requestData, Map<String, Object> enrichedData)`
-//
-//            CRITICAL META-RULES (READ CAREFULLY):
-//            1. NO DOT-NOTATION FOR MAPS (CRITICAL): Java Maps DO NOT support `.get("A.B")`. If the YAML references a nested field like `ObjectA.FieldB`, you MUST translate it to nested, casted gets: `((Map<String, Object>) map.get("ObjectA")).get("FieldB")`.
-//            2. ENRICHED DATA TYPE SAFETY: Data pulled from `enrichedData` is typically a `Map<String, Object>` or `List<Map<String, Object>>` (from Method 4). DO NOT blindly cast it to a `String`.
-//            3. NO DYNAMIC PARSERS: Do NOT use `YAMLUtil` or write literal `LOOKUP()` methods in Java. Translate them to raw Java using the dictionary below.
-//
-//            TRANSLATION DICTIONARY FOR YAML:
-//            - LOOKUP(key)       -> `enrichedData.get("key")` (cast to Map or List as needed)
-//            - CONCAT(a, b, c)   -> `a + b + c`
-//            - NOW().getTime()   -> `System.currentTimeMillis()`
-//            - AND(a, b)         -> `(a && b)`
-//            - DB_UPDATE         -> `logger.warn("DB_UPDATE skipped in evaluateBusinessRules");`
-//
-//            TASK: Read `businessRules` from <TARGET_YAML> and translate the exact logic step-by-step into hardcoded Java. Mutate `requestData` using `.put()`. Return nothing.
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//
-//            case 6 -> """
-//            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-//
-//            METHOD CONTEXT: `private Double calculations(PlatformContext context, TransactionData data, Map<String, Object> requestData, Map<String, Object> enrichedData)`
-//
-//            CRITICAL META-RULES (READ CAREFULLY):
-//            1. SYNTAX COMPLETENESS (CRITICAL): You must write full, valid Java statements ending with semicolons `;`. Do NOT output dangling expressions or ternary operators without assignments.
-//            2. NO DOT-NOTATION FOR MAPS: Translate YAML dot notation into nested, casted `.get()` calls.
-//               BAD: `requestData.get("DocumentData.Items")`
-//               GOOD: `((Map<String, Object>) requestData.get("DocumentData")).get("Items")`
-//            3. EXACT RETURN TYPE: You MUST assign your final calculated double to a variable and explicitly `return` it at the end of the method.
-//
-//            TEMPLATE TO FOLLOW:
-//            {
-//                logger.info("Entering calculations()");
-//                Double finalCalculatedValue = 0.0D;
-//
-//                // Read YAML `calculations`
-//                // Perform math logic (Use Java Streams if iterating over a List)
-//                // requestData.put("variable_name_from_yaml", computed_value);
-//                // finalCalculatedValue = computed_value;
-//
-//                logger.info("Exiting calculations()");
-//                return finalCalculatedValue;
-//            }
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//
-//            case 7 -> """
-//            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-//
-//            METHOD CONTEXT: `private TransactionData prepareResponseOutput(PlatformContext context, TransactionData data, Map<String, Object> requestData, Double calculatedValue)`
-//
-//            CRITICAL META-RULES (READ CAREFULLY):
-//            1. NO POJO HALLUCINATIONS (CRITICAL): `TransactionData` is NOT a custom POJO. It does NOT have methods like `.setJobId()` or `.setStatus()`. You are ONLY allowed to use `data.setResponse(String key, Object payload)`.
-//            2. NO API HALLUCINATIONS (CRITICAL): `PlatformContext` does NOT have a `.addAuditLog()` method. Do NOT invent fake methods.
-//            3. JSON CHECKED EXCEPTIONS: `new ObjectMapper().writeValueAsString(obj)` MUST be wrapped in a `try-catch` block.
-//
-//            TASK:
-//            1. Read `response.success.payload` from <TARGET_YAML>. Build a `Map<String, Object>` and attach it via `data.setResponse("Response", Collections.singletonList(responseMap));`.
-//            2. Read `response.success.dbMutations` from <TARGET_YAML>. Build a `List<Map<String, Object>>` representing the audit payload and attach it via `data.setResponse(entityNameFromYaml, auditList);`.
-//            3. Return the `data` object.
-//
-//            <TARGET_YAML>
-//            """ + yaml + """
-//            </TARGET_YAML>""";
-//
-//            default -> "";
-//        };
-//    }
-
-    // ===================================================================
-    // HIGH-PRECISION PROMPTS OPTIMIZED FOR GPT-OSS:20B (>87% ACCURACY)
-    // ===================================================================
-// ===================================================================
-    // HIGH-PRECISION PROMPTS OPTIMIZED FOR GPT-OSS:20B (>87% ACCURACY)
-    // ===================================================================
-    private String buildPrompt(int methodNumber, String yaml, String previousCode) {
-        return switch (methodNumber) {
-
-            case 1 -> """
-            Output ONLY the raw Java body. You MUST wrap your entire response in outer curly braces { }.
-            DO NOT output the method signature. DO NOT output markdown or backticks.
-            
-            First lines exactly:
-            {
-                logger.info("Entering extractInputPayload()");
-                Map<String, Object> requestData = data.getRequestData() != null ? data.getRequestData() : new HashMap<>();
-                logger.debug("requestData = {}", requestData);
-            
-            After that, read the YAML under `request.fields`. For EACH top-level field, add this block (replace <name> with the field name and use the appropriate type block):
-            
-            If type is "Object":
-            Map<String, Object> <name> = (Map<String, Object>) requestData.get("<name>");
-            if (<name> == null) {
-                <name> = new HashMap<>(); 
-                requestData.put("<name>", <name>);
-            }
-            logger.debug("<name> = {}", <name>);
-            
-            If type is "Array":
-            List<Map<String, Object>> <name> = (List<Map<String, Object>>) requestData.get("<name>");
-            if (<name> == null) { 
-                <name> = new ArrayList<>(); 
-                requestData.put("<name>", <name>);
-            }
-            logger.debug("<name> = {}", <name>);
-            
-            If type is "String":
-            String <name> = (String) requestData.get("<name>");
-            logger.debug("<name> = {}", <name>);
-            
-            End with exactly:
-                logger.info("Exiting extractInputPayload()");
-                return requestData;
-            }
-            
-            IMPORTANT: Write each extraction individually. NO loops. Output plain Java inside { }.
-            
-            <TARGET_YAML>
-            """ + yaml + """
-            </TARGET_YAML>""";
-
-            case 2 -> """
-            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-            
-            METHOD CONTEXT: `private ValidationStatus performTechnicalValidations(TransactionData data, Map<String, Object> requestData)`
-            
-            CRITICAL ANTI-HALLUCINATION RULES:
-            1. "REQUEST" KEYWORD BAN: The YAML prefix `Request.` implies the variable `requestData`. THERE IS NO KEY NAMED "Request". 
-               BAD: `requestData.get("Request").get("TemplateId")`
-               GOOD: `requestData.get("TemplateId")`
-            2. UNCAST CHAINING BAN: You MUST cast every level of a nested map before calling `.get()`.
-               BAD: `((Map) requestData.get("A")).get("B").get("C")`
-               GOOD: `((Map<String, Object>) ((Map<String, Object>) requestData.get("A")).get("B")).get("C")`
-            3. NPE SAFETY (OPERATOR PRECEDENCE): Wrap OR/AND conditions in parentheses.
-               BAD: `var != null && var.equals("A") || var.equals("B")`
-               GOOD: `(var != null && (var.equals("A") || var.equals("B")))`
-            4. SECTION ISOLATION: Translate ONLY the rules inside `validations.technical`.
-            
-            TRANSLATION DICTIONARY:
-            - TYPEOF(X) == 'Object'  -> `X instanceof Map`
-            - TYPEOF(X) == 'Array'   -> `X instanceof List`
-            - TYPEOF(X) == 'String'  -> `X instanceof String`
-            - LEN(X) > 0             -> `(X != null && X instanceof String && !((String) X).isEmpty())`
-            
-            TEMPLATE FOR EACH RULE:
-            Object <field_var> = <extract_safely_with_casts>;
-            boolean <rule_name>_valid = <translated_condition>;
-            if (!<rule_name>_valid) {
-                logger.warn("Validation failed: <rule_name> - <onFailure_string_from_yaml>");
-                return ValidationStatus.VALIDATION_FAILED;
-            }
-            
-            TASK: Start with `{ logger.info("Entering performTechnicalValidations()"); `. Translate rules. End with `logger.info("Exiting performTechnicalValidations()"); return ValidationStatus.VALIDATION_SUCCESS; }`.
-            
-            <PREVIOUS_CODE>
-            """ + (previousCode.isEmpty() ? "none" : previousCode) + """
-            </PREVIOUS_CODE>
-            
-            <TARGET_YAML>
-            """ + yaml + """
-            </TARGET_YAML>""";
-
-            case 3 -> """
-            Output ONLY the raw Java body wrapped in { }. DO NOT output the method signature. DO NOT output markdown.
-            
-            METHOD CONTEXT: `private ValidationStatus performFunctionalValidations(TransactionData data, Map<String, Object> requestData)`
-            
-            CRITICAL ANTI-HALLUCINATION RULES:
-            1. "REQUEST" KEYWORD BAN: Strip `Request.` from paths. NEVER use `requestData.get("Request")`.
-            2. UNCAST CHAINING BAN: You MUST cast every level of a nested map before calling `.get()`.
-               GOOD: `((Map<String, Object>) ((Map<String, Object>) requestData.get("A")).get("B")).get("C")`
-            3. SECTION ISOLATION: Translate ONLY the rules inside `validations.functional`.
-            
-            TRANSLATION DICTIONARY:
-            - MATCHES(X, regex) -> `(X != null && X instanceof String && ((String) X).matches(regex))`
-            - OR(a, b) -> `(a || b)`
-            - AND(a, b) -> `(a && b)`
-            
-            TEMPLATE FOR EACH RULE:
-            Object <field_var> = <extract_safely_with_casts>;
-            boolean <rule_name>_valid = <translated_condition>;
-            if (!<rule_name>_valid) {
-                logger.warn("Validation failed: <rule_name> - <onFailure_string_from_yaml>");
-                return ValidationStatus.VALIDATION_FAILED;
-            }
-            
-            TASK: Start with `{ logger.info("Entering performFunctionalValidations()"); `. Translate rules. End with `logger.info("Exiting performFunctionalValidations()"); return ValidationStatus.VALIDATION_SUCCESS; }`.
-            
-            <PREVIOUS_CODE>
-            """ + (previousCode.isEmpty() ? "none" : previousCode) + """
-            </PREVIOUS_CODE>
-            
-            <TARGET_YAML>
-            """ + yaml + """
-            </TARGET_YAML>""";
-
-            case 4 -> """
-    Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
-
-    METHOD CONTEXT: private Map<String, Object> fetchEnrichedData(PlatformContext context, TransactionData data, Map<String, Object> requestData)
-
-    ABSOLUTE RULES:
-    1. NEVER redeclare `requestData` or `data` – they are already in scope.
-    2. Use `new ConcurrentHashMap<>()` as the enriched map.
-    3. DB access ONLY via `context.fetchDataFromDB(String tableName, Map<String,Object> params)`, which returns `List<Map<String,Object>>`.
-    4. For `exactly_match: true`, take the first list element if the list is not empty, else `null`.
-    5. Use `CompletableFuture.runAsync()` for each **independent** DB call.  
-       If a later enrichment depends on the output of a previous one, wait for the previous future to complete (e.g., `previousFuture.join()`), then run the dependent one.
-    6. After launching all futures, wait for them to finish with `CompletableFuture.allOf(…).join()`.
-    7. Log entry/exit with `logger.info()` and every enrichment result with `logger.debug()`.
-
-    STEP‑BY‑STEP TRANSLATION OF YAML `dataEnrichment`:
-
-    For each enrichment in the YAML list (process them in order):
-
-    a) Identify the consumed data:
-       - If `consumes` is "Request.SomeArray[]":
-           `List<Map<String,Object>> items = (List<Map<String,Object>>) requestData.get("SomeArray");`
-       - If `consumes` is "Request.SomeArray[].Nested[]":
-           first get `SomeArray`, then for each item get the nested list.
-       - If `consumes` does NOT end with `[]` (e.g., "Request.TemplateId"), it is a scalar value taken directly from `requestData`.
-
-    b) Build DB query parameters using the `where` block:
-       - Split `where.field` by commas to get the DB column names (e.g., "template_id").
-       - Translate `where.valueSource`:
-         * "Request.X" → `requestData.get("X")`
-         * "item.Field" → `item.get("Field")`
-         * "AND(item.A, item.B)" → map the column names to item fields in the same order.
-       - Create a `Map<String,Object>` with column names as keys and the corresponding values.
-
-    c) Call `context.fetchDataFromDB(entity.table, params)` and store the result.
-       - For `exactly_match: true`: store the first map or `null`.
-       - For a top‑level enrichment, store a `List<Map<String,Object>>` containing one entry per array item (parallel to the consumed array).
-       - For a nested enrichment (e.g., Parts), store a `Map<String, Map<String,Object>>` keyed by the nested identifier (like part number).
-
-    d) Store the enrichment’s result in the concurrent map using the enrichment `name` (e.g., `"TemplateLookup"`) as the key.
-
-    e) If the enrichment is the first one, launch it in a `runAsync` and keep a reference to the future.  
-       If a later enrichment needs data from an earlier one, call `.join()` on that earlier future first, then build the params and run the new future.
-
-    Finally, after the loop over enrichments, wait for any remaining futures with `CompletableFuture.allOf(…).join()`.
-    Return the enriched map.
-
-    <PREVIOUS_CODE>
-    """ + (previousCode.isEmpty() ? "none" : previousCode) + """
-    </PREVIOUS_CODE>
-    <TARGET_YAML>
-    """ + yaml + """
-    </TARGET_YAML>""";
-
-
-
-            case 5 -> """
-    Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
-
-    METHOD CONTEXT: private void evaluateBusinessRules(PlatformContext context, TransactionData data, Map<String, Object> requestData, Map<String, Object> enrichedData)
-
-    ABSOLUTE RULES:
-    1. This method returns nothing. It mutates `requestData` by calling `requestData.put(key, value)`.
-    2. NEVER write undefined variables like `rule` without declaring them. You must loop over the YAML rules yourself.
-    3. NO pseudo‑code – you MUST translate the expressions into real Java using the TRANSLATION TABLE below.
-    4. NO helper methods – all logic inline.
-    5. Use Java Streams (`.stream().map().filter().collect()`) – no for/while loops.
-    6. Log entry/exit with `logger.info()`.
-
-    HOW TO PROCESS businessRules:
-    - Read the list from the YAML: you already have the YAML in the prompt. Translate the YAML into Java by directly writing the code for each rule, not by parsing a Java object.
-    - The YAML contains a list of rules. For each rule, there is a list of `actions`.
-    - For each action:
-        * If action type is "COMPUTE":
-            1. Declare a local variable with the name given in `action.params.targetVariable`.
-            2. Translate the expression in `action.params.expression` using the TRANSLATION TABLE.
-            3. After computing, do: `requestData.put(targetVariable, computedValue);`
-        * If action type is "DB_UPDATE":
-            Just log: `logger.warn("DB_UPDATE skipped");`
-
-    TRANSLATION TABLE (pseudo‑function → Java):
-    - `PARALLEL_MAP(array, lambda)` → `((List<Map<String,Object>>) array).parallelStream().map(item -> { lambda body; return result; }).collect(Collectors.toList())`
-    - `MAP(array, lambda)` → `((List<Map<String,Object>>) array).stream().map(item -> { lambda body; return result; }).collect(Collectors.toList())`
-    - `LET(var = expr; body)` → declare the local variable, then write the body.
-    - `LOOKUP(enrichName, field1 = value1, ...)`:
-        * Get the enrichment data: `Object lookupData = enrichedData.get(enrichName);`
-        * If it's a `List<Map>`: filter: `list.stream().filter(m -> Objects.equals(m.get("field1"), value1) && ...).findFirst().orElse(null)`
-        * If it's a `Map<String,Map>`: `((Map<String,Map<String,Object>>)lookupData).get(keyValue)`
-        * Return `null` if not found.
-    - `IF(cond, trueVal, falseVal)` → `cond ? trueVal : falseVal`
-    - `AND(cond1, cond2, ...)` → `cond1 && cond2 && ...`
-    - `OR(cond1, cond2, ...)` → `cond1 || cond2 || ...`
-    - `NOT(cond)` → `!cond`
-    - `CONTAINS(collection, item)` → `collection != null && ((List<?>)collection).contains(item)`
-    - `CONCAT(a, b, ...)` → `a + b + ...`
-    - `NOW()` → `new Date()`
-    - `NOW().getTime()` → `System.currentTimeMillis()`
-    - `ROUND(value, decimals)` → `BigDecimal.valueOf(value).setScale(decimals, RoundingMode.HALF_UP).doubleValue()`
-    - `JSON.stringify(obj)` → `new ObjectMapper().writeValueAsString(obj)` (wrap in try‑catch)
-    - `MAP('key1', value1, ...)` → `Map.of("key1", value1, ...)` (if >10 keys, use `HashMap`)
-    - `IS_NOT_NULL(x)` → `x != null`
-    - `==` / `=` → `Objects.equals()` for objects, `==` for primitives
-    - `SUM(array, lambda)` → `array.stream().mapToDouble(item -> lambda).sum()`
-
-    Important: When you see `Request.X` in an expression, you must translate it to the appropriate path in the `requestData` map, e.g., `requestData.get("X")` or `((Map<String,Object>) requestData.get("X")).get("Y")`.
-
-    Start with `logger.info("Entering evaluateBusinessRules()");` and end with `logger.info("Exiting evaluateBusinessRules()");`.
-
-    <PREVIOUS_CODE>
-    """ + (previousCode.isEmpty() ? "none" : previousCode) + """
-    </PREVIOUS_CODE>
-    <TARGET_YAML>
-    """ + yaml + """
-    </TARGET_YAML>""";
-
-
-            case 6 -> """
-    Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
-
-    METHOD CONTEXT: private Double calculations(PlatformContext context, TransactionData data, Map<String, Object> requestData, Map<String, Object> enrichedData)
-
-    ABSOLUTE RULES:
-    1. You MUST return a `Double`. If the YAML expression produces a complex object (Map/List), store it in `requestData` and return `0.0D`.
-    2. Use `enrichedData` for any LOOKUPs; do NOT call `fetchDataFromDB`.
-    3. Use the same TRANSLATION TABLE as in method 5.
-    4. Log entry/exit with `logger.info()`.
-
-    TASK:
-    - Read the calculation entry from YAML `calculations` (usually the first one).
-    - Translate its `compute.expression` into Java.
-    - Store the result in a local variable (named as per `compute.variable`), then `requestData.put(variableName, result);`.
-    - Return `0.0D`.
-
-    <PREVIOUS_CODE>
-    """ + (previousCode.isEmpty() ? "none" : previousCode) + """
-    </PREVIOUS_CODE>
-    <TARGET_YAML>
-    """ + yaml + """
-    </TARGET_YAML>""";
-
-
-            case 7 -> """
-    Output ONLY the raw Java body inside { }. Do NOT output the method signature or markdown.
-
-    METHOD CONTEXT: private TransactionData prepareResponseOutput(PlatformContext context, TransactionData data, Map<String, Object> requestData, Double calculatedValue)
-
-    ABSOLUTE RULES:
-    1. Return `data` at the end.
-    2. Access `TransactionData` ONLY via `data.setResponse(String key, List<Map<String,Object>> payload)`.
-    3. All variables produced by previous methods are stored in `requestData` (or in `enrichedData` if it's an enrichment result). Retrieve them by their exact YAML names.
-    4. JSON conversion: `new ObjectMapper().writeValueAsString(obj)` – wrap in try‑catch for `JsonProcessingException`.
-
-    STEPS:
-
-    1. **Build response payload** from YAML `response.success.payload`.
-       For each entry:
-         - `name` is the response key.
-         - `valueSource`: if it is a MAP(…) expression, translate it as before.
-           Otherwise, it is a variable name (like `"job_id"`, `"total_amount"`, `"template_version"`).
-           Retrieve the value:
-             * If the variable is stored in `requestData` (e.g., `job_id`, `total_amount`), use `requestData.get("variableName")`.
-             * If it is stored in `enrichedData` under the enrichment name (e.g., `template_version` was produced by `TemplateLookup`), retrieve it from there. For instance: `Map<String,Object> templateLookup = (Map<String,Object>) enrichedData.get("TemplateLookup");` then `templateLookup.get("template_version")`.
-       Put all pairs into a `Map<String,Object> responseMap`.
-
-    2. **Set the response**:
-       `data.setResponse("Response", Collections.singletonList(responseMap));`
-
-    3. **Build audit mutations** from YAML `response.success.dbMutations`.
-       For each mutation:
-         - The entity name is `mutation.entity`.
-         - For each field in `mutation.set`:
-           - Translate the `valueSource`:
-             * `JSON.stringify(Request)` → `new ObjectMapper().writeValueAsString(requestData)` (catch exception)
-             * `NOW()` → `new Date()`
-             * Other identifiers (like `job_id`, `total_amount`) → retrieve from `requestData` or `enrichedData` as appropriate.
-             * If it contains a string concatenation (e.g., `"'https://...' + job_id + '.pdf'"`), evaluate it as a Java string expression.
-         - Build a `Map<String,Object>` for that audit record and add it to a list.
-       Store with: `data.setResponse(entityName, auditList);`
-
-    4. Return `data`.
-
-    IMPORTANT: Always use the exact variable names and paths from the YAML. Do NOT invent keys like "Header" unless the YAML contains them.
-
-    <PREVIOUS_CODE>
-    """ + (previousCode.isEmpty() ? "none" : previousCode) + """
-    </PREVIOUS_CODE>
-    <TARGET_YAML>
-    """ + yaml + """
-    </TARGET_YAML>""";
-
-            default -> "";
-        };
     }
 }

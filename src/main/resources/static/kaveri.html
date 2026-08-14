@@ -348,6 +348,8 @@
     const API_BASE_URL = 'http://localhost:8080/api';
     let generatedMaps = [];
     let mapsGenerated = false;
+    let currentSubmodulePath = "";
+    let currentServiceName = "";
 
     // Fullscreen state
     let fullscreenMapIndex = -1, editingIndex = -1, originalContent = '';
@@ -840,25 +842,33 @@
 
     window.saveCode = async () => {
         const code = document.getElementById('generatedCode').textContent;
+
+        // Safety check to ensure the workspace was actually set up
+        if (!currentSubmodulePath || !currentServiceName) {
+            showToast('⚠️ Workspace not initialized. Generate code first.', true);
+            return;
+        }
+
         try {
-            const h = await window.showSaveFilePicker({
-                suggestedName: 'generated_code.txt',
-                types: [{ description: 'Code', accept: { 'text/plain': ['.txt', '.js', '.py', '.ts'] } }]
+            showToast('💾 Saving microservice to workspace...', false);
+
+            const res = await fetch(`${API_BASE_URL}/stream/save-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    submodulePath: currentSubmodulePath,
+                    serviceName: currentServiceName,
+                    code: code
+                })
             });
-            const w = await h.createWritable();
-            await w.write(code);
-            await w.close();
-            showToast('💾 Code saved!');
+
+            if (!res.ok) throw new Error(`Backend error (${res.status})`);
+
+            showToast('✅ Service successfully saved directly to cloned repository!');
+
         } catch (err) {
-            if (err.name === 'AbortError') return;
-            const b = new Blob([code], { type: 'text/plain' });
-            const u = URL.createObjectURL(b);
-            const a = document.createElement('a');
-            a.href = u;
-            a.download = 'generated_code.txt';
-            a.click();
-            URL.revokeObjectURL(u);
-            showToast('💾 Code downloaded!');
+            console.error('Save to workspace error:', err);
+            showToast('⚠️ Failed to save service to workspace', true);
         }
     };
 
@@ -951,6 +961,9 @@
 
             if (!setupRes.ok) throw new Error(`Backend error (${setupRes.status})`);
             const setupData = await setupRes.json();
+
+            currentSubmodulePath = setupData.submodulePath;
+            currentServiceName = setupData.serviceName;
 
             cb.textContent += `// ✅ Repository cloned successfully!\n// 📁 Workspace initialized at: ${setupData.submodulePath}\n\n`;
             showToast('✅ Workspace configured in cloned_repositories!');

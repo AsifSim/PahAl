@@ -54,7 +54,7 @@ public class OllamaService {
                 "top_p", 0.9,
                 "top_k", 40,
                 "repeat_penalty", 1.1,
-                "num_ctx", 12288
+                "num_ctx", 8192
         ));
         log.debug("requestBody = {}", requestBody);
 
